@@ -1,4 +1,5 @@
 import { loadHomePage } from './home.js';
+import { loadPracticeTimerPage } from './practice-timer.js';
 
 // 动态加载清单文件
 let manifest = [];
@@ -147,29 +148,9 @@ async function loadContent(path) {
 
   // 处理练功计时器特殊页面
   if (path === 'practice/timer') {
-    article.innerHTML = `
-      <h1>练功计时器</h1>
-      <div id="timer-chart" style="
-        width: 100%;
-        height: 400px;
-        border: 2px dashed var(--border);
-        border-radius: 8px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin: 20px 0;
-        background: rgba(0, 123, 255, 0.05);
-        color: var(--muted);
-        font-size: 16px;
-      ">
-        图表区域预留位置<br>
-        即将支持KV数据可视化
-      </div>
-      <p style="text-align: center; color: var(--muted); margin-top: 20px;">
-        练功数据统计图表即将上线
-      </p>
-    `;
+    await loadPracticeTimerPage(article);
     highlightActive(path);
+    updateAppBar('练功计时器');
     return;
   }
 

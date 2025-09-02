@@ -16,7 +16,17 @@
 	},
 	"observability": {
 		"enabled": true
-	}
+	},
+	"kv_namespaces": [
+		{
+			"binding": "aeons_info_config",
+			"id": "fb91aa299c80447e85f9fd2fe2c89950"
+		},
+		{
+			"binding": "aeons_info_practice_time",
+			"id": "9637d978c6cd4c16be612446d58db1e3"
+		}
+	]
 	/**
 	 * Smart Placement
 	 * Docs: https://developers.cloudflare.com/workers/configuration/smart-placement/#smart-placement

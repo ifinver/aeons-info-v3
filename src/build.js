@@ -2,6 +2,7 @@ import { copyFileSync, mkdirSync, readdirSync, statSync, existsSync, rmSync } fr
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { buildContent } from './build-content.js';
+import { bundleChart } from './bundle-chart.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -65,16 +66,20 @@ async function build() {
   // 2. 创建 dist 目录
   ensureDir(distDir);
   
-  // 3. 构建内容（MD -> HTML JSON）到 dist/content
+  // 3. Bundle Chart.js
+  console.log('打包 Chart.js...');
+  bundleChart();
+  
+  // 4. 构建内容（MD -> HTML JSON）到 dist/content
   const distContentDir = join(distDir, 'content');
   console.log('构建内容...');
   await buildContent(distContentDir);
   
-  // 4. 复制客户端文件到 dist（排除 content 目录中的源 MD 文件）
+  // 5. 复制客户端文件到 dist（排除 content 目录中的源 MD 文件）
   console.log('\n复制客户端文件...');
   copyDirectory(clientDir, distDir, ['content']);
   
-  // 5. 构建 CSS 到 dist
+  // 6. 构建 CSS 到 dist
   console.log('\n构建 CSS...');
   const { execSync } = await import('child_process');
   try {
