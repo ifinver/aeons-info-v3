@@ -63,7 +63,7 @@ async function buildSidebar() {
   const wrapper = document.createElement('div');
   const brand = document.createElement('div');
   brand.className = 'brand';
-  brand.innerHTML = '永恒的信息 <span class="muted">v3</span>';
+  brand.innerHTML = '永恒的信息';
   wrapper.appendChild(brand);
 
   groups.forEach(g => {
