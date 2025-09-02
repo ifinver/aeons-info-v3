@@ -1,0 +1,262 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html, body {
+    @apply h-full m-0;
+  }
+  
+  body {
+    @apply font-sans text-text overflow-x-hidden;
+  }
+  
+  * {
+    box-sizing: border-box;
+  }
+}
+
+@layer components {
+  /* 侧边栏样式 */
+  .sidebar {
+    @apply fixed top-0 left-0 w-[300px] h-screen overflow-y-auto overflow-x-hidden;
+    @apply bg-gradient-to-b from-bg-panel to-bg-panel-2 border-r border-border;
+    @apply px-3.5 py-5 z-10;
+  }
+  
+  .content {
+    @apply ml-[300px] min-h-screen p-7 overflow-y-auto;
+  }
+  
+  /* 品牌和导航 */
+  .brand {
+    @apply font-bold text-lg mb-3.5;
+  }
+  
+  .nav-section {
+    @apply mt-5;
+  }
+  
+  .nav-section:has(.nav-title-section) {
+    @apply mt-7 mb-2;
+  }
+  
+  .nav-title {
+    @apply text-text-muted text-xs tracking-wide uppercase mx-2 my-3;
+  }
+  
+  .nav-title-section {
+    @apply font-bold text-lg relative text-text normal-case tracking-normal;
+  }
+  
+  .nav-title-section::after {
+    @apply absolute -bottom-2 left-0 right-0 h-px bg-border;
+    content: '';
+  }
+  
+  .nav-list {
+    @apply list-none p-0 m-0;
+  }
+  
+  .nav-list a {
+    @apply block py-2 px-2.5 mx-1 my-0.5 text-text no-underline rounded-lg;
+    @apply transition-all duration-200 ease-in-out;
+  }
+  
+  .nav-list a:hover {
+    @apply bg-bg-panel-2 text-primary;
+  }
+  
+  .nav-list a.active {
+    @apply bg-primary-light text-primary;
+  }
+  
+  /* 嵌套导航 */
+  .nav-subgroup {
+    @apply my-2;
+  }
+  
+  .nav-subtitle {
+    @apply text-text text-sm mx-1 my-0.5 font-normal py-2 px-2.5;
+  }
+  
+  .nav-sublist {
+    @apply list-none p-0 m-0;
+  }
+  
+  .nav-sublist li {
+    @apply ml-5;
+  }
+  
+  .nav-sublist a {
+    @apply block py-2 px-2.5 mx-1 my-0.5 text-text no-underline rounded-lg;
+    @apply transition-all duration-200 ease-in-out;
+  }
+  
+  .nav-sublist a:hover {
+    @apply bg-bg-panel-2 text-primary;
+  }
+  
+  .nav-sublist a.active {
+    @apply bg-primary-light text-primary;
+  }
+  
+  /* 文章内容 */
+  #article {
+    @apply max-w-[860px] mx-auto bg-white/95 border border-border rounded-2xl p-7;
+    box-shadow: 0 4px 20px rgba(0,0,0,.1), inset 0 1px 0 rgba(255,255,255,.8);
+  }
+  
+  #article h1, #article h2, #article h3 {
+    @apply text-text;
+  }
+  
+  #article p, #article li {
+    @apply text-text-secondary leading-7;
+  }
+  
+  #article code {
+    @apply bg-bg-panel px-1.5 py-0.5 rounded text-text-secondary;
+  }
+  
+  #article pre {
+    @apply bg-bg-panel p-4 rounded-lg overflow-auto;
+  }
+  
+  /* 搜索框 */
+  .search {
+    @apply flex gap-2 mx-1.5 my-2.5;
+  }
+  
+  .search input {
+    @apply flex-1 rounded-lg border border-border bg-white text-text py-2.5 px-3;
+  }
+  
+  .search button {
+    @apply rounded-lg border border-border bg-primary text-white py-2.5 px-3;
+  }
+  
+  .muted {
+    @apply text-text-muted text-xs mx-1.5 my-2;
+  }
+  
+  /* 首页样式 */
+  .home-page {
+    @apply max-w-none m-0 bg-transparent border-none rounded-none p-0 shadow-none;
+  }
+  
+  .home-header {
+    @apply text-center py-16 px-0 bg-gradient-to-br from-indigo-500 to-purple-600;
+    @apply text-white rounded-2xl mb-10;
+  }
+  
+  .home-header h1 {
+    @apply text-6xl m-0 mb-4 font-bold text-white;
+  }
+  
+  .home-subtitle {
+    @apply text-xl m-0 opacity-90 font-light;
+  }
+  
+  .home-content {
+    @apply max-w-4xl mx-auto;
+  }
+  
+  .home-intro {
+    @apply text-center bg-white p-10 rounded-2xl shadow-lg mb-10;
+  }
+  
+  .home-intro h2 {
+    @apply text-gray-800 text-3xl mb-6;
+  }
+  
+  .home-intro p {
+    @apply text-lg leading-7 text-gray-600 mb-4;
+  }
+  
+  .home-sections {
+    @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-10;
+  }
+  
+  .home-section {
+    @apply bg-white p-8 rounded-2xl shadow-lg transition-all duration-300 ease-in-out;
+  }
+  
+  .home-section:hover {
+    @apply -translate-y-1 shadow-hover;
+  }
+  
+  .home-section h3 {
+    @apply text-gray-800 text-xl mb-4 flex items-center gap-2;
+  }
+  
+  .home-section p {
+    @apply text-gray-600 leading-6 mb-6;
+  }
+  
+  .section-articles {
+    @apply flex flex-col gap-3;
+  }
+  
+  .article-link {
+    @apply flex justify-between items-center py-4 px-5 bg-gray-50 rounded-xl;
+    @apply no-underline text-gray-800 transition-all duration-300 ease-in-out;
+    @apply border-2 border-transparent;
+  }
+  
+  .article-link:hover {
+    @apply bg-gray-100 border-primary translate-x-1;
+  }
+  
+  .article-title {
+    @apply font-medium flex-1;
+  }
+  
+  .article-arrow {
+    @apply text-primary font-bold text-lg transition-transform duration-300 ease-in-out;
+  }
+  
+  .article-link:hover .article-arrow {
+    @apply translate-x-1;
+  }
+  
+  .home-footer {
+    @apply text-center bg-white p-8 rounded-2xl shadow-lg;
+  }
+  
+  .home-footer p {
+    @apply text-gray-600 text-lg m-0 italic;
+  }
+  
+  /* 响应式设计 */
+  @media (max-width: 768px) {
+    .home-header h1 {
+      @apply text-4xl;
+    }
+    
+    .home-subtitle {
+      @apply text-lg;
+    }
+    
+    .home-sections {
+      @apply grid-cols-1 gap-5;
+    }
+    
+    .home-section {
+      @apply p-6;
+    }
+    
+    .home-intro {
+      @apply py-8 px-5;
+    }
+  }
+  
+  @media (max-width: 960px) {
+    .sidebar {
+      @apply static w-full h-auto;
+    }
+    .content {
+      @apply ml-0 p-5;
+    }
+  }
+}
