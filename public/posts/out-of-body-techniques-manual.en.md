@@ -6,6 +6,6 @@ weight: 3
 draft: true
 ---
 
+# Out of Body Techniques Manual
+
 https://www.scribd.com/document/381396247/Out-of-Body-Techniques-Manual
-
-

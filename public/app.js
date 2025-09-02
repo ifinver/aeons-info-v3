@@ -1,4 +1,5 @@
 import { marked } from 'https://cdn.jsdelivr.net/npm/marked/lib/marked.esm.js';
+import { loadHomePage } from './home.js';
 
 const manifest = [
   { title: '30天学会灵魂出体', path: 'posts/30-days-master-obe.zh.md', group: '博文', subgroup: null },
@@ -157,15 +158,16 @@ function highlightActive(path) {
   });
 }
 
+
+
 function route() {
   const hash = location.hash;
   if (hash.startsWith('#/')) {
     const path = decodeURIComponent(hash.slice(2));
     loadMarkdown(path);
   } else {
-    // default: first item
-    const first = manifest[0];
-    location.hash = `#/${encodeURIComponent(first.path)}`;
+    // 显示首页
+    loadHomePage(manifest, article);
   }
 }
 

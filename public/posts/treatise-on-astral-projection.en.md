@@ -6,6 +6,8 @@ summary: "Treatise on Astral Projection is Robert Bruce’s detailed explanation
 draft: true
 ---
 
+# Treatise on Astral Projection
+
 ## About the Author
 
 **Robert Bruce** is an internationally respected mystic, paranormal researcher, and metaphysical experimenter. Since 1992, he has generously shared guidance online. He is warm-hearted, deeply humble, full of compassion, sincerity, and humor.
@@ -47,6 +49,7 @@ Bruce believes that the out-of-body experience can help transform our concept of
 
 ### Chapter One: The Basic Concept of Astral Projection
 
+
 This is the first part of a series describing the astral world and the process of projection.
 
 While reading this treatise, keep in mind that this was my first attempt at writing. You could say I learned as I went along.
@@ -75,4 +78,65 @@ One final point: the Eastern concept of levels—physical, astral, mental, Buddh
 
 To access these higher levels, you need clairvoyance—a faculty that can be developed or may be innate.
 
+---
+
+### Chapter Two: Conditions for Astral Projection and Relaxation Exercises
+
+Astral projection is an automatic reflex of your body and consciousness. Triggering a fully conscious projection requires meeting three primary conditions:
+
+- The ability to completely relax the body while remaining mentally awake.  
+- The ability to shift your point of consciousness outside your body.  
+- Sufficient mental and spiritual energy to maintain control over the projection without slipping into sleep.
+
+Combined, these conditions initiate the automatic projection reflex with enough momentum to cause a full projection. There are also secondary conditions that may vary depending on your experience and environment.
+
+#### *Relaxation*
+
+You must **master** full-body relaxation. If you already know a relaxation method, you may adapt it. Sit in a **chair** and begin relaxing. Start from your feet: tense and then relax them. Continue by tensing and relaxing your calves, thighs, hips, abdomen, chest, arms, neck, and face. Repeat this process several times until you feel completely relaxed. Breathe deeply and slowly throughout, and try to **perceive** the breath entering and leaving your body.
+
+#### *Imaginary Hands"*
+
+Imagine having a pair of **Imaginary Hands**. Use these hands to stroke yourself repeatedly, starting from your feet and moving up your thighs. Try to **feel** them relaxing you and giving comfort. Continue stroking your torso, paying special attention to the chakras. The Imaginary Hands technique also trains you to shift your point of consciousness to various parts of the body. Focus your full attention on these Imaginary Hands as much as possible.
+
+#### *Energy Raising*
+
+While using your Imaginary Hands to stroke your thighs upward, imagine that you are grabbing the energy flowing there and pushing it upward. This is the natural channel of psychic/life energy flowing within your body. With practice, you will **actually feel** this energy surging through you. It acts like a battery that **recharges** you.
+
+#### *Chakras*
+
+These chakras are located at:
+
+1. **Base Chakra** – at the base of the spine (between anus and genitals)  
+2. **Spleen Chakra** – just below the navel  
+3. **Solar Plexus Chakra** – a palm’s width above the navel  
+4. **Heart Chakra** – center of the chest  
+5. **Throat Chakra**  
+6. **Brow Chakra**  
+7. **Crown Chakra** – at the crown of the head
+
+Visualize each chakra as roughly the size of your hand.
+
+#### *Chakra Activation*
+
+Chakras are energy transmutation centers. Each chakra converts the Earth's natural life energy into a specific type of energy. As you push energy upward with your Imaginary Hands, pause briefly at each chakra and visualize your Imaginary Hands **opening** it. Push energy from one chakra to the next. Repeat this process several times. You may not feel anything at first, but with practice, you’ll begin to sense a pulsing or vibration beneath your skin.
+
+#### *Check Yourself*
+
+During the entire session, continually check for muscle tension. If needed, redo the relaxation steps. A common issue is that muscles will **automatically tense** when you raise energy. Remember—these are mental actions only. Your physical body must remain still and deeply relaxed.
+
+#### *Shifting the Point of Consciousness*
+
+To shift your point of consciousness, imagine yourself one or two feet in front of your physical body—not as a separate person, but as yourself located ahead of your body. Always remember that your body is behind you. It may feel strange at first, but you'll get used to it. Do not tense up or let your body attempt to follow—your body will try to obey, physically. Don’t let it.
+
+#### *Mental State*
+
+Your surface mind will be fully occupied by these exercises, so no mental effort is needed to stay focused. As you relax, your body will begin to feel **heavy**, and you’ll enter a light **trance** state. Stop other exercises at this point, and use **breath awareness** to clear your mind of distractions.
+
+#### *Breath Awareness*
+
+**Perceive** the air as you inhale and exhale. As you breathe in, use your Imaginary Hands to push energy from the base chakra up to the heart chakra. **Note**: If vibrations start and you’re not ready to project yet, gently shake your head and move slightly to maintain normal awareness.
+
+These exercises should be practiced **daily**. Whenever you have a few spare minutes, do a few of them. You will quickly and easily rebalance your physical condition. With regular practice, you’ll be able to enter a state of **complete relaxation** within minutes. When attempting full conscious projection, this training will greatly reduce effort and fatigue.
+
+---
 

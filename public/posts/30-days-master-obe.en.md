@@ -1,9 +1,11 @@
 ---
 title: "Out-of-body adventures -- 30 days to the most exciting experience of your life"
 date: 2025-06-03T20:02:00+08:00
-robots: noindex
+summary: ""
 weight: 2
 ---
+
+# OUT-OF-BODY ADVENTURES -- 30 Days to the Most Exciting Experience of Your Life
 
 **By Rick Stack**
 
@@ -20,8 +22,6 @@ I would like to thank the people who gra-ciously allowed me to use their dreams 
 I would like to thank my editor, Stacy Prince,for her humor and sharp pencils.
 
 And I would like to thank my infant son,Cody, for waiting until the book was finishedbefore arriving.
-
----
 
 ## CONTENTS
 
@@ -115,7 +115,6 @@ Another factor to keep in mind is your overall environment and state of mind. If
 
 ---
 
-## [1] SCIENCE FACT OR SCIENCE FICTION?
-
+## SCIENCE FACT OR SCIENCE FICTION?
 
 
