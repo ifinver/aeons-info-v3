@@ -4,12 +4,12 @@ import { loadHomePage } from './home.js';
 const manifest = [
   { title: '30天学会灵魂出体', path: 'posts/30-days-master-obe.zh.md', group: '博文', subgroup: null },
   { title: 'Out-of-body adventures (30 days)', path: 'posts/30-days-master-obe.en.md', group: '博文', subgroup: null },
-  { title: 'Treatise on Astral Projection (EN)', path: 'posts/treatise-on-astral-projection.en.md', group: '博文', subgroup: null },
+  { title: 'Treatise on Astral Projection (EN)', path: 'posts/treatise-on-astral-projection.en.md', group: '博文', subgroup: null, hidden: true },
   { title: '论星体投射 (ZH)', path: 'posts/treatise-on-astral-projection.zh.md', group: '博文', subgroup: null },
   { title: 'Out of Body Techniques Manual', path: 'posts/out-of-body-techniques-manual.en.md', group: '博文', subgroup: null },
-  { title: '瑜伽经 · 站点版', path: 'posts/yoga-sutra/by-site.zh.md', group: '博文', subgroup: '瑜伽经' },
+  { title: '瑜伽经 · 站点版', path: 'posts/yoga-sutra/by-site.zh.md', group: '博文', subgroup: '瑜伽经', hidden: true },
   { title: 'Yoga Sutras · Bon Giovanni', path: 'posts/yoga-sutra/by-bon-giovanni.en.md', group: '博文', subgroup: '瑜伽经' },
-  { title: 'Yoga Sutras · Swami Jnaneshvara', path: 'posts/yoga-sutra/by-swami-jnaneshvara-bharati.en.md', group: '博文', subgroup: '瑜伽经' },
+  { title: 'Yoga Sutras · Swami Jnaneshvara', path: 'posts/yoga-sutra/by-swami-jnaneshvara-bharati.en.md', group: '博文', subgroup: '瑜伽经', hidden: true },
   { title: '瑜伽经 · 元吾氏译', path: 'posts/yoga-sutra/by-yuanwushi.zh.md', group: '博文', subgroup: '瑜伽经' },
   { title: '练功计时器', path: 'practice/timer', group: '练习', subgroup: null },
 ];
@@ -18,7 +18,9 @@ const sidebar = document.getElementById('sidebar');
 const article = document.getElementById('article');
 
 function buildSidebar() {
-  const groups = Array.from(new Set(manifest.map(m => m.group)));
+  // 过滤掉隐藏的文章
+  const visibleManifest = manifest.filter(m => !m.hidden);
+  const groups = Array.from(new Set(visibleManifest.map(m => m.group)));
   const wrapper = document.createElement('div');
   const brand = document.createElement('div');
   brand.className = 'brand';
@@ -41,8 +43,8 @@ function buildSidebar() {
     const ul = document.createElement('ul');
     ul.className = 'nav-list';
 
-    // 获取该分组下的所有项目
-    const groupItems = manifest.filter(m => m.group === g);
+    // 获取该分组下的所有项目（已过滤隐藏的）
+    const groupItems = visibleManifest.filter(m => m.group === g);
     // 获取所有子分组
     const subgroups = Array.from(new Set(groupItems.map(m => m.subgroup).filter(s => s !== null)));
 
@@ -166,8 +168,9 @@ function route() {
     const path = decodeURIComponent(hash.slice(2));
     loadMarkdown(path);
   } else {
-    // 显示首页
-    loadHomePage(manifest, article);
+    // 显示首页，传递过滤后的 manifest
+    const visibleManifest = manifest.filter(m => !m.hidden);
+    loadHomePage(visibleManifest, article);
   }
 }
 
