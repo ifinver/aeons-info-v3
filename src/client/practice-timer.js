@@ -170,7 +170,7 @@ function addPracticeTimerStyles() {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
       gap: 20px;
-      margin-bottom: 36px;
+      margin-bottom: 0px;
       margin-top: 8px;
       margin-left: 20px;
       margin-right: 20px;
@@ -210,7 +210,7 @@ function addPracticeTimerStyles() {
       border-radius: 12px;
       padding: 10px;
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-      margin: 0 -5px;
+      margin: 0 -5px 20px -5px;
       min-height: 350px;
     }
     
@@ -218,8 +218,6 @@ function addPracticeTimerStyles() {
       width: 100% !important;
       height: 340px !important;
     }
-    
-
     
     .modal-overlay {
       position: fixed;
@@ -407,12 +405,12 @@ function addPracticeTimerStyles() {
       .stats-grid {
         grid-template-columns: 1fr;
         gap: 16px;
-        margin-bottom: 30px;
+        margin-bottom: 10px;
         margin-top: 6px;
       }
       
       .chart-container {
-        margin: 0 -3px;
+        margin: 0 -3px 20px -3px;
         padding: 8px;
         min-height: 280px;
       }
