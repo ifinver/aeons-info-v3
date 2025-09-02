@@ -1,5 +1,5 @@
 import { loadHomePage } from './home.js';
-import { loadPracticeTimerPage } from './practice-timer.js';
+import { loadPracticeTimerPage, cleanupPracticeTimerPage } from './practice-timer.js';
 
 // 动态加载清单文件
 let manifest = [];
@@ -143,6 +143,11 @@ async function loadContent(path) {
       <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
     </div>
   `;
+  
+  // 清理练功计时器页面可能的样式影响
+  if (path !== 'practice/timer') {
+    cleanupPracticeTimerPage(article);
+  }
   
   await loadManifest();
 

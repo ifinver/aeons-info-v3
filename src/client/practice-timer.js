@@ -19,13 +19,37 @@ function waitForChart() {
   });
 }
 
+// 清理练功计时器页面的样式影响
+export function cleanupPracticeTimerPage(container) {
+  // 移除可能添加的类名
+  container.classList.remove('practice-timer-container');
+  // 清理图表实例
+  if (practiceChart) {
+    practiceChart.destroy();
+    practiceChart = null;
+  }
+}
+
 export async function loadPracticeTimerPage(container) {
   // 等待Chart.js加载完成
   await waitForChart();
   
+  // 清理之前可能存在的类名
+  container.classList.remove('practice-timer-container');
+  
+  // 根据屏幕大小设置不同的边距
+  const isMobile = window.innerWidth <= 768;
+  const marginStyle = isMobile 
+    ? "margin: -15px -15px 0 -15px; padding: 15px;" 
+    : "margin: -20px -20px 0 -20px; padding: 20px;";
+  
   container.innerHTML = `
-    <div class="practice-timer-page">
-      <h1 class="text-3xl font-bold mb-6 text-center">练功计时器</h1>
+    <div class="practice-timer-page" style="${marginStyle}">
+      <!-- 标题和添加按钮 -->
+      <div class="header-row mb-6">
+        <h1 class="page-title">练功计时器</h1>
+        <button id="add-data-btn" class="add-btn">+</button>
+      </div>
       
       <!-- 统计信息 -->
       <div class="stats-grid mb-8">
@@ -48,13 +72,7 @@ export async function loadPracticeTimerPage(container) {
         <canvas id="practice-chart" width="400" height="200"></canvas>
       </div>
       
-      <!-- 添加数据按钮 -->
-      <div class="text-center">
-        <button id="add-data-btn" class="add-data-btn">
-          <span>➕</span>
-          增加数据
-        </button>
-      </div>
+
     </div>
     
     <!-- 添加数据对话框 -->
@@ -104,14 +122,59 @@ function addPracticeTimerStyles() {
     .practice-timer-page {
       max-width: 1000px;
       margin: 0 auto;
-      padding: 20px;
+    }
+    
+    .header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 32px;
+      margin-top: 8px;
+      margin-left: 20PX;
+      margin-right: 20px;
+    }
+    
+    .page-title {
+      font-size: 2rem;
+      font-weight: bold;
+      color: var(--text, #1f2937);
+      margin: 0;
+    }
+    
+    .add-btn {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+      color: white;
+      border: none;
+      font-size: 24px;
+      font-weight: 300;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    }
+    
+    .add-btn:hover {
+      transform: translateY(-2px) scale(1.05);
+      box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+    }
+    
+    .add-btn:active {
+      transform: translateY(0) scale(0.95);
     }
     
     .stats-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
       gap: 20px;
-      margin-bottom: 30px;
+      margin-bottom: 36px;
+      margin-top: 8px;
+      margin-left: 20px;
+      margin-right: 20px;
     }
     
     .stat-card {
@@ -146,34 +209,18 @@ function addPracticeTimerStyles() {
       background: var(--card-bg, #ffffff);
       border: 1px solid var(--border, #e2e8f0);
       border-radius: 12px;
-      padding: 20px;
+      padding: 10px;
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      margin: 0 -5px;
+      min-height: 350px;
     }
     
-    .add-data-btn {
-      background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
-      color: white;
-      border: none;
-      border-radius: 50px;
-      padding: 16px 32px;
-      font-size: 16px;
-      font-weight: 600;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      transition: all 0.3s ease;
-      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    #practice-chart {
+      width: 100% !important;
+      height: 340px !important;
     }
     
-    .add-data-btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
-    }
-    
-    .add-data-btn:active {
-      transform: translateY(0);
-    }
+
     
     .modal-overlay {
       position: fixed;
@@ -340,12 +387,39 @@ function addPracticeTimerStyles() {
     
     @media (max-width: 768px) {
       .practice-timer-page {
-        padding: 16px;
+        padding: 15px;
+      }
+      
+      .header-row {
+        margin-bottom: 28px;
+        margin-top: 6px;
+      }
+      
+      .page-title {
+        font-size: 1.75rem;
+      }
+      
+      .add-btn {
+        width: 44px;
+        height: 44px;
+        font-size: 20px;
       }
       
       .stats-grid {
         grid-template-columns: 1fr;
         gap: 16px;
+        margin-bottom: 30px;
+        margin-top: 6px;
+      }
+      
+      .chart-container {
+        margin: 0 -3px;
+        padding: 8px;
+        min-height: 280px;
+      }
+      
+      #practice-chart {
+        height: 260px !important;
       }
       
       .modal-content {
