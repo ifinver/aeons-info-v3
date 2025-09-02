@@ -137,7 +137,11 @@ async function buildSidebar() {
 }
 
 async function loadContent(path) {
-  article.innerHTML = '<h1>加载中…</h1>';
+  article.innerHTML = `
+    <div class="flex items-center justify-center min-h-[200px]">
+      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+    </div>
+  `;
   
   await loadManifest();
 
