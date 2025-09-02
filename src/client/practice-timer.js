@@ -47,10 +47,15 @@ export async function loadPracticeTimerPage(container) {
     <div class="practice-timer-page" style="${marginStyle}">
       <!-- 标题和添加按钮 -->
       <div class="header-row mb-6">
-        <h1 class="page-title">练功计时器</h1>
+        <h1 class="page-title" style="margin-bottom: 0px;">练功计时器</h1>
         <button id="add-data-btn" class="add-btn">+</button>
       </div>
       
+      <!-- 图表容器 -->
+      <div class="chart-container mb-8">
+        <canvas id="practice-chart" width="400" height="200"></canvas>
+      </div>
+
       <!-- 统计信息 -->
       <div class="stats-grid mb-8">
         <div class="stat-card">
@@ -66,12 +71,6 @@ export async function loadPracticeTimerPage(container) {
           <div class="stat-value" id="total-days">0天</div>
         </div>
       </div>
-      
-      <!-- 图表容器 -->
-      <div class="chart-container mb-8">
-        <canvas id="practice-chart" width="400" height="200"></canvas>
-      </div>
-      
 
     </div>
     
@@ -142,13 +141,13 @@ function addPracticeTimerStyles() {
     }
     
     .add-btn {
-      width: 48px;
-      height: 48px;
+      width: 36px;
+      height: 36px;
       border-radius: 50%;
       background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
       color: white;
       border: none;
-      font-size: 24px;
+      font-size: 20px;
       font-weight: 300;
       cursor: pointer;
       display: flex;
@@ -400,9 +399,9 @@ function addPracticeTimerStyles() {
       }
       
       .add-btn {
-        width: 44px;
-        height: 44px;
-        font-size: 20px;
+        width: 32px;
+        height: 32px;
+        font-size: 18px;
       }
       
       .stats-grid {
