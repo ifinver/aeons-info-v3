@@ -78,11 +78,11 @@ export function generateExpiryTime(hours: number = 24): number {
   return Date.now() + (hours * 60 * 60 * 1000);
 }
 
-// 增强的密码强度验证
+// 改进的密码强度验证 - 更加合理和用户友好
 export function validatePassword(password: string): { valid: boolean; message: string } {
   const errors: string[] = [];
   
-  // 长度检查 (至少8位)
+  // 基本长度检查 (至少8位)
   if (password.length < 8) {
     errors.push('密码长度至少8位');
   }
@@ -92,38 +92,55 @@ export function validatePassword(password: string): { valid: boolean; message: s
     errors.push('密码长度不能超过128位');
   }
   
-  // 大写字母检查
-  if (!/[A-Z]/.test(password)) {
-    errors.push('密码必须包含至少一个大写字母');
+  // 计算密码复杂度得分 (而不是严格要求所有类型)
+  let score = 0;
+  let hasUpper = /[A-Z]/.test(password);
+  let hasLower = /[a-z]/.test(password);
+  let hasDigit = /\d/.test(password);
+  let hasSpecial = /[!@#$%^&*(),.?":{}|<>_\-+=\[\]\\\/~`]/.test(password);
+  
+  if (hasUpper) score++;
+  if (hasLower) score++;
+  if (hasDigit) score++;
+  if (hasSpecial) score++;
+  
+  // 长密码可以降低复杂度要求
+  if (password.length >= 12) {
+    // 12位以上密码只需要3种字符类型
+    if (score < 3) {
+      errors.push('长密码需要包含至少3种字符类型（大写字母、小写字母、数字、特殊字符）');
+    }
+  } else {
+    // 8-11位密码需要4种字符类型或者3种+足够长度
+    if (score < 3) {
+      errors.push('密码需要包含至少3种字符类型（大写字母、小写字母、数字、特殊字符）');
+    }
   }
   
-  // 小写字母检查
-  if (!/[a-z]/.test(password)) {
-    errors.push('密码必须包含至少一个小写字母');
-  }
-  
-  // 数字检查
-  if (!/\d/.test(password)) {
-    errors.push('密码必须包含至少一个数字');
-  }
-  
-  // 特殊字符检查
-  if (!/[!@#$%^&*(),.?":{}|<>_\-+=\[\]\\\/~`]/.test(password)) {
-    errors.push('密码必须包含至少一个特殊字符');
-  }
-  
-  // 常见弱密码检查
-  const commonPasswords = [
+  // 只检查最常见的弱密码模式
+  const commonWeakPatterns = [
     'password', '123456', '12345678', 'qwerty', 'abc123', 
-    'password123', 'admin', 'letmein', 'welcome', '123456789'
+    'admin', 'letmein', 'welcome'
   ];
-  if (commonPasswords.some(common => password.toLowerCase().includes(common))) {
-    errors.push('密码不能包含常见的弱密码模式');
+  const lowercasePassword = password.toLowerCase();
+  if (commonWeakPatterns.some(pattern => lowercasePassword === pattern || lowercasePassword.includes(pattern + '123'))) {
+    errors.push('密码不能使用常见的弱密码模式');
   }
   
-  // 重复字符检查
-  if (/(.)\1{2,}/.test(password)) {
-    errors.push('密码不能包含连续重复的字符');
+  // 放宽重复字符检查 - 只检查4个以上的连续重复
+  if (/(.)\1{3,}/.test(password)) {
+    errors.push('密码不能包含4个或以上连续重复的字符');
+  }
+  
+  // 检查全数字密码
+  if (/^\d+$/.test(password)) {
+    errors.push('密码不能全部为数字');
+  }
+  
+  // 检查简单的键盘序列
+  const keyboardPatterns = ['123456', '654321', 'qwerty', 'asdfgh', 'zxcvbn'];
+  if (keyboardPatterns.some(pattern => lowercasePassword.includes(pattern))) {
+    errors.push('密码不能包含键盘序列');
   }
   
   if (errors.length > 0) {

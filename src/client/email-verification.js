@@ -69,9 +69,9 @@ function showPasswordCreationForm(container, token) {
               <p>密码要求：</p>
               <ul>
                 <li>至少8个字符</li>
-                <li>包含大小写字母</li>
-                <li>包含数字</li>
-                <li>包含特殊字符</li>
+                <li>包含至少3种字符类型（大写字母、小写字母、数字、特殊字符）</li>
+                <li>不能是常见的弱密码</li>
+                <li>12位以上的密码要求会更宽松</li>
               </ul>
             </div>
           </div>
@@ -214,26 +214,49 @@ function showFormError(container, message) {
 }
 
 function validatePassword(password) {
-  // 密码验证规则（与服务器端保持一致）
+  // 改进的密码验证规则（与服务器端保持一致）
   if (password.length < 8) return false;
   if (password.length > 128) return false;
   
+  // 计算密码复杂度得分
+  let score = 0;
   const hasUpper = /[A-Z]/.test(password);
   const hasLower = /[a-z]/.test(password);
   const hasNumber = /\d/.test(password);
   const hasSpecial = /[!@#$%^&*(),.?":{}|<>_\-+=\[\]\\\/~`]/.test(password);
-
-  // 常见弱密码检查
-  const commonPasswords = [
-    'password', '123456', '12345678', 'qwerty', 'abc123', 
-    'password123', 'admin', 'letmein', 'welcome', '123456789'
-  ];
-  const hasCommonPattern = commonPasswords.some(common => password.toLowerCase().includes(common));
   
-  // 重复字符检查
-  const hasRepeatingChars = /(.)\1{2,}/.test(password);
+  if (hasUpper) score++;
+  if (hasLower) score++;
+  if (hasNumber) score++;
+  if (hasSpecial) score++;
+  
+  // 长密码降低复杂度要求
+  const minScore = password.length >= 12 ? 3 : 3;
+  if (score < minScore) return false;
 
-  return hasUpper && hasLower && hasNumber && hasSpecial && !hasCommonPattern && !hasRepeatingChars;
+  // 只检查最常见的弱密码模式
+  const commonWeakPatterns = [
+    'password', '123456', '12345678', 'qwerty', 'abc123', 
+    'admin', 'letmein', 'welcome'
+  ];
+  const lowercasePassword = password.toLowerCase();
+  if (commonWeakPatterns.some(pattern => lowercasePassword === pattern || lowercasePassword.includes(pattern + '123'))) {
+    return false;
+  }
+  
+  // 放宽重复字符检查 - 只检查4个以上连续重复
+  if (/(.)\1{3,}/.test(password)) return false;
+  
+  // 检查全数字密码
+  if (/^\d+$/.test(password)) return false;
+  
+  // 检查键盘序列
+  const keyboardPatterns = ['123456', '654321', 'qwerty', 'asdfgh', 'zxcvbn'];
+  if (keyboardPatterns.some(pattern => lowercasePassword.includes(pattern))) {
+    return false;
+  }
+
+  return true;
 }
 
 // 安全的文本清理函数
