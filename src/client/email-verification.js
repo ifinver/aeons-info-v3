@@ -124,9 +124,13 @@ function showVerificationError(container, message) {
 }
 
 async function handlePasswordCreation(container, token) {
-  const password = container.querySelector('#password').value;
-  const confirmPassword = container.querySelector('#confirm-password').value;
+  let password = container.querySelector('#password').value;
+  let confirmPassword = container.querySelector('#confirm-password').value;
   const submitBtn = container.querySelector('#create-password-btn');
+
+  // 清理输入（防止XSS）
+  password = sanitizeInput(password);
+  confirmPassword = sanitizeInput(confirmPassword);
 
   // 验证密码
   if (password !== confirmPassword) {
@@ -135,7 +139,7 @@ async function handlePasswordCreation(container, token) {
   }
 
   if (!validatePassword(password)) {
-    showFormError(container, '密码不符合要求');
+    showFormError(container, '密码必须包含：至少8个字符、大小写字母、数字、特殊字符，且不能包含常见弱密码模式');
     return;
   }
 
@@ -210,14 +214,57 @@ function showFormError(container, message) {
 }
 
 function validatePassword(password) {
-  // 密码验证规则
-  const minLength = password.length >= 8;
+  // 密码验证规则（与服务器端保持一致）
+  if (password.length < 8) return false;
+  if (password.length > 128) return false;
+  
   const hasUpper = /[A-Z]/.test(password);
   const hasLower = /[a-z]/.test(password);
   const hasNumber = /\d/.test(password);
-  const hasSpecial = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+  const hasSpecial = /[!@#$%^&*(),.?":{}|<>_\-+=\[\]\\\/~`]/.test(password);
 
-  return minLength && hasUpper && hasLower && hasNumber && hasSpecial;
+  // 常见弱密码检查
+  const commonPasswords = [
+    'password', '123456', '12345678', 'qwerty', 'abc123', 
+    'password123', 'admin', 'letmein', 'welcome', '123456789'
+  ];
+  const hasCommonPattern = commonPasswords.some(common => password.toLowerCase().includes(common));
+  
+  // 重复字符检查
+  const hasRepeatingChars = /(.)\1{2,}/.test(password);
+
+  return hasUpper && hasLower && hasNumber && hasSpecial && !hasCommonPattern && !hasRepeatingChars;
+}
+
+// 安全的文本清理函数
+function sanitizeInput(input) {
+  if (typeof input !== 'string') return '';
+  
+  // 移除潜在的XSS字符
+  return input
+    .replace(/[<>\"'&]/g, '') // 移除HTML特殊字符
+    .replace(/javascript:/gi, '') // 移除javascript协议
+    .replace(/on\w+=/gi, '') // 移除事件处理器
+    .trim();
+}
+
+// 验证邮箱格式
+function isValidEmail(email) {
+  // 更严格的邮箱验证正则
+  const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
+  
+  // 长度检查
+  if (email.length > 254) return false;
+  if (email.length < 5) return false;
+  
+  // 基本格式检查
+  if (!emailRegex.test(email)) return false;
+  
+  // 防止危险字符
+  const dangerousChars = /<|>|"|'|&|;|\||`/;
+  if (dangerousChars.test(email)) return false;
+  
+  return true;
 }
 
 function addVerificationStyles() {

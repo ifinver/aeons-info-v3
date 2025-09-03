@@ -3,7 +3,54 @@
 
 // 用户认证状态
 let currentUser = null;
-let authToken = localStorage.getItem('authToken');
+let csrfToken = null; // CSRF token从登录响应获取
+
+// 安全的cookie操作函数
+function getCookie(name) {
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop().split(';').shift();
+}
+
+function deleteCookie(name) {
+  document.cookie = name + '=; expires=Thu, 01 Jan 1970 00:00:01 GMT; path=/; secure; samesite=strict';
+}
+
+// 检查是否已登录（通过检查cookie）
+function isLoggedIn() {
+  return getCookie('authToken') !== undefined;
+}
+
+// 安全的文本清理函数
+function sanitizeInput(input) {
+  if (typeof input !== 'string') return '';
+  
+  // 移除潜在的XSS字符
+  return input
+    .replace(/[<>\"'&]/g, '') // 移除HTML特殊字符
+    .replace(/javascript:/gi, '') // 移除javascript协议
+    .replace(/on\w+=/gi, '') // 移除事件处理器
+    .trim();
+}
+
+// 验证邮箱格式
+function isValidEmail(email) {
+  // 更严格的邮箱验证正则
+  const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
+  
+  // 长度检查
+  if (email.length > 254) return false;
+  if (email.length < 5) return false;
+  
+  // 基本格式检查
+  if (!emailRegex.test(email)) return false;
+  
+  // 防止危险字符
+  const dangerousChars = /<|>|"|'|&|;|\||`/;
+  if (dangerousChars.test(email)) return false;
+  
+  return true;
+}
 
 // 等待Chart.js加载完成
 function waitForChart() {
@@ -48,7 +95,7 @@ export async function loadPracticeTimerPage(container) {
     : "margin: -20px -20px 0 -20px; padding: 20px;";
   
   // 检查用户是否已登录
-  if (!currentUser && !authToken) {
+  if (!currentUser && !isLoggedIn()) {
     // 显示登录/注册界面
     container.innerHTML = `
       <div class="auth-page" style="${marginStyle}">
@@ -594,9 +641,10 @@ async function addPracticeRecord() {
   try {
     const response = await fetch('/api/kv/practice-time', {
       method: 'POST',
+      credentials: 'include',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${authToken}`
+        ...(csrfToken ? { 'X-CSRF-Token': csrfToken } : {})
       },
       body: JSON.stringify({
         date,
@@ -628,8 +676,10 @@ async function addPracticeRecord() {
 async function loadAndRenderData() {
   try {
     const response = await fetch('/api/kv/practice-time', {
+      credentials: 'include',
       headers: {
-        'Authorization': `Bearer ${authToken}`
+        'Content-Type': 'application/json',
+        ...(csrfToken ? { 'X-CSRF-Token': csrfToken } : {})
       }
     });
     if (!response.ok) {
@@ -1058,8 +1108,8 @@ function initAuth() {
   // 绑定事件
   bindAuthEvents();
   
-  // 如果有token，尝试获取用户信息
-  if (authToken) {
+  // 如果已登录，尝试获取用户信息
+  if (isLoggedIn()) {
     getCurrentUser();
   }
 }
@@ -1116,11 +1166,19 @@ function showForm(formType) {
 
 // 处理登录
 async function handleLogin() {
-  const email = document.getElementById('login-email').value.trim();
+  let email = document.getElementById('login-email').value.trim();
   const password = document.getElementById('login-password').value;
+  
+  // 清理邮箱输入（防止XSS）
+  email = sanitizeInput(email);
   
   if (!email || !password) {
     showMessage('请填写完整的登录信息', 'error');
+    return;
+  }
+  
+  if (!isValidEmail(email)) {
+    showMessage('请输入有效的邮箱地址', 'error');
     return;
   }
   
@@ -1134,6 +1192,7 @@ async function handleLogin() {
       headers: {
         'Content-Type': 'application/json',
       },
+      credentials: 'include', // 包含cookie
       body: JSON.stringify({ email, password })
     });
     
@@ -1143,10 +1202,9 @@ async function handleLogin() {
       throw new Error(data.error || '登录失败');
     }
     
-    // 保存用户信息和token
+    // 保存用户信息和CSRF token
     currentUser = data.user;
-    authToken = data.token;
-    localStorage.setItem('authToken', authToken);
+    csrfToken = data.csrfToken;
     
     showMessage('登录成功！', 'success');
     
@@ -1166,10 +1224,18 @@ async function handleLogin() {
 
 // 处理注册
 async function handleRegister() {
-  const email = document.getElementById('register-email').value.trim();
+  let email = document.getElementById('register-email').value.trim();
+  
+  // 清理邮箱输入（防止XSS）
+  email = sanitizeInput(email);
   
   if (!email) {
     showMessage('请输入邮箱地址', 'error');
+    return;
+  }
+  
+  if (!isValidEmail(email)) {
+    showMessage('请输入有效的邮箱地址', 'error');
     return;
   }
   
@@ -1208,10 +1274,18 @@ async function handleRegister() {
 
 // 处理忘记密码
 async function handleForgotPassword() {
-  const email = document.getElementById('forgot-email').value.trim();
+  let email = document.getElementById('forgot-email').value.trim();
+  
+  // 清理邮箱输入（防止XSS）
+  email = sanitizeInput(email);
   
   if (!email) {
     showMessage('请输入邮箱地址', 'error');
+    return;
+  }
+  
+  if (!isValidEmail(email)) {
+    showMessage('请输入有效的邮箱地址', 'error');
     return;
   }
   
@@ -1251,28 +1325,33 @@ async function handleForgotPassword() {
 // 获取当前用户信息
 async function getCurrentUser() {
   try {
+    if (!isLoggedIn()) return null;
+    
     const response = await fetch('/api/auth/me', {
+      credentials: 'include', // 包含HttpOnly cookie
       headers: {
-        'Authorization': `Bearer ${authToken}`
+        'Content-Type': 'application/json',
+        ...(csrfToken ? { 'X-CSRF-Token': csrfToken } : {})
       }
     });
     
     if (!response.ok) {
-      // token无效，清除本地存储
-      localStorage.removeItem('authToken');
-      authToken = null;
+      // Token可能已过期，清除相关状态
       currentUser = null;
-      return;
+      csrfToken = null;
+      return null;
     }
     
     const data = await response.json();
     currentUser = data.user;
+    csrfToken = data.csrfToken || csrfToken; // 更新CSRF token
+    return currentUser;
     
   } catch (error) {
     console.error('获取用户信息失败:', error);
-    localStorage.removeItem('authToken');
-    authToken = null;
     currentUser = null;
+    csrfToken = null;
+    return null;
   }
 }
 
@@ -1281,18 +1360,20 @@ async function handleLogout() {
   try {
     await fetch('/api/auth/logout', {
       method: 'POST',
+      credentials: 'include',
       headers: {
-        'Authorization': `Bearer ${authToken}`
+        'Content-Type': 'application/json',
+        ...(csrfToken ? { 'X-CSRF-Token': csrfToken } : {})
       }
     });
   } catch (error) {
     console.error('登出失败:', error);
   }
   
-  // 清除本地存储
-  localStorage.removeItem('authToken');
-  authToken = null;
+  // 清除本地状态
   currentUser = null;
+  csrfToken = null;
+  // HttpOnly cookie会被服务器端清除
   
   // 重新加载页面
   location.reload();
