@@ -9,10 +9,14 @@ export interface EmailData {
 // 发送邮件
 export async function sendEmail(emailData: EmailData, env: any): Promise<boolean> {
   try {
+    const fromEmail = env.MAIL_FROM_EMAIL || 'noreply@aeons-info.com';
     const response = await fetch('https://api.mailchannels.net/tx/v1/send', {
       method: 'POST',
       headers: {
         'content-type': 'application/json',
+        ...(env.MAILCHANNELS_API_KEY ? { 'Authorization': `Bearer ${env.MAILCHANNELS_API_KEY}` } : {}),
+        ...(env.MAILCHANNELS_API_KEY ? { 'X-Api-Key': env.MAILCHANNELS_API_KEY } : {}),
+        'X-Auth-User': fromEmail,
       },
       body: JSON.stringify({
         personalizations: [
@@ -21,7 +25,7 @@ export async function sendEmail(emailData: EmailData, env: any): Promise<boolean
           },
         ],
         from: {
-          email: env.MAIL_FROM_EMAIL || 'noreply@aeons-info.com',
+          email: fromEmail,
           name: env.MAIL_FROM_NAME || '练功计时器',
         },
         subject: emailData.subject,
