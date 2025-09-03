@@ -16,29 +16,9 @@ function deleteCookie(name) {
   document.cookie = name + '=; expires=Thu, 01 Jan 1970 00:00:01 GMT; path=/; secure; samesite=strict';
 }
 
-// 检查是否已登录（通过服务端API验证HttpOnly Cookie）
-async function isLoggedIn() {
-  try {
-    const response = await fetch('/api/auth/status', {
-      method: 'GET',
-      credentials: 'include', // 重要：发送HttpOnly Cookie
-    });
-    
-    if (response.ok) {
-      const data = await response.json();
-      return data.authenticated === true;
-    }
-    return false;
-  } catch (error) {
-    console.error('状态检查失败:', error);
-    return false;
-  }
-}
-
-// 同步版本的登录状态检查（用于兼容性）
-function isLoggedInSync() {
-  // 这个函数现在只是一个占位符，实际状态需要通过异步API检查
-  return currentUser !== null;
+// 检查是否已登录（通过检查cookie）
+function isLoggedIn() {
+  return getCookie('authToken') !== undefined;
 }
 
 // 安全的文本清理函数
@@ -102,26 +82,6 @@ export function cleanupPracticeTimerPage(container) {
 }
 
 export async function loadPracticeTimerPage(container) {
-  console.log('🚀 === 练功计时器页面开始加载 ===');
-  console.log('⏰ 加载时间:', new Date().toLocaleString());
-  
-  // 详细检查页面加载时的认证状态
-  console.log('🔍 === 页面加载时认证状态检查 ===');
-  console.log('🍪 document.cookie 内容:', document.cookie || '(空)');
-  console.log('🔑 authToken cookie 值:', getCookie('authToken') || '(无)');
-  console.log('📏 authToken 长度:', getCookie('authToken')?.length || 0);
-  console.log('👤 currentUser 变量:', currentUser || '(无)');
-  console.log('🔐 csrfToken 变量:', csrfToken || '(无)');
-  console.log('✅ isLoggedIn() 函数返回:', isLoggedIn());
-  
-  // 检查cookie的详细属性（如果存在）
-  if (getCookie('authToken')) {
-    console.log('🍪 authToken cookie 详情:');
-    console.log('  - 值的前10位:', getCookie('authToken').substring(0, 10) + '...');
-    console.log('  - 完整长度:', getCookie('authToken').length);
-  }
-  
-  console.log('🔍 === 认证状态检查完成 ===');
   
   // 等待Chart.js加载完成
   await waitForChart();
@@ -136,7 +96,6 @@ export async function loadPracticeTimerPage(container) {
     : "margin: -20px -20px 0 -20px; padding: 20px;";
   
   // 检查用户是否已登录
-  console.log('🎯 开始登录状态判断 - isLoggedIn():', isLoggedIn());
   if (!isLoggedIn()) {
     // 显示登录/注册界面
     container.innerHTML = `
@@ -1232,142 +1191,60 @@ function showForm(formType) {
 
 // 处理登录
 async function handleLogin() {
-  console.log('🚀 开始登录流程...');
-  
   let email = document.getElementById('login-email').value.trim();
   const password = document.getElementById('login-password').value;
   
-  console.log('📧 原始邮箱:', email);
-  console.log('🔒 密码长度:', password.length);
-  
   // 清理邮箱输入（防止XSS）
   email = sanitizeInput(email);
-  console.log('🧹 清理后邮箱:', email);
   
   if (!email || !password) {
-    console.log('❌ 输入验证失败: 缺少邮箱或密码');
     showMessage('请填写完整的登录信息', 'error');
     return;
   }
   
   if (!isValidEmail(email)) {
-    console.log('❌ 邮箱格式验证失败:', email);
     showMessage('请输入有效的邮箱地址', 'error');
     return;
   }
-  
-  console.log('✅ 输入验证通过，准备发送请求...');
   
   const loginBtn = document.getElementById('login-btn');
   loginBtn.disabled = true;
   loginBtn.textContent = '登录中...';
   
   try {
-    console.log('📡 发送登录请求到 /api/auth/login');
-    console.log('📦 请求体:', { email, password: '***' });
-    
-    const requestOptions = {
+    const response = await fetch('/api/auth/login', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      credentials: 'include', // 包含cookie
+      credentials: 'include',
       body: JSON.stringify({ email, password })
-    };
-    
-    console.log('🔧 请求配置:', {
-      ...requestOptions,
-      body: JSON.stringify({ email, password: '***' })
     });
     
-    const response = await fetch('/api/auth/login', requestOptions);
-    
-    console.log('📡 收到响应:');
-    console.log('  - 状态码:', response.status);
-    console.log('  - 状态文本:', response.statusText);
-    console.log('  - Content-Type:', response.headers.get('Content-Type'));
-    console.log('  - Set-Cookie:', response.headers.get('Set-Cookie'));
-    console.log('  - 所有响应头:', [...response.headers.entries()]);
-    
-    // 检查响应内容类型
-    const contentType = response.headers.get('Content-Type');
-    console.log('🔍 检查Content-Type:', contentType);
-    
-    let data;
-    try {
-      if (contentType && contentType.includes('application/json')) {
-        console.log('📄 尝试解析JSON响应...');
-        data = await response.json();
-        console.log('✅ JSON解析成功:', data);
-      } else {
-        console.log('⚠️ 响应不是JSON，尝试读取文本...');
-        const text = await response.text();
-        console.log('📄 响应文本内容:', text);
-        throw new Error(`服务器返回了非JSON响应: ${text}`);
-      }
-    } catch (parseError) {
-      console.error('❌ 响应解析失败:', parseError);
-      console.log('🔍 尝试读取原始响应...');
-      try {
-        const rawText = await response.text();
-        console.log('📄 原始响应文本:', rawText);
-      } catch (textError) {
-        console.error('❌ 连原始文本都无法读取:', textError);
-      }
-      throw new Error(`响应解析失败: ${parseError.message}`);
-    }
+    const data = await response.json();
     
     if (!response.ok) {
-      console.log('❌ 登录失败，服务器返回错误:', data);
       throw new Error(data.error || '登录失败');
     }
-    
-    console.log('🎉 登录成功！');
-    console.log('👤 用户信息:', data.user);
-    console.log('🔐 CSRF令牌:', data.csrfToken ? '已获取' : '未获取');
     
     // 保存用户信息和CSRF token
     currentUser = data.user;
     csrfToken = data.csrfToken;
     
-    console.log('💾 已保存用户状态');
-    console.log('🍪 当前cookies:', document.cookie);
-    
-    // 详细检查登录后的存储状态
-    console.log('🔍 登录后存储状态检查:');
-    console.log('  - authToken cookie:', getCookie('authToken') ? '已设置' : '未设置');
-    console.log('  - authToken 长度:', getCookie('authToken')?.length || 0);
-    console.log('  - currentUser 变量:', currentUser ? '已设置' : '未设置');
-    console.log('  - csrfToken 变量:', csrfToken ? '已设置' : '未设置');
-    console.log('  - isLoggedIn() 返回:', isLoggedIn());
-    
-    // 立即测试用户信息获取
-    console.log('🧪 测试立即获取用户信息...');
-    setTimeout(async () => {
-      try {
-        const testUser = await getCurrentUser();
-        console.log('✅ 登录后立即获取用户信息成功:', testUser);
-      } catch (error) {
-        console.error('❌ 登录后立即获取用户信息失败:', error);
-      }
-    }, 100);
-    
     showMessage('登录成功！', 'success');
     
-    // 暂时注释掉自动跳转，方便查看Console日志
-    console.log('🔄 为了调试，暂时禁用自动跳转');
-    console.log('📝 如需手动跳转，请在Console中运行: location.reload()');
+    // 清空表单
+    document.getElementById('login-email').value = '';
+    document.getElementById('login-password').value = '';
     
-    // setTimeout(() => {
-    //   location.reload();
-    // }, 1000);
+    // 刷新当前页面
+    setTimeout(() => {
+      window.location.reload();
+    }, 1000);
     
   } catch (error) {
-    console.error('❌ 登录流程出错:', error);
-    console.error('❌ 错误详情:', error.stack);
     showMessage('登录失败: ' + error.message, 'error');
   } finally {
-    console.log('🔧 重置登录按钮状态');
     loginBtn.disabled = false;
     loginBtn.textContent = '登录';
   }
@@ -1475,56 +1352,30 @@ async function handleForgotPassword() {
 
 // 获取当前用户信息
 async function getCurrentUser() {
-  console.log('👤 开始获取当前用户信息...');
+  if (!isLoggedIn()) {
+    return null;
+  }
   
   try {
-    console.log('📡 发送状态检查请求到 /api/auth/status');
-    
-    const response = await fetch('/api/auth/status', {
+    const response = await fetch('/api/auth/me', {
       method: 'GET',
-      credentials: 'include' // 发送HttpOnly Cookie
+      credentials: 'include'
     });
     
-    console.log('📡 收到状态响应:');
-    console.log('  - 状态码:', response.status);
-    console.log('  - 状态文本:', response.statusText);
-    console.log('  - Content-Type:', response.headers.get('Content-Type'));
-    
     if (!response.ok) {
-      console.error('❌ 状态检查请求失败:', response.status);
-      currentUser = null;
-      csrfToken = null;
       return null;
     }
     
-    console.log('📄 尝试解析状态响应...');
     const data = await response.json();
-    console.log('✅ 状态响应解析成功:', data);
     
-    if (data.authenticated && data.user) {
-      console.log('✅ 用户已认证:', data.user);
-      // 更新全局状态
-      currentUser = data.user;
-      if (data.csrfToken) {
-        csrfToken = data.csrfToken;
-        console.log('🔐 CSRF令牌已更新');
-      }
-      
-      console.log('💾 已更新用户状态');
-      console.log('👤 当前用户:', currentUser);
-      
-      return data.user;
-    } else {
-      console.log('❌ 用户未认证');
-      currentUser = null;
-      csrfToken = null;
-      return null;
+    // 更新全局状态
+    currentUser = data.user;
+    if (data.csrfToken) {
+      csrfToken = data.csrfToken;
     }
+    
+    return data.user;
   } catch (error) {
-    console.error('❌ 获取用户信息失败:', error);
-    console.error('❌ 错误详情:', error.stack);
-    currentUser = null;
-    csrfToken = null;
     return null;
   }
 }

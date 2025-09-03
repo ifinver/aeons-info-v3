@@ -181,10 +181,7 @@ async function handleAuthApi(request: Request, env: any): Promise<Response> {
     return handleUserLogout(request, env);
   }
 
-  // GET /api/auth/status -> 检查认证状态
-  if (segments.length === 3 && segments[2] === 'status' && method === 'GET') {
-    return handleAuthStatus(request, env);
-  }
+
 
   // GET /api/auth/me -> 获取当前用户信息
   if (segments.length === 3 && segments[2] === 'me' && method === 'GET') {
@@ -422,14 +419,9 @@ async function handleUserLogin(request: Request, env: any): Promise<Response> {
     // 在开发环境中不使用Secure标志，生产环境中使用
     const isProduction = request.url.includes('https://') || request.headers.get('cf-ray'); // Cloudflare特有header
     const secureFlag = isProduction ? '; Secure' : '';
-    const cookieValue = `authToken=${sessionToken}; HttpOnly${secureFlag}; SameSite=Lax; Max-Age=${7 * 24 * 60 * 60}; Path=/`;
+    const cookieValue = `authToken=${sessionToken}${secureFlag}; SameSite=Lax; Max-Age=${7 * 24 * 60 * 60}; Path=/`;
     
-    console.log('🍪 设置Cookie调试信息:');
-    console.log('  - URL:', request.url);
-    console.log('  - isProduction:', isProduction);
-    console.log('  - secureFlag:', secureFlag);
-    console.log('  - sessionToken长度:', sessionToken.length);
-    console.log('  - cookieValue:', cookieValue);
+
     
     response.headers.set('Set-Cookie', cookieValue);
 
@@ -441,37 +433,6 @@ async function handleUserLogin(request: Request, env: any): Promise<Response> {
   }
 }
 
-// 检查认证状态
-async function handleAuthStatus(request: Request, env: any): Promise<Response> {
-  try {
-    const { user, tokenData } = await validateAuthToken(request, env);
-    
-    if (!user || !tokenData) {
-      return json({ 
-        authenticated: false, 
-        user: null 
-      });
-    }
-
-    return json({ 
-      authenticated: true, 
-      user: {
-        id: user.id,
-        email: user.email,
-        verified: user.verified
-      },
-      csrfToken: tokenData.csrfToken
-    });
-
-  } catch (error) {
-    console.error('状态检查错误:', error);
-    return json({ 
-      authenticated: false, 
-      user: null,
-      error: '状态检查失败' 
-    }, 500);
-  }
-}
 
 // 验证邮箱
 async function handleEmailVerification(request: Request, env: any): Promise<Response> {
@@ -601,7 +562,7 @@ async function handleUserLogout(request: Request, env: any): Promise<Response> {
     const isProduction = request.url.includes('https://') || request.headers.get('cf-ray');
     const secureFlag = isProduction ? '; Secure' : '';
     response.headers.set('Set-Cookie', 
-      `authToken=; HttpOnly${secureFlag}; SameSite=Strict; Max-Age=0; Path=/`
+      `authToken=${secureFlag}; SameSite=Lax; Max-Age=0; Path=/`
     );
     
     return response;
