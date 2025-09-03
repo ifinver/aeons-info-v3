@@ -16,9 +16,29 @@ function deleteCookie(name) {
   document.cookie = name + '=; expires=Thu, 01 Jan 1970 00:00:01 GMT; path=/; secure; samesite=strict';
 }
 
-// 检查是否已登录（通过检查cookie）
-function isLoggedIn() {
-  return getCookie('authToken') !== undefined;
+// 检查是否已登录（通过服务端API验证HttpOnly Cookie）
+async function isLoggedIn() {
+  try {
+    const response = await fetch('/api/auth/status', {
+      method: 'GET',
+      credentials: 'include', // 重要：发送HttpOnly Cookie
+    });
+    
+    if (response.ok) {
+      const data = await response.json();
+      return data.authenticated === true;
+    }
+    return false;
+  } catch (error) {
+    console.error('状态检查失败:', error);
+    return false;
+  }
+}
+
+// 同步版本的登录状态检查（用于兼容性）
+function isLoggedInSync() {
+  // 这个函数现在只是一个占位符，实际状态需要通过异步API检查
+  return currentUser !== null;
 }
 
 // 安全的文本清理函数
@@ -1458,58 +1478,48 @@ async function getCurrentUser() {
   console.log('👤 开始获取当前用户信息...');
   
   try {
-    const loggedIn = isLoggedIn();
-    console.log('🍪 登录状态检查:', loggedIn);
-    console.log('🍪 所有cookies:', document.cookie);
-    console.log('🍪 authToken cookie:', getCookie('authToken') ? '存在' : '不存在');
+    console.log('📡 发送状态检查请求到 /api/auth/status');
     
-    if (!loggedIn) {
-      console.log('❌ 未登录，返回null');
-      return null;
-    }
+    const response = await fetch('/api/auth/status', {
+      method: 'GET',
+      credentials: 'include' // 发送HttpOnly Cookie
+    });
     
-    console.log('📡 发送获取用户信息请求到 /api/auth/me');
-    console.log('🔐 当前CSRF令牌:', csrfToken ? '存在' : '不存在');
-    
-    const requestOptions = {
-      credentials: 'include', // 包含HttpOnly cookie
-      headers: {
-        'Content-Type': 'application/json',
-        ...(csrfToken ? { 'X-CSRF-Token': csrfToken } : {})
-      }
-    };
-    
-    console.log('🔧 请求配置:', requestOptions);
-    
-    const response = await fetch('/api/auth/me', requestOptions);
-    
-    console.log('📡 收到用户信息响应:');
+    console.log('📡 收到状态响应:');
     console.log('  - 状态码:', response.status);
     console.log('  - 状态文本:', response.statusText);
     console.log('  - Content-Type:', response.headers.get('Content-Type'));
     
     if (!response.ok) {
-      console.log('❌ 获取用户信息失败，可能token已过期');
-      console.log('🧹 清除用户状态');
-      // Token可能已过期，清除相关状态
+      console.error('❌ 状态检查请求失败:', response.status);
       currentUser = null;
       csrfToken = null;
       return null;
     }
     
-    console.log('📄 尝试解析用户信息响应...');
+    console.log('📄 尝试解析状态响应...');
     const data = await response.json();
-    console.log('✅ 用户信息解析成功:', data);
+    console.log('✅ 状态响应解析成功:', data);
     
-    currentUser = data.user;
-    csrfToken = data.csrfToken || csrfToken; // 更新CSRF token
-    
-    console.log('💾 已更新用户状态');
-    console.log('👤 当前用户:', currentUser);
-    console.log('🔐 CSRF令牌已更新:', csrfToken ? '是' : '否');
-    
-    return currentUser;
-    
+    if (data.authenticated && data.user) {
+      console.log('✅ 用户已认证:', data.user);
+      // 更新全局状态
+      currentUser = data.user;
+      if (data.csrfToken) {
+        csrfToken = data.csrfToken;
+        console.log('🔐 CSRF令牌已更新');
+      }
+      
+      console.log('💾 已更新用户状态');
+      console.log('👤 当前用户:', currentUser);
+      
+      return data.user;
+    } else {
+      console.log('❌ 用户未认证');
+      currentUser = null;
+      csrfToken = null;
+      return null;
+    }
   } catch (error) {
     console.error('❌ 获取用户信息失败:', error);
     console.error('❌ 错误详情:', error.stack);
@@ -1524,8 +1534,31 @@ function debugAuthStatus() {
   console.log('🔍 === 认证状态调试信息 ===');
   console.log('📅 时间:', new Date().toLocaleString());
   console.log('🍪 所有cookies:', document.cookie);
-  console.log('🔑 authToken cookie:', getCookie('authToken') || '无');
-  console.log('📏 authToken 长度:', getCookie('authToken')?.length || 0);
+  
+  // 详细的Cookie解析调试
+  console.log('🔧 === Cookie解析详情 ===');
+  const cookieString = document.cookie;
+  console.log('📝 原始cookie字符串:', JSON.stringify(cookieString));
+  console.log('📝 cookie字符串长度:', cookieString.length);
+  
+  if (cookieString.includes('authToken')) {
+    console.log('✅ cookie字符串包含 authToken');
+    const authTokenMatch = cookieString.match(/authToken=([^;]*)/);
+    console.log('🎯 正则匹配结果:', authTokenMatch);
+    if (authTokenMatch) {
+      console.log('🎯 匹配到的token值:', authTokenMatch[1]);
+      console.log('🎯 token值长度:', authTokenMatch[1].length);
+    }
+  } else {
+    console.log('❌ cookie字符串不包含 authToken');
+  }
+  
+  const authToken = getCookie('authToken');
+  console.log('🔑 getCookie() 返回值:', authToken);
+  console.log('🔑 getCookie() 返回值类型:', typeof authToken);
+  console.log('🔑 authToken === undefined:', authToken === undefined);
+  console.log('🔑 authToken || "无":', authToken || '无');
+  console.log('📏 authToken 长度:', authToken ? authToken.length : 0);
   console.log('👤 currentUser 变量:', currentUser || '无');
   console.log('🔐 csrfToken 变量:', csrfToken || '无');
   console.log('✅ isLoggedIn() 返回:', isLoggedIn());

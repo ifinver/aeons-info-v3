@@ -181,6 +181,11 @@ async function handleAuthApi(request: Request, env: any): Promise<Response> {
     return handleUserLogout(request, env);
   }
 
+  // GET /api/auth/status -> 检查认证状态
+  if (segments.length === 3 && segments[2] === 'status' && method === 'GET') {
+    return handleAuthStatus(request, env);
+  }
+
   // GET /api/auth/me -> 获取当前用户信息
   if (segments.length === 3 && segments[2] === 'me' && method === 'GET') {
     return handleGetCurrentUser(request, env);
@@ -390,7 +395,7 @@ async function handleUserLogin(request: Request, env: any): Promise<Response> {
     const tokenData: AuthToken = {
       userId: user.id,
       email: user.email,
-      expiresAt: generateExpiryTime(2), // 2小时过期（更安全）
+      expiresAt: generateExpiryTime(7 * 24), // 7天过期
       type: 'session',
       csrfToken: csrfTokenValue,
       ipAddress: clientIP,
@@ -399,7 +404,7 @@ async function handleUserLogin(request: Request, env: any): Promise<Response> {
 
     // 存储会话令牌
     await env.aeons_info_auth_tokens.put(sessionToken, JSON.stringify(tokenData), {
-      expirationTtl: 2 * 60 * 60 // 2小时
+      expirationTtl: 7 * 24 * 60 * 60 // 7天
     });
 
     // 设置安全的响应头
@@ -417,15 +422,54 @@ async function handleUserLogin(request: Request, env: any): Promise<Response> {
     // 在开发环境中不使用Secure标志，生产环境中使用
     const isProduction = request.url.includes('https://') || request.headers.get('cf-ray'); // Cloudflare特有header
     const secureFlag = isProduction ? '; Secure' : '';
-    response.headers.set('Set-Cookie', 
-      `authToken=${sessionToken}; HttpOnly${secureFlag}; SameSite=Strict; Max-Age=${2 * 60 * 60}; Path=/`
-    );
+    const cookieValue = `authToken=${sessionToken}; HttpOnly${secureFlag}; SameSite=Lax; Max-Age=${7 * 24 * 60 * 60}; Path=/`;
+    
+    console.log('🍪 设置Cookie调试信息:');
+    console.log('  - URL:', request.url);
+    console.log('  - isProduction:', isProduction);
+    console.log('  - secureFlag:', secureFlag);
+    console.log('  - sessionToken长度:', sessionToken.length);
+    console.log('  - cookieValue:', cookieValue);
+    
+    response.headers.set('Set-Cookie', cookieValue);
 
     return response;
 
   } catch (error) {
     console.error('登录错误:', error);
     return json({ error: '系统暂时不可用，请稍后重试' }, 500);
+  }
+}
+
+// 检查认证状态
+async function handleAuthStatus(request: Request, env: any): Promise<Response> {
+  try {
+    const { user, tokenData } = await validateAuthToken(request, env);
+    
+    if (!user || !tokenData) {
+      return json({ 
+        authenticated: false, 
+        user: null 
+      });
+    }
+
+    return json({ 
+      authenticated: true, 
+      user: {
+        id: user.id,
+        email: user.email,
+        verified: user.verified
+      },
+      csrfToken: tokenData.csrfToken
+    });
+
+  } catch (error) {
+    console.error('状态检查错误:', error);
+    return json({ 
+      authenticated: false, 
+      user: null,
+      error: '状态检查失败' 
+    }, 500);
   }
 }
 
@@ -851,7 +895,9 @@ ${resetUrl}
 function json(data: unknown, status = 200): Response {
   return new Response(JSON.stringify(data), {
     status,
-    headers: { 'content-type': 'application/json; charset=utf-8' },
+    headers: { 
+      'content-type': 'application/json; charset=utf-8',
+    },
   });
 }
 
