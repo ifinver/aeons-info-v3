@@ -166,16 +166,24 @@ export async function loadPracticeTimerPage(container) {
   console.log('  - currentUser:', currentUser);
   console.log('  - csrfToken:', csrfToken ? '存在' : '不存在');
   
-  // 如果已登录但没有用户信息，先获取用户信息
-  if (!currentUser) {
-    console.log('🔄 已登录但无用户信息，尝试获取用户信息...');
-    await getCurrentUser();
+  // 如果已登录但没有用户信息或CSRF token，先获取用户信息
+  if (!currentUser || !csrfToken) {
+    console.log('🔄 已登录但缺少用户信息或CSRF token，尝试获取...');
+    const user = await getCurrentUser();
+    if (!user) {
+      console.log('⚠️ 获取用户信息失败，可能token已过期');
+      console.log('🧹 清除无效cookie并重新加载');
+      // 清除可能无效的cookie
+      deleteCookie('authToken');
+      // 重新加载页面显示登录界面
+      location.reload();
+      return;
+    }
   }
   
-  // 如果仍然没有用户信息，可能token已过期，显示登录界面
-  if (!currentUser) {
-    console.log('⚠️ 仍无用户信息，可能token已过期');
-    console.log('🧹 清除无效cookie并重新加载');
+  // 再次检查CSRF token
+  if (!csrfToken) {
+    console.log('⚠️ 无法获取CSRF token，显示登录界面');
     // 清除可能无效的cookie
     deleteCookie('authToken');
     // 重新加载页面显示登录界面
@@ -1237,9 +1245,13 @@ async function handleLogin() {
     document.getElementById('login-email').value = '';
     document.getElementById('login-password').value = '';
     
-    // 刷新当前页面
-    setTimeout(() => {
-      window.location.reload();
+    // 不要刷新页面，直接重新加载练功计时器界面
+    setTimeout(async () => {
+      // 重新加载练功计时器页面内容
+      const container = document.getElementById('main-content');
+      if (container) {
+        await loadPracticeTimerPage(container);
+      }
     }, 1000);
     
   } catch (error) {
@@ -1353,6 +1365,7 @@ async function handleForgotPassword() {
 // 获取当前用户信息
 async function getCurrentUser() {
   if (!isLoggedIn()) {
+    console.log('🔍 getCurrentUser: 用户未登录');
     return null;
   }
   
@@ -1363,19 +1376,28 @@ async function getCurrentUser() {
     });
     
     if (!response.ok) {
+      console.log('🔍 getCurrentUser: 响应失败', response.status);
       return null;
     }
     
     const data = await response.json();
+    console.log('🔍 getCurrentUser: 获取到数据', {
+      hasUser: !!data.user,
+      hasCSRFToken: !!data.csrfToken
+    });
     
     // 更新全局状态
     currentUser = data.user;
     if (data.csrfToken) {
       csrfToken = data.csrfToken;
+      console.log('🔍 getCurrentUser: CSRF token已更新');
+    } else {
+      console.log('⚠️ getCurrentUser: 响应中没有CSRF token');
     }
     
     return data.user;
   } catch (error) {
+    console.error('🔍 getCurrentUser: 请求失败', error);
     return null;
   }
 }

@@ -582,16 +582,14 @@ async function handleGetCurrentUser(request: Request, env: any): Promise<Respons
       return json({ error: '未授权访问' }, 401);
     }
 
-    // 生成新的CSRF token（可选的额外安全措施）
-    const newCSRFToken = generateCSRFToken();
-    
+    // 返回现有的CSRF token，确保客户端和服务端同步
     return json({
       user: {
         id: user.id,
         email: user.email,
         verified: user.verified
       },
-      csrfToken: newCSRFToken
+      csrfToken: tokenData.csrfToken
     });
 
   } catch (error) {
