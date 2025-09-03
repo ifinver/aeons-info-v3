@@ -160,19 +160,29 @@ export async function loadPracticeTimerPage(container) {
     return;
   }
   
+  console.log('🔍 练功计时器页面加载 - 认证状态检查');
+  console.log('  - isLoggedIn():', isLoggedIn());
+  console.log('  - currentUser:', currentUser);
+  console.log('  - csrfToken:', csrfToken ? '存在' : '不存在');
+  
   // 如果已登录但没有用户信息，先获取用户信息
   if (!currentUser) {
+    console.log('🔄 已登录但无用户信息，尝试获取用户信息...');
     await getCurrentUser();
   }
   
   // 如果仍然没有用户信息，可能token已过期，显示登录界面
   if (!currentUser) {
+    console.log('⚠️ 仍无用户信息，可能token已过期');
+    console.log('🧹 清除无效cookie并重新加载');
     // 清除可能无效的cookie
     deleteCookie('authToken');
     // 重新加载页面显示登录界面
     location.reload();
     return;
   }
+  
+  console.log('✅ 用户认证成功，显示练功计时器界面');
   
   // 如果已登录，显示练功计时器界面
   container.innerHTML = `
@@ -1180,57 +1190,140 @@ function showForm(formType) {
 
 // 处理登录
 async function handleLogin() {
+  console.log('🚀 开始登录流程...');
+  
   let email = document.getElementById('login-email').value.trim();
   const password = document.getElementById('login-password').value;
   
+  console.log('📧 原始邮箱:', email);
+  console.log('🔒 密码长度:', password.length);
+  
   // 清理邮箱输入（防止XSS）
   email = sanitizeInput(email);
+  console.log('🧹 清理后邮箱:', email);
   
   if (!email || !password) {
+    console.log('❌ 输入验证失败: 缺少邮箱或密码');
     showMessage('请填写完整的登录信息', 'error');
     return;
   }
   
   if (!isValidEmail(email)) {
+    console.log('❌ 邮箱格式验证失败:', email);
     showMessage('请输入有效的邮箱地址', 'error');
     return;
   }
+  
+  console.log('✅ 输入验证通过，准备发送请求...');
   
   const loginBtn = document.getElementById('login-btn');
   loginBtn.disabled = true;
   loginBtn.textContent = '登录中...';
   
   try {
-    const response = await fetch('/api/auth/login', {
+    console.log('📡 发送登录请求到 /api/auth/login');
+    console.log('📦 请求体:', { email, password: '***' });
+    
+    const requestOptions = {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       credentials: 'include', // 包含cookie
       body: JSON.stringify({ email, password })
+    };
+    
+    console.log('🔧 请求配置:', {
+      ...requestOptions,
+      body: JSON.stringify({ email, password: '***' })
     });
     
-    const data = await response.json();
+    const response = await fetch('/api/auth/login', requestOptions);
+    
+    console.log('📡 收到响应:');
+    console.log('  - 状态码:', response.status);
+    console.log('  - 状态文本:', response.statusText);
+    console.log('  - Content-Type:', response.headers.get('Content-Type'));
+    console.log('  - Set-Cookie:', response.headers.get('Set-Cookie'));
+    console.log('  - 所有响应头:', [...response.headers.entries()]);
+    
+    // 检查响应内容类型
+    const contentType = response.headers.get('Content-Type');
+    console.log('🔍 检查Content-Type:', contentType);
+    
+    let data;
+    try {
+      if (contentType && contentType.includes('application/json')) {
+        console.log('📄 尝试解析JSON响应...');
+        data = await response.json();
+        console.log('✅ JSON解析成功:', data);
+      } else {
+        console.log('⚠️ 响应不是JSON，尝试读取文本...');
+        const text = await response.text();
+        console.log('📄 响应文本内容:', text);
+        throw new Error(`服务器返回了非JSON响应: ${text}`);
+      }
+    } catch (parseError) {
+      console.error('❌ 响应解析失败:', parseError);
+      console.log('🔍 尝试读取原始响应...');
+      try {
+        const rawText = await response.text();
+        console.log('📄 原始响应文本:', rawText);
+      } catch (textError) {
+        console.error('❌ 连原始文本都无法读取:', textError);
+      }
+      throw new Error(`响应解析失败: ${parseError.message}`);
+    }
     
     if (!response.ok) {
+      console.log('❌ 登录失败，服务器返回错误:', data);
       throw new Error(data.error || '登录失败');
     }
+    
+    console.log('🎉 登录成功！');
+    console.log('👤 用户信息:', data.user);
+    console.log('🔐 CSRF令牌:', data.csrfToken ? '已获取' : '未获取');
     
     // 保存用户信息和CSRF token
     currentUser = data.user;
     csrfToken = data.csrfToken;
     
+    console.log('💾 已保存用户状态');
+    console.log('🍪 当前cookies:', document.cookie);
+    
+    // 详细检查登录后的存储状态
+    console.log('🔍 登录后存储状态检查:');
+    console.log('  - authToken cookie:', getCookie('authToken') ? '已设置' : '未设置');
+    console.log('  - authToken 长度:', getCookie('authToken')?.length || 0);
+    console.log('  - currentUser 变量:', currentUser ? '已设置' : '未设置');
+    console.log('  - csrfToken 变量:', csrfToken ? '已设置' : '未设置');
+    console.log('  - isLoggedIn() 返回:', isLoggedIn());
+    
+    // 立即测试用户信息获取
+    console.log('🧪 测试立即获取用户信息...');
+    setTimeout(async () => {
+      try {
+        const testUser = await getCurrentUser();
+        console.log('✅ 登录后立即获取用户信息成功:', testUser);
+      } catch (error) {
+        console.error('❌ 登录后立即获取用户信息失败:', error);
+      }
+    }, 100);
+    
     showMessage('登录成功！', 'success');
     
     // 重新加载页面显示练功计时器
+    console.log('🔄 1秒后重新加载页面...');
     setTimeout(() => {
       location.reload();
     }, 1000);
     
   } catch (error) {
-    console.error('登录失败:', error);
+    console.error('❌ 登录流程出错:', error);
+    console.error('❌ 错误详情:', error.stack);
     showMessage('登录失败: ' + error.message, 'error');
   } finally {
+    console.log('🔧 重置登录按钮状态');
     loginBtn.disabled = false;
     loginBtn.textContent = '登录';
   }
@@ -1338,36 +1431,93 @@ async function handleForgotPassword() {
 
 // 获取当前用户信息
 async function getCurrentUser() {
+  console.log('👤 开始获取当前用户信息...');
+  
   try {
-    if (!isLoggedIn()) return null;
+    const loggedIn = isLoggedIn();
+    console.log('🍪 登录状态检查:', loggedIn);
+    console.log('🍪 所有cookies:', document.cookie);
+    console.log('🍪 authToken cookie:', getCookie('authToken') ? '存在' : '不存在');
     
-    const response = await fetch('/api/auth/me', {
+    if (!loggedIn) {
+      console.log('❌ 未登录，返回null');
+      return null;
+    }
+    
+    console.log('📡 发送获取用户信息请求到 /api/auth/me');
+    console.log('🔐 当前CSRF令牌:', csrfToken ? '存在' : '不存在');
+    
+    const requestOptions = {
       credentials: 'include', // 包含HttpOnly cookie
       headers: {
         'Content-Type': 'application/json',
         ...(csrfToken ? { 'X-CSRF-Token': csrfToken } : {})
       }
-    });
+    };
+    
+    console.log('🔧 请求配置:', requestOptions);
+    
+    const response = await fetch('/api/auth/me', requestOptions);
+    
+    console.log('📡 收到用户信息响应:');
+    console.log('  - 状态码:', response.status);
+    console.log('  - 状态文本:', response.statusText);
+    console.log('  - Content-Type:', response.headers.get('Content-Type'));
     
     if (!response.ok) {
+      console.log('❌ 获取用户信息失败，可能token已过期');
+      console.log('🧹 清除用户状态');
       // Token可能已过期，清除相关状态
       currentUser = null;
       csrfToken = null;
       return null;
     }
     
+    console.log('📄 尝试解析用户信息响应...');
     const data = await response.json();
+    console.log('✅ 用户信息解析成功:', data);
+    
     currentUser = data.user;
     csrfToken = data.csrfToken || csrfToken; // 更新CSRF token
+    
+    console.log('💾 已更新用户状态');
+    console.log('👤 当前用户:', currentUser);
+    console.log('🔐 CSRF令牌已更新:', csrfToken ? '是' : '否');
+    
     return currentUser;
     
   } catch (error) {
-    console.error('获取用户信息失败:', error);
+    console.error('❌ 获取用户信息失败:', error);
+    console.error('❌ 错误详情:', error.stack);
     currentUser = null;
     csrfToken = null;
     return null;
   }
 }
+
+// 全局调试函数 - 检查认证状态
+function debugAuthStatus() {
+  console.log('🔍 === 认证状态调试信息 ===');
+  console.log('📅 时间:', new Date().toLocaleString());
+  console.log('🍪 所有cookies:', document.cookie);
+  console.log('🔑 authToken cookie:', getCookie('authToken') || '无');
+  console.log('📏 authToken 长度:', getCookie('authToken')?.length || 0);
+  console.log('👤 currentUser 变量:', currentUser || '无');
+  console.log('🔐 csrfToken 变量:', csrfToken || '无');
+  console.log('✅ isLoggedIn() 返回:', isLoggedIn());
+  
+  // 尝试获取当前用户信息
+  getCurrentUser().then(user => {
+    console.log('📡 getCurrentUser() 结果:', user || '获取失败');
+  }).catch(error => {
+    console.error('❌ getCurrentUser() 错误:', error);
+  });
+  
+  console.log('🔍 === 调试信息结束 ===');
+}
+
+// 将调试函数挂载到全局，方便在控制台调用
+window.debugAuthStatus = debugAuthStatus;
 
 // 处理登出
 async function handleLogout() {
