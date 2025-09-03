@@ -1,6 +1,10 @@
 // 练功计时器页面
 // Chart.js 将通过script标签加载，使用全局Chart对象
 
+// 用户认证状态
+let currentUser = null;
+let authToken = localStorage.getItem('authToken');
+
 // 等待Chart.js加载完成
 function waitForChart() {
   return new Promise((resolve) => {
@@ -43,8 +47,83 @@ export async function loadPracticeTimerPage(container) {
     ? "margin: -15px -15px 0 -15px; padding: 15px;" 
     : "margin: -20px -20px 0 -20px; padding: 20px;";
   
+  // 检查用户是否已登录
+  if (!currentUser && !authToken) {
+    // 显示登录/注册界面
+    container.innerHTML = `
+      <div class="auth-page" style="${marginStyle}">
+        <div class="auth-container">
+          <div class="auth-header">
+            <h1>练功计时器</h1>
+            <p>请登录或注册以使用练功计时器功能</p>
+          </div>
+          
+          <!-- 登录表单 -->
+          <div class="auth-form" id="login-form">
+            <h2>登录</h2>
+            <div class="form-group">
+              <label for="login-email">邮箱</label>
+              <input type="email" id="login-email" class="form-input" placeholder="请输入邮箱" />
+            </div>
+            <div class="form-group">
+              <label for="login-password">密码</label>
+              <input type="password" id="login-password" class="form-input" placeholder="请输入密码" />
+            </div>
+            <button id="login-btn" class="auth-btn primary">登录</button>
+            <div class="auth-links">
+              <button id="show-register-btn" class="link-btn">没有账户？去注册</button>
+              <button id="forgot-password-btn" class="link-btn">忘记密码？</button>
+            </div>
+          </div>
+          
+          <!-- 注册表单 -->
+          <div class="auth-form hidden" id="register-form">
+            <h2>注册</h2>
+            <div class="form-group">
+              <label for="register-email">邮箱</label>
+              <input type="email" id="register-email" class="form-input" placeholder="请输入邮箱" />
+            </div>
+            <button id="register-btn" class="auth-btn primary">发送注册邮件</button>
+            <div class="auth-links">
+              <button id="show-login-btn" class="link-btn">已有账户？去登录</button>
+            </div>
+          </div>
+          
+          <!-- 忘记密码表单 -->
+          <div class="auth-form hidden" id="forgot-password-form">
+            <h2>忘记密码</h2>
+            <div class="form-group">
+              <label for="forgot-email">邮箱</label>
+              <input type="email" id="forgot-email" class="form-input" placeholder="请输入邮箱" />
+            </div>
+            <button id="send-reset-btn" class="auth-btn primary">发送重置邮件</button>
+            <div class="auth-links">
+              <button id="back-to-login-btn" class="link-btn">返回登录</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+    
+    // 添加认证页面样式
+    addAuthStyles();
+    
+    // 初始化认证功能
+    initAuth();
+    return;
+  }
+  
+  // 如果已登录，显示练功计时器界面
   container.innerHTML = `
     <div class="practice-timer-page" style="${marginStyle}">
+      <!-- 用户信息栏 -->
+      <div class="user-info-bar">
+        <div class="user-info">
+          <span class="user-email">${currentUser ? currentUser.email : '用户'}</span>
+        </div>
+        <button id="logout-btn" class="logout-btn">登出</button>
+      </div>
+      
       <!-- 标题和添加按钮 -->
       <div class="header-row mb-6">
         <h1 class="page-title" style="margin-bottom: 0px;">练功计时器</h1>
@@ -449,6 +528,12 @@ function bindEvents() {
   const closeModal = document.getElementById('close-modal');
   const cancelBtn = document.getElementById('cancel-btn');
   const confirmBtn = document.getElementById('confirm-btn');
+  const logoutBtn = document.getElementById('logout-btn');
+  
+  // 登出按钮事件
+  if (logoutBtn) {
+    logoutBtn.addEventListener('click', handleLogout);
+  }
   
   // 打开对话框
   addDataBtn.addEventListener('click', () => {
@@ -511,6 +596,7 @@ async function addPracticeRecord() {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'Authorization': `Bearer ${authToken}`
       },
       body: JSON.stringify({
         date,
@@ -541,7 +627,11 @@ async function addPracticeRecord() {
 
 async function loadAndRenderData() {
   try {
-    const response = await fetch('/api/kv/practice-time');
+    const response = await fetch('/api/kv/practice-time', {
+      headers: {
+        'Authorization': `Bearer ${authToken}`
+      }
+    });
     if (!response.ok) {
       throw new Error('获取数据失败');
     }
@@ -773,4 +863,437 @@ function showMessage(text, type = 'info') {
       document.body.removeChild(message);
     }, 300);
   }, 3000);
+}
+
+// 添加认证页面样式
+function addAuthStyles() {
+  const existingStyle = document.getElementById('auth-styles');
+  if (existingStyle) return;
+
+  const style = document.createElement('style');
+  style.id = 'auth-styles';
+  style.textContent = `
+    .auth-page {
+      max-width: 500px;
+      margin: 0 auto;
+      padding: 40px 20px;
+    }
+    
+    .auth-container {
+      background: var(--card-bg, #ffffff);
+      border: 1px solid var(--border, #e2e8f0);
+      border-radius: 16px;
+      padding: 40px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    }
+    
+    .auth-header {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+    
+    .auth-header h1 {
+      font-size: 2rem;
+      font-weight: bold;
+      color: var(--text, #1f2937);
+      margin: 0 0 8px 0;
+    }
+    
+    .auth-header p {
+      color: var(--muted, #6b7280);
+      margin: 0;
+    }
+    
+    .auth-form {
+      transition: all 0.3s ease;
+    }
+    
+    .auth-form.hidden {
+      display: none;
+    }
+    
+    .auth-form h2 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: var(--text, #1f2937);
+      margin: 0 0 24px 0;
+      text-align: center;
+    }
+    
+    .form-group {
+      margin-bottom: 20px;
+    }
+    
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 500;
+      color: var(--text, #374151);
+    }
+    
+    .form-input {
+      width: 100%;
+      padding: 12px 16px;
+      border: 1px solid var(--border, #e2e8f0);
+      border-radius: 8px;
+      font-size: 14px;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+      box-sizing: border-box;
+    }
+    
+    .form-input:focus {
+      outline: none;
+      border-color: var(--primary, #3b82f6);
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+    
+    .auth-btn {
+      width: 100%;
+      padding: 12px 24px;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      margin-bottom: 20px;
+    }
+    
+    .auth-btn.primary {
+      background: var(--primary, #3b82f6);
+      color: white;
+    }
+    
+    .auth-btn.primary:hover {
+      background: var(--primary-dark, #2563eb);
+      transform: translateY(-1px);
+    }
+    
+    .auth-btn:disabled {
+      background: var(--muted, #9ca3af);
+      cursor: not-allowed;
+      transform: none;
+    }
+    
+    .auth-links {
+      text-align: center;
+    }
+    
+    .link-btn {
+      background: none;
+      border: none;
+      color: var(--primary, #3b82f6);
+      cursor: pointer;
+      font-size: 14px;
+      text-decoration: underline;
+      margin: 0 8px;
+      padding: 4px 8px;
+      border-radius: 4px;
+      transition: background 0.2s ease;
+    }
+    
+    .link-btn:hover {
+      background: rgba(59, 130, 246, 0.1);
+    }
+    
+    .user-info-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--card-bg, #ffffff);
+      border: 1px solid var(--border, #e2e8f0);
+      border-radius: 12px;
+      padding: 16px 20px;
+      margin-bottom: 24px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .user-email {
+      font-weight: 500;
+      color: var(--text, #374151);
+    }
+    
+    .logout-btn {
+      padding: 8px 16px;
+      background: var(--muted, #6b7280);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      transition: background 0.2s ease;
+    }
+    
+    .logout-btn:hover {
+      background: var(--muted-dark, #4b5563);
+    }
+    
+    @media (max-width: 768px) {
+      .auth-page {
+        padding: 20px 15px;
+      }
+      
+      .auth-container {
+        padding: 30px 20px;
+      }
+      
+      .auth-header h1 {
+        font-size: 1.75rem;
+      }
+    }
+  `;
+  
+  document.head.appendChild(style);
+}
+
+// 初始化认证功能
+function initAuth() {
+  // 绑定事件
+  bindAuthEvents();
+  
+  // 如果有token，尝试获取用户信息
+  if (authToken) {
+    getCurrentUser();
+  }
+}
+
+// 绑定认证相关事件
+function bindAuthEvents() {
+  // 登录表单事件
+  const loginBtn = document.getElementById('login-btn');
+  const loginEmail = document.getElementById('login-email');
+  const loginPassword = document.getElementById('login-password');
+  
+  loginBtn.addEventListener('click', () => handleLogin());
+  loginPassword.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') handleLogin();
+  });
+  
+  // 注册表单事件
+  const registerBtn = document.getElementById('register-btn');
+  const registerEmail = document.getElementById('register-email');
+  
+  registerBtn.addEventListener('click', () => handleRegister());
+  registerEmail.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') handleRegister();
+  });
+  
+  // 忘记密码表单事件
+  const sendResetBtn = document.getElementById('send-reset-btn');
+  const forgotEmail = document.getElementById('forgot-email');
+  
+  sendResetBtn.addEventListener('click', () => handleForgotPassword());
+  forgotEmail.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') handleForgotPassword();
+  });
+  
+  // 切换表单事件
+  document.getElementById('show-register-btn').addEventListener('click', () => showForm('register'));
+  document.getElementById('show-login-btn').addEventListener('click', () => showForm('login'));
+  document.getElementById('forgot-password-btn').addEventListener('click', () => showForm('forgot-password'));
+  document.getElementById('back-to-login-btn').addEventListener('click', () => showForm('login'));
+}
+
+// 显示指定表单
+function showForm(formType) {
+  const forms = ['login', 'register', 'forgot-password'];
+  forms.forEach(form => {
+    const formElement = document.getElementById(`${form}-form`);
+    if (form === formType) {
+      formElement.classList.remove('hidden');
+    } else {
+      formElement.classList.add('hidden');
+    }
+  });
+}
+
+// 处理登录
+async function handleLogin() {
+  const email = document.getElementById('login-email').value.trim();
+  const password = document.getElementById('login-password').value;
+  
+  if (!email || !password) {
+    showMessage('请填写完整的登录信息', 'error');
+    return;
+  }
+  
+  const loginBtn = document.getElementById('login-btn');
+  loginBtn.disabled = true;
+  loginBtn.textContent = '登录中...';
+  
+  try {
+    const response = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ email, password })
+    });
+    
+    const data = await response.json();
+    
+    if (!response.ok) {
+      throw new Error(data.error || '登录失败');
+    }
+    
+    // 保存用户信息和token
+    currentUser = data.user;
+    authToken = data.token;
+    localStorage.setItem('authToken', authToken);
+    
+    showMessage('登录成功！', 'success');
+    
+    // 重新加载页面显示练功计时器
+    setTimeout(() => {
+      location.reload();
+    }, 1000);
+    
+  } catch (error) {
+    console.error('登录失败:', error);
+    showMessage('登录失败: ' + error.message, 'error');
+  } finally {
+    loginBtn.disabled = false;
+    loginBtn.textContent = '登录';
+  }
+}
+
+// 处理注册
+async function handleRegister() {
+  const email = document.getElementById('register-email').value.trim();
+  
+  if (!email) {
+    showMessage('请输入邮箱地址', 'error');
+    return;
+  }
+  
+  const registerBtn = document.getElementById('register-btn');
+  registerBtn.disabled = true;
+  registerBtn.textContent = '发送中...';
+  
+  try {
+    const response = await fetch('/api/auth/register', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ email })
+    });
+    
+    const data = await response.json();
+    
+    if (!response.ok) {
+      throw new Error(data.error || '注册失败');
+    }
+    
+    showMessage('注册邮件已发送，请检查您的邮箱并点击验证链接', 'success');
+    
+    // 清空邮箱输入
+    document.getElementById('register-email').value = '';
+    
+  } catch (error) {
+    console.error('注册失败:', error);
+    showMessage('注册失败: ' + error.message, 'error');
+  } finally {
+    registerBtn.disabled = false;
+    registerBtn.textContent = '发送注册邮件';
+  }
+}
+
+// 处理忘记密码
+async function handleForgotPassword() {
+  const email = document.getElementById('forgot-email').value.trim();
+  
+  if (!email) {
+    showMessage('请输入邮箱地址', 'error');
+    return;
+  }
+  
+  const sendResetBtn = document.getElementById('send-reset-btn');
+  sendResetBtn.disabled = true;
+  sendResetBtn.textContent = '发送中...';
+  
+  try {
+    const response = await fetch('/api/auth/forgot-password', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ email })
+    });
+    
+    const data = await response.json();
+    
+    if (!response.ok) {
+      throw new Error(data.error || '发送失败');
+    }
+    
+    showMessage('重置邮件已发送，请检查您的邮箱', 'success');
+    
+    // 清空邮箱输入
+    document.getElementById('forgot-email').value = '';
+    
+  } catch (error) {
+    console.error('发送失败:', error);
+    showMessage('发送失败: ' + error.message, 'error');
+  } finally {
+    sendResetBtn.disabled = false;
+    sendResetBtn.textContent = '发送重置邮件';
+  }
+}
+
+// 获取当前用户信息
+async function getCurrentUser() {
+  try {
+    const response = await fetch('/api/auth/me', {
+      headers: {
+        'Authorization': `Bearer ${authToken}`
+      }
+    });
+    
+    if (!response.ok) {
+      // token无效，清除本地存储
+      localStorage.removeItem('authToken');
+      authToken = null;
+      currentUser = null;
+      return;
+    }
+    
+    const data = await response.json();
+    currentUser = data.user;
+    
+  } catch (error) {
+    console.error('获取用户信息失败:', error);
+    localStorage.removeItem('authToken');
+    authToken = null;
+    currentUser = null;
+  }
+}
+
+// 处理登出
+async function handleLogout() {
+  try {
+    await fetch('/api/auth/logout', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${authToken}`
+      }
+    });
+  } catch (error) {
+    console.error('登出失败:', error);
+  }
+  
+  // 清除本地存储
+  localStorage.removeItem('authToken');
+  authToken = null;
+  currentUser = null;
+  
+  // 重新加载页面
+  location.reload();
 }

@@ -1,5 +1,6 @@
 import { loadHomePage } from './home.js';
 import { loadPracticeTimerPage, cleanupPracticeTimerPage } from './practice-timer.js';
+import { loadEmailVerificationPage } from './email-verification.js';
 
 // 动态加载清单文件
 let manifest = [];
@@ -156,6 +157,13 @@ async function loadContent(path) {
     await loadPracticeTimerPage(article);
     highlightActive(path);
     updateAppBar('练功计时器');
+    return;
+  }
+
+  // 处理邮箱验证页面
+  if (path.startsWith('auth/verify/')) {
+    await loadEmailVerificationPage(article, path);
+    updateAppBar('邮箱验证');
     return;
   }
 

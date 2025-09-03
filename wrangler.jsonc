@@ -25,6 +25,14 @@
 		{
 			"binding": "aeons_info_practice_time",
 			"id": "af6c834bcad4423a9be86d6caca1b838"
+		},
+		{
+			"binding": "aeons_info_users",
+			"id": "user_namespace_id_placeholder"
+		},
+		{
+			"binding": "aeons_info_auth_tokens",
+			"id": "auth_tokens_namespace_id_placeholder"
 		}
 	]
 	/**
