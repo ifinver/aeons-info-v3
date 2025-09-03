@@ -343,6 +343,20 @@ function checkMobileAndOpenDrawer() {
 
 // 初始化应用
 async function initApp() {
+  console.log('🚀 === APP 初始化开始 ===');
+  console.log('⏰ APP启动时间:', new Date().toLocaleString());
+  console.log('🔗 当前URL:', window.location.href);
+  console.log('🔗 当前Hash:', window.location.hash);
+  
+  // 检查全局认证状态（如果practice-timer.js已加载）
+  if (typeof window.debugAuthStatus === 'function') {
+    console.log('🔍 发现认证调试函数，执行检查...');
+    window.debugAuthStatus();
+  } else {
+    console.log('🔍 APP级别简单认证检查:');
+    console.log('🍪 document.cookie:', document.cookie || '(空)');
+  }
+  
   await buildSidebar();
   
   // 绑定移动端事件

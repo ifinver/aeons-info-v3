@@ -82,6 +82,27 @@ export function cleanupPracticeTimerPage(container) {
 }
 
 export async function loadPracticeTimerPage(container) {
+  console.log('🚀 === 练功计时器页面开始加载 ===');
+  console.log('⏰ 加载时间:', new Date().toLocaleString());
+  
+  // 详细检查页面加载时的认证状态
+  console.log('🔍 === 页面加载时认证状态检查 ===');
+  console.log('🍪 document.cookie 内容:', document.cookie || '(空)');
+  console.log('🔑 authToken cookie 值:', getCookie('authToken') || '(无)');
+  console.log('📏 authToken 长度:', getCookie('authToken')?.length || 0);
+  console.log('👤 currentUser 变量:', currentUser || '(无)');
+  console.log('🔐 csrfToken 变量:', csrfToken || '(无)');
+  console.log('✅ isLoggedIn() 函数返回:', isLoggedIn());
+  
+  // 检查cookie的详细属性（如果存在）
+  if (getCookie('authToken')) {
+    console.log('🍪 authToken cookie 详情:');
+    console.log('  - 值的前10位:', getCookie('authToken').substring(0, 10) + '...');
+    console.log('  - 完整长度:', getCookie('authToken').length);
+  }
+  
+  console.log('🔍 === 认证状态检查完成 ===');
+  
   // 等待Chart.js加载完成
   await waitForChart();
   
@@ -95,6 +116,7 @@ export async function loadPracticeTimerPage(container) {
     : "margin: -20px -20px 0 -20px; padding: 20px;";
   
   // 检查用户是否已登录
+  console.log('🎯 开始登录状态判断 - isLoggedIn():', isLoggedIn());
   if (!isLoggedIn()) {
     // 显示登录/注册界面
     container.innerHTML = `
@@ -1312,11 +1334,13 @@ async function handleLogin() {
     
     showMessage('登录成功！', 'success');
     
-    // 重新加载页面显示练功计时器
-    console.log('🔄 1秒后重新加载页面...');
-    setTimeout(() => {
-      location.reload();
-    }, 1000);
+    // 暂时注释掉自动跳转，方便查看Console日志
+    console.log('🔄 为了调试，暂时禁用自动跳转');
+    console.log('📝 如需手动跳转，请在Console中运行: location.reload()');
+    
+    // setTimeout(() => {
+    //   location.reload();
+    // }, 1000);
     
   } catch (error) {
     console.error('❌ 登录流程出错:', error);
@@ -1518,6 +1542,21 @@ function debugAuthStatus() {
 
 // 将调试函数挂载到全局，方便在控制台调用
 window.debugAuthStatus = debugAuthStatus;
+
+// 手动触发页面重载的函数（调试用）
+window.manualReload = function() {
+  console.log('🔄 手动触发页面重载...');
+  location.reload();
+};
+
+// 显示所有可用的调试函数
+window.showDebugFunctions = function() {
+  console.log('🛠️ === 可用的调试函数 ===');
+  console.log('debugAuthStatus() - 检查认证状态');
+  console.log('manualReload() - 手动重载页面');
+  console.log('showDebugFunctions() - 显示此帮助');
+  console.log('🛠️ === 调试函数列表结束 ===');
+};
 
 // 处理登出
 async function handleLogout() {
