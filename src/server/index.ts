@@ -15,6 +15,29 @@
 import * as bcrypt from 'bcryptjs';
 import { generateToken as cryptoGenerateToken, generateUUID } from './crypto-utils';
 
+// 从 auth.ts 导入所有认证相关函数
+import {
+  generateToken,
+  hashPassword,
+  verifyPassword,
+  generateUserId,
+  generateVerificationToken,
+  generateSessionToken,
+  generateExpiryTime,
+  isValidEmail,
+  validatePassword,
+  sanitizeInput,
+  generateCSRFToken,
+  validateCSRFToken,
+  getClientIP,
+  type User,
+  type AuthToken,
+  type LoginAttempt
+} from './auth';
+
+// 从 mail.ts 导入邮件发送函数
+import { sendEmail } from './mail';
+
 export default {
 	async fetch(request, env, ctx): Promise<Response> {
 		const url = new URL(request.url);
@@ -1098,35 +1121,7 @@ async function refreshSession(request: Request, env: any): Promise<{success: boo
   }
 }
 
-// 类型定义
-interface User {
-  id: string;
-  email: string;
-  passwordHash: string;
-  createdAt: string;
-  verified: boolean;
-  lastLoginAt?: string;
-  failedLoginAttempts?: number;
-  lockedUntil?: string;
-}
-
-interface AuthToken {
-  userId: string;
-  email: string;
-  expiresAt: number;
-  type: 'session' | 'verification' | 'password_reset';
-  csrfToken?: string;
-  ipAddress?: string;
-  userAgent?: string;
-}
-
-interface LoginAttempt {
-  ip: string;
-  attempts: number;
-  lastAttempt: number;
-  blockedUntil?: number;
-}
-
+// 类型定义 - User, AuthToken, LoginAttempt 已从 auth.ts 导入
 interface EmailData {
   to: string;
   subject: string;
@@ -1134,179 +1129,5 @@ interface EmailData {
   text?: string;
 }
 
-// 工具函数
-function generateToken(length: number = 32): string {
-  return cryptoGenerateToken(length);
-}
-
-async function hashPassword(password: string): Promise<string> {
-  const saltRounds = 12;
-  return await bcrypt.hash(password, saltRounds);
-}
-
-async function verifyPassword(password: string, hash: string): Promise<boolean> {
-  try {
-    return await bcrypt.compare(password, hash);
-  } catch (error) {
-    console.error('密码验证错误:', error);
-    return false;
-  }
-}
-
-function generateUserId(): string {
-  return 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-}
-
-function generateVerificationToken(): string {
-  return generateToken(16);
-}
-
-function generateSessionToken(): string {
-  return generateToken(32);
-}
-
-function generateExpiryTime(hours: number = 24): number {
-  return Date.now() + (hours * 60 * 60 * 1000);
-}
-
-function isValidEmail(email: string): boolean {
-  const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
-  
-  if (email.length > 254) return false;
-  if (email.length < 5) return false;
-  if (!emailRegex.test(email)) return false;
-  
-  const dangerousChars = /<|>|"|'|&|;|\||`/;
-  if (dangerousChars.test(email)) return false;
-  
-  return true;
-}
-
-function validatePassword(password: string): { valid: boolean; message: string } {
-  const errors: string[] = [];
-  
-  if (password.length < 8) {
-    errors.push('密码长度至少8位');
-  }
-  
-  if (password.length > 128) {
-    errors.push('密码长度不能超过128位');
-  }
-  
-  if (!/[A-Z]/.test(password)) {
-    errors.push('密码必须包含至少一个大写字母');
-  }
-  
-  if (!/[a-z]/.test(password)) {
-    errors.push('密码必须包含至少一个小写字母');
-  }
-  
-  if (!/\d/.test(password)) {
-    errors.push('密码必须包含至少一个数字');
-  }
-  
-  if (!/[!@#$%^&*(),.?":{}|<>_\-+=\[\]\\\/~`]/.test(password)) {
-    errors.push('密码必须包含至少一个特殊字符');
-  }
-  
-  const commonPasswords = [
-    'password', '123456', '12345678', 'qwerty', 'abc123', 
-    'password123', 'admin', 'letmein', 'welcome', '123456789'
-  ];
-  if (commonPasswords.some(common => password.toLowerCase().includes(common))) {
-    errors.push('密码不能包含常见的弱密码模式');
-  }
-  
-  if (/(.)\1{2,}/.test(password)) {
-    errors.push('密码不能包含连续重复的字符');
-  }
-  
-  if (errors.length > 0) {
-    return { valid: false, message: errors.join('; ') };
-  }
-  
-  return { valid: true, message: '密码强度符合要求' };
-}
-
-function sanitizeInput(input: string): string {
-  if (typeof input !== 'string') return '';
-  
-  return input
-    .replace(/[<>\"'&]/g, '')
-    .replace(/javascript:/gi, '')
-    .replace(/on\w+=/gi, '')
-    .trim();
-}
-
-function generateCSRFToken(): string {
-  return generateToken(32);
-}
-
-function validateCSRFToken(providedToken: string, storedToken: string): boolean {
-  if (!providedToken || !storedToken) return false;
-  if (providedToken.length !== storedToken.length) return false;
-  
-  let result = 0;
-  for (let i = 0; i < providedToken.length; i++) {
-    result |= providedToken.charCodeAt(i) ^ storedToken.charCodeAt(i);
-  }
-  return result === 0;
-}
-
-function getClientIP(request: Request): string {
-  const headers = request.headers;
-  return headers.get('CF-Connecting-IP') ||
-         headers.get('X-Forwarded-For')?.split(',')[0]?.trim() ||
-         headers.get('X-Real-IP') ||
-         headers.get('X-Client-IP') ||
-         'unknown';
-}
-
-// 发送邮件
-async function sendEmail(emailData: EmailData, env: any): Promise<boolean> {
-  try {
-    const fromEmail = env.MAIL_FROM_EMAIL || 'noreply@aeons.info';
-    const response = await fetch('https://api.mailchannels.net/tx/v1/send', {
-      method: 'POST',
-      headers: {
-        'content-type': 'application/json',
-        ...(env.MAILCHANNELS_API_KEY ? { 'Authorization': `Bearer ${env.MAILCHANNELS_API_KEY}` } : {}),
-        ...(env.MAILCHANNELS_API_KEY ? { 'X-Api-Key': env.MAILCHANNELS_API_KEY } : {}),
-        'X-Auth-User': fromEmail,
-      },
-      body: JSON.stringify({
-        personalizations: [
-          {
-            to: [{ email: emailData.to, name: emailData.to.split('@')[0] }],
-          },
-        ],
-        from: {
-          email: fromEmail,
-          name: env.MAIL_FROM_NAME || 'Aeons.info',
-        },
-        subject: emailData.subject,
-        content: [
-          {
-            type: 'text/html',
-            value: emailData.html,
-          },
-          ...(emailData.text ? [{
-            type: 'text/plain',
-            value: emailData.text,
-          }] : []),
-        ],
-      }),
-    });
-
-    if (!response.ok) {
-      console.error('邮件发送失败:', response.status, response.statusText);
-      return false;
-    }
-
-    return true;
-  } catch (error) {
-    console.error('邮件发送错误:', error);
-    return false;
-  }
-}
+// 所有工具函数已经从 auth.ts 和 mail.ts 导入
 
