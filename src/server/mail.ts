@@ -9,7 +9,7 @@ export interface EmailData {
 // 发送邮件
 export async function sendEmail(emailData: EmailData, env: any): Promise<boolean> {
   try {
-    const fromEmail = env.MAIL_FROM_EMAIL || 'noreply@aeons-info.com';
+    const fromEmail = env.MAIL_FROM_EMAIL || 'noreply@aeons.info';
     const response = await fetch('https://api.mailchannels.net/tx/v1/send', {
       method: 'POST',
       headers: {

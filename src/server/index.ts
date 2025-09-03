@@ -220,33 +220,17 @@ async function handleUserRegistration(request: Request, env: any): Promise<Respo
     const emailSent = await sendEmail(emailData, env);
 
     if (!emailSent) {
-      return json({ 
-        error: '邮件发送失败，请稍后重试',
-        debug: {
-          mailchannelsApiKey: env.MAILCHANNELS_API_KEY || null,
-          fromEmail: env.MAIL_FROM_EMAIL || 'noreply@aeons-info.com'
-        }
-      }, 500);
+      return json({ error: '邮件发送失败，请稍后重试' }, 500);
     }
 
     return json({ 
       message: '注册邮件已发送，请检查您的邮箱并点击验证链接',
-      email,
-      debug: {
-        mailchannelsApiKey: env.MAILCHANNELS_API_KEY || null,
-        fromEmail: env.MAIL_FROM_EMAIL || 'noreply@aeons-info.com'
-      }
+      email
     });
 
   } catch (error) {
     console.error('注册错误:', error);
-    return json({ 
-      error: '注册失败，请稍后重试',
-      debug: {
-        mailchannelsApiKey: env.MAILCHANNELS_API_KEY || null,
-        fromEmail: env.MAIL_FROM_EMAIL || 'noreply@aeons-info.com'
-      }
-    }, 500);
+    return json({ error: '注册失败，请稍后重试' }, 500);
   }
 }
 
@@ -627,7 +611,7 @@ function validatePassword(password: string): { valid: boolean; message: string }
 // 从mail.ts导入的邮件函数
 async function sendEmail(emailData: any, env: any): Promise<boolean> {
   try {
-    const fromEmail = env.MAIL_FROM_EMAIL || 'noreply@aeons-info.com';
+    const fromEmail = env.MAIL_FROM_EMAIL || 'noreply@aeons.info';
     const response = await fetch('https://api.mailchannels.net/tx/v1/send', {
       method: 'POST',
       headers: {
