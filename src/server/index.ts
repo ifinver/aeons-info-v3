@@ -414,8 +414,11 @@ async function handleUserLogin(request: Request, env: any): Promise<Response> {
     });
 
     // 设置HttpOnly cookie
+    // 在开发环境中不使用Secure标志，生产环境中使用
+    const isProduction = request.url.includes('https://') || request.headers.get('cf-ray'); // Cloudflare特有header
+    const secureFlag = isProduction ? '; Secure' : '';
     response.headers.set('Set-Cookie', 
-      `authToken=${sessionToken}; HttpOnly; Secure; SameSite=Strict; Max-Age=${2 * 60 * 60}; Path=/`
+      `authToken=${sessionToken}; HttpOnly${secureFlag}; SameSite=Strict; Max-Age=${2 * 60 * 60}; Path=/`
     );
 
     return response;
@@ -551,8 +554,10 @@ async function handleUserLogout(request: Request, env: any): Promise<Response> {
 
     // 清除HttpOnly cookie
     const response = json({ message: '登出成功' });
+    const isProduction = request.url.includes('https://') || request.headers.get('cf-ray');
+    const secureFlag = isProduction ? '; Secure' : '';
     response.headers.set('Set-Cookie', 
-      'authToken=; HttpOnly; Secure; SameSite=Strict; Max-Age=0; Path=/'
+      `authToken=; HttpOnly${secureFlag}; SameSite=Strict; Max-Age=0; Path=/`
     );
     
     return response;

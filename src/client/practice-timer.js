@@ -95,7 +95,7 @@ export async function loadPracticeTimerPage(container) {
     : "margin: -20px -20px 0 -20px; padding: 20px;";
   
   // 检查用户是否已登录
-  if (!currentUser && !isLoggedIn()) {
+  if (!isLoggedIn()) {
     // 显示登录/注册界面
     container.innerHTML = `
       <div class="auth-page" style="${marginStyle}">
@@ -157,6 +157,20 @@ export async function loadPracticeTimerPage(container) {
     
     // 初始化认证功能
     initAuth();
+    return;
+  }
+  
+  // 如果已登录但没有用户信息，先获取用户信息
+  if (!currentUser) {
+    await getCurrentUser();
+  }
+  
+  // 如果仍然没有用户信息，可能token已过期，显示登录界面
+  if (!currentUser) {
+    // 清除可能无效的cookie
+    deleteCookie('authToken');
+    // 重新加载页面显示登录界面
+    location.reload();
     return;
   }
   
