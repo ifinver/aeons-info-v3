@@ -52,17 +52,13 @@
   }
 
   .sidebar-logout-btn {
-    @apply w-8 h-8 text-white border-0 rounded-lg cursor-pointer flex-shrink-0;
+    @apply w-6 h-6 text-gray-500 border-0 bg-transparent cursor-pointer flex-shrink-0;
     @apply flex items-center justify-center transition-all duration-200 ease-in-out;
-    background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    font-size: 14px;
+    font-size: 16px;
   }
 
   .sidebar-logout-btn:hover {
-    @apply transform -translate-y-px;
-    background: linear-gradient(135deg, #4b5563 0%, #374151 100%);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    @apply text-gray-700 transform scale-110;
   }
   
   .nav-section {
