@@ -54,7 +54,10 @@
   .sidebar-logout-btn {
     @apply w-6 h-6 text-gray-500 border-0 bg-transparent cursor-pointer flex-shrink-0;
     @apply flex items-center justify-center transition-all duration-200 ease-in-out;
-    font-size: 16px;
+  }
+  
+  .sidebar-logout-btn i {
+    font-size: 14px;
   }
 
   .sidebar-logout-btn:hover {

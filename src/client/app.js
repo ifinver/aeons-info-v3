@@ -162,7 +162,7 @@ function updateUserInfoInSidebar() {
         <div class="user-details">
           <span class="user-email">${currentUser.email}</span>
         </div>
-        <button id="sidebar-logout-btn" class="sidebar-logout-btn" title="登出">↗</button>
+        <button id="sidebar-logout-btn" class="sidebar-logout-btn" title="登出"><i class="fas fa-sign-out-alt"></i></button>
       </div>
     `;
     
