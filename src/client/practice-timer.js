@@ -769,10 +769,10 @@ function renderChart(records) {
   
   const data = records.map(record => (record.totalMinutes / 60).toFixed(1)); // 转换为小时
   
-  // 计算平均值
-  const averageHours = records.length > 0 
-    ? records.reduce((sum, record) => sum + record.totalMinutes, 0) / records.length / 60
-    : 0;
+  // 计算平均值（使用与汇总一致的方法）
+  const totalMinutes = records.reduce((sum, record) => sum + record.totalMinutes, 0);
+  const averageMinutes = records.length > 0 ? Math.round(totalMinutes / records.length) : 0;
+  const averageHours = averageMinutes / 60;
   
   const averageLine = new Array(records.length).fill(averageHours.toFixed(1));
   
@@ -836,16 +836,16 @@ function renderChart(records) {
           callbacks: {
             label: function(context) {
               if (context.datasetIndex === 0) {
-                const hours = parseFloat(context.parsed.y);
-                const totalMinutes = Math.round(hours * 60);
-                const h = Math.floor(totalMinutes / 60);
-                const m = totalMinutes % 60;
+                // 对于单个数据点，直接从records中获取原始数据
+                const recordIndex = context.dataIndex;
+                const originalMinutes = records[recordIndex].totalMinutes;
+                const h = Math.floor(originalMinutes / 60);
+                const m = originalMinutes % 60;
                 return `练功时长: ${h}小时${m}分钟`;
               } else {
-                const hours = parseFloat(context.parsed.y);
-                const totalMinutes = Math.round(hours * 60);
-                const h = Math.floor(totalMinutes / 60);
-                const m = totalMinutes % 60;
+                // 对于平均值，使用与汇总一致的计算方法
+                const h = Math.floor(averageMinutes / 60);
+                const m = averageMinutes % 60;
                 return `平均时长: ${h}小时${m}分钟`;
               }
             }
