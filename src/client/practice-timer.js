@@ -1245,14 +1245,40 @@ async function handleLogin() {
     document.getElementById('login-email').value = '';
     document.getElementById('login-password').value = '';
     
-    // 不要刷新页面，直接重新加载练功计时器界面
+    // 延迟一下让用户看到成功消息，然后重新加载练功计时器界面
     setTimeout(async () => {
-      // 重新加载练功计时器页面内容
-      const container = document.getElementById('main-content');
-      if (container) {
-        await loadPracticeTimerPage(container);
+      try {
+        // 确保用户信息和CSRF token已经设置
+        console.log('🔄 登录成功，重新加载练功计时器界面');
+        console.log('👤 当前用户:', currentUser);
+        console.log('🔐 CSRF Token:', csrfToken ? '存在' : '缺失');
+        
+        // 验证认证状态
+        if (!currentUser || !csrfToken) {
+          console.log('⚠️ 认证信息不完整，尝试获取用户信息');
+          const user = await getCurrentUser();
+          if (!user || !csrfToken) {
+            console.log('❌ 无法获取完整的认证信息，刷新页面');
+            window.location.reload();
+            return;
+          }
+        }
+        
+        // 重新加载练功计时器页面内容
+        const container = document.getElementById('article');
+        if (container) {
+          await loadPracticeTimerPage(container);
+          console.log('✅ 练功计时器界面已重新加载');
+        } else {
+          console.error('❌ 找不到容器元素 #article');
+          window.location.reload();
+        }
+      } catch (error) {
+        console.error('❌ 重新加载练功计时器失败:', error);
+        // 如果出错，使用页面刷新作为备用方案
+        window.location.reload();
       }
-    }, 1000);
+    }, 1500);
     
   } catch (error) {
     showMessage('登录失败: ' + error.message, 'error');
