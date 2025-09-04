@@ -32,6 +32,43 @@
   .brand {
     @apply font-bold text-lg mb-3.5;
   }
+
+  /* 用户信息区域 */
+  .user-info-section {
+    @apply mt-3 mb-3 p-3 rounded-xl border border-border/50 hidden;
+    background-color: rgba(248, 249, 250, 0.8);
+  }
+
+  .sidebar-user-info {
+    @apply flex justify-between items-center gap-3 relative pb-3;
+  }
+
+  .sidebar-user-info::after {
+    content: '';
+    @apply absolute bottom-0 left-0 right-0 h-px;
+    background-color: rgba(222, 226, 230, 0.6);
+  }
+
+  .user-details {
+    @apply flex items-center gap-2;
+  }
+
+  .user-email {
+    @apply text-sm font-medium text-gray-700 flex-1 min-w-0 overflow-hidden text-ellipsis whitespace-nowrap;
+  }
+
+  .sidebar-logout-btn {
+    @apply px-3 py-2 text-xs font-medium text-white border-0 rounded-lg cursor-pointer flex-shrink-0 whitespace-nowrap;
+    @apply transition-all duration-200 ease-in-out;
+    background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+
+  .sidebar-logout-btn:hover {
+    @apply transform -translate-y-px;
+    background: linear-gradient(135deg, #4b5563 0%, #374151 100%);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  }
   
   .nav-section {
     @apply mt-5;
