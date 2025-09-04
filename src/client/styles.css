@@ -614,7 +614,7 @@ body {
 /* 用户信息区域 */
 .user-info-section {
   margin-top: 0.75rem;
-  margin-bottom: 1.25rem;
+  margin-bottom: 0.75rem;
   padding: 0.75rem;
   background-color: rgba(248, 249, 250, 0.8);
   border: 1px solid rgba(222, 226, 230, 0.5);
@@ -624,8 +624,21 @@ body {
 
 .sidebar-user-info {
   display: flex;
-  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
   gap: 0.75rem;
+  position: relative;
+  padding-bottom: 0.75rem;
+}
+
+.sidebar-user-info::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background-color: rgba(222, 226, 230, 0.6);
 }
 
 .user-details {
@@ -639,6 +652,11 @@ body {
   font-weight: 500;
   color: #374151;
   word-break: break-all;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .sidebar-logout-btn {
@@ -652,6 +670,8 @@ body {
   font-weight: 500;
   transition: all 0.2s ease;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .sidebar-logout-btn:hover {
