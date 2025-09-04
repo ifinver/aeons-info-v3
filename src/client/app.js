@@ -68,6 +68,12 @@ async function buildSidebar() {
   brand.innerHTML = '永恒的信息';
   wrapper.appendChild(brand);
 
+  // 添加用户信息区域（如果已登录）
+  const userInfoSection = document.createElement('div');
+  userInfoSection.id = 'user-info-section';
+  userInfoSection.className = 'user-info-section';
+  wrapper.appendChild(userInfoSection);
+
   groups.forEach(g => {
     const sec = document.createElement('div');
     sec.className = 'nav-section';
@@ -136,7 +142,45 @@ async function buildSidebar() {
 
   sidebar.innerHTML = '';
   sidebar.appendChild(wrapper);
+  
+  // 初始化用户信息显示
+  updateUserInfoInSidebar();
 }
+
+// 更新侧边栏中的用户信息
+function updateUserInfoInSidebar() {
+  const userInfoSection = document.getElementById('user-info-section');
+  if (!userInfoSection) return;
+  
+  // 检查是否登录（从practice-timer.js获取状态）
+  const isLoggedIn = window.isLoggedIn && window.isLoggedIn();
+  const currentUser = window.currentUser;
+  
+  if (isLoggedIn && currentUser) {
+    userInfoSection.innerHTML = `
+      <div class="sidebar-user-info">
+        <div class="user-details">
+          <span class="user-email">${currentUser.email}</span>
+        </div>
+        <button id="sidebar-logout-btn" class="sidebar-logout-btn">登出</button>
+      </div>
+    `;
+    
+    // 绑定登出按钮事件
+    const logoutBtn = document.getElementById('sidebar-logout-btn');
+    if (logoutBtn && window.handleLogout) {
+      logoutBtn.addEventListener('click', window.handleLogout);
+    }
+    
+    userInfoSection.style.display = 'block';
+  } else {
+    userInfoSection.innerHTML = '';
+    userInfoSection.style.display = 'none';
+  }
+}
+
+// 导出函数到全局
+window.updateUserInfoInSidebar = updateUserInfoInSidebar;
 
 async function loadContent(path) {
   article.innerHTML = `
@@ -384,6 +428,8 @@ async function initApp() {
   
   await route();
   checkMobileAndOpenDrawer();
+  
+  console.log('🚀 === APP 初始化完成 ===');
 }
 
 addEventListener('hashchange', () => {

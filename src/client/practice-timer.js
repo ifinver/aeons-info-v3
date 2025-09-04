@@ -21,6 +21,11 @@ function isLoggedIn() {
   return getCookie('authToken') !== undefined;
 }
 
+// 将函数和变量导出到全局，以便其他模块访问
+window.isLoggedIn = isLoggedIn;
+window.currentUser = null;
+window.csrfToken = null;
+
 // 安全的文本清理函数
 function sanitizeInput(input) {
   if (typeof input !== 'string') return '';
@@ -196,14 +201,6 @@ export async function loadPracticeTimerPage(container) {
   // 如果已登录，显示练功计时器界面
   container.innerHTML = `
     <div class="practice-timer-page" style="${marginStyle}">
-      <!-- 用户信息栏 -->
-      <div class="user-info-bar">
-        <div class="user-info">
-          <span class="user-email">${currentUser ? currentUser.email : '用户'}</span>
-        </div>
-        <button id="logout-btn" class="logout-btn">登出</button>
-      </div>
-      
       <!-- 标题和添加按钮 -->
       <div class="header-row mb-6">
         <h1 class="page-title" style="margin-bottom: 0px;">练功计时器</h1>
@@ -608,12 +605,6 @@ function bindEvents() {
   const closeModal = document.getElementById('close-modal');
   const cancelBtn = document.getElementById('cancel-btn');
   const confirmBtn = document.getElementById('confirm-btn');
-  const logoutBtn = document.getElementById('logout-btn');
-  
-  // 登出按钮事件
-  if (logoutBtn) {
-    logoutBtn.addEventListener('click', handleLogout);
-  }
   
   // 打开对话框
   addDataBtn.addEventListener('click', () => {
@@ -1079,44 +1070,6 @@ function addAuthStyles() {
       background: rgba(59, 130, 246, 0.1);
     }
     
-    .user-info-bar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: var(--card-bg, #ffffff);
-      border: 1px solid var(--border, #e2e8f0);
-      border-radius: 12px;
-      padding: 16px 20px;
-      margin-bottom: 24px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    }
-    
-    .user-info {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    
-    .user-email {
-      font-weight: 500;
-      color: var(--text, #374151);
-    }
-    
-    .logout-btn {
-      padding: 8px 16px;
-      background: var(--muted, #6b7280);
-      color: white;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      font-size: 14px;
-      font-weight: 500;
-      transition: background 0.2s ease;
-    }
-    
-    .logout-btn:hover {
-      background: var(--muted-dark, #4b5563);
-    }
     
     @media (max-width: 768px) {
       .auth-page {
@@ -1238,6 +1191,8 @@ async function handleLogin() {
     // 保存用户信息和CSRF token
     currentUser = data.user;
     csrfToken = data.csrfToken;
+    window.currentUser = currentUser;
+    window.csrfToken = csrfToken;
     
     showMessage('登录成功！', 'success');
     
@@ -1269,6 +1224,11 @@ async function handleLogin() {
         if (container) {
           await loadPracticeTimerPage(container);
           console.log('✅ 练功计时器界面已重新加载');
+          
+          // 更新侧边栏的用户信息
+          if (window.updateUserInfoInSidebar) {
+            window.updateUserInfoInSidebar();
+          }
         } else {
           console.error('❌ 找不到容器元素 #article');
           window.location.reload();
@@ -1414,11 +1374,18 @@ async function getCurrentUser() {
     
     // 更新全局状态
     currentUser = data.user;
+    window.currentUser = currentUser;
     if (data.csrfToken) {
       csrfToken = data.csrfToken;
+      window.csrfToken = csrfToken;
       console.log('🔍 getCurrentUser: CSRF token已更新');
     } else {
       console.log('⚠️ getCurrentUser: 响应中没有CSRF token');
+    }
+    
+    // 更新侧边栏用户信息
+    if (window.updateUserInfoInSidebar) {
+      window.updateUserInfoInSidebar();
     }
     
     return data.user;
@@ -1508,8 +1475,13 @@ async function handleLogout() {
   // 清除本地状态
   currentUser = null;
   csrfToken = null;
+  window.currentUser = null;
+  window.csrfToken = null;
   // HttpOnly cookie会被服务器端清除
   
   // 重新加载页面
   location.reload();
 }
+
+// 导出登出函数到全局
+window.handleLogout = handleLogout;

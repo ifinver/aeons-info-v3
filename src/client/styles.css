@@ -611,6 +611,55 @@ body {
   font-weight: 700;
 }
 
+/* 用户信息区域 */
+.user-info-section {
+  margin-top: 0.75rem;
+  margin-bottom: 1.25rem;
+  padding: 0.75rem;
+  background-color: rgba(248, 249, 250, 0.8);
+  border: 1px solid rgba(222, 226, 230, 0.5);
+  border-radius: 0.75rem;
+  display: none;
+}
+
+.sidebar-user-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.user-details {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.user-email {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #374151;
+  word-break: break-all;
+}
+
+.sidebar-logout-btn {
+  padding: 0.5rem 0.75rem;
+  background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+  color: white;
+  border: none;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  font-size: 0.75rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.sidebar-logout-btn:hover {
+  background: linear-gradient(135deg, #4b5563 0%, #374151 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
 .nav-section {
   margin-top: 1.25rem;
 }
