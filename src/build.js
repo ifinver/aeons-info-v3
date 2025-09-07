@@ -83,7 +83,7 @@ async function build() {
   console.log('\n构建 CSS...');
   const { execSync } = await import('child_process');
   try {
-    execSync('npx tailwindcss -i ./src/build-styles.css -o ./dist/styles.css --minify', { 
+    execSync('npx tailwindcss -i ./src/client/styles.css -o ./dist/styles.css --minify', { 
       stdio: 'inherit',
       cwd: srcDir
     });
