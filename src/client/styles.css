@@ -527,7 +527,7 @@
     
     /* 文章内容调整 */
     #article {
-      @apply p-4 text-sm;
+      @apply p-4 text-sm max-w-none mx-0 rounded-none;
     }
     
     #article h1 {
