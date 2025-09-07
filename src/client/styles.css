@@ -488,6 +488,7 @@
     /* 调整内容区域 */
     .content {
       @apply ml-0 pt-14 p-4;
+      padding: 3.5rem 0px 0px;
     }
     
     /* 移动端抽屉样式 - 默认隐藏 */
