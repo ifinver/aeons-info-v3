@@ -32,6 +32,37 @@
   .brand {
     @apply font-bold text-lg mb-3.5;
   }
+
+  /* 用户信息区域 */
+  .user-info-section {
+    @apply mt-3 mb-3 p-3 rounded-xl border border-border/50 hidden;
+    background-color: rgba(248, 249, 250, 0.8);
+  }
+
+  .sidebar-user-info {
+    @apply flex justify-between items-center gap-3;
+  }
+
+  .user-details {
+    @apply flex items-center gap-2;
+  }
+
+  .user-email {
+    @apply text-sm font-medium text-gray-700 flex-1 min-w-0 overflow-hidden text-ellipsis whitespace-nowrap;
+  }
+
+  .sidebar-logout-btn {
+    @apply w-6 h-6 text-gray-500 border-0 bg-transparent cursor-pointer flex-shrink-0;
+    @apply flex items-center justify-center transition-all duration-200 ease-in-out;
+  }
+  
+  .sidebar-logout-btn i {
+    font-size: 14px;
+  }
+
+  .sidebar-logout-btn:hover {
+    @apply text-gray-700 transform scale-110;
+  }
   
   .nav-section {
     @apply mt-5;

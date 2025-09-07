@@ -11,31 +11,26 @@
  * Learn more at https://developers.cloudflare.com/workers/
  */
 
-// 导入bcrypt和其他必要模块
-import * as bcrypt from 'bcryptjs';
-import { generateToken as cryptoGenerateToken, generateUUID } from './crypto-utils';
-
-// 从 auth.ts 导入所有认证相关函数
-import {
-  generateToken,
-  hashPassword,
-  verifyPassword,
-  generateUserId,
-  generateVerificationToken,
-  generateSessionToken,
-  generateExpiryTime,
-  isValidEmail,
+// 从auth.ts导入的类型和函数
+import { 
+  User, 
+  AuthToken, 
+  LoginAttempt,
+  hashPassword, 
+  verifyPassword, 
+  generateUserId, 
+  generateVerificationToken, 
+  generateSessionToken, 
+  isTokenExpired, 
+  generateExpiryTime, 
+  isValidEmail, 
   validatePassword,
   sanitizeInput,
   generateCSRFToken,
   validateCSRFToken,
-  getClientIP,
-  type User,
-  type AuthToken,
-  type LoginAttempt
+  getClientIP
 } from './auth';
 
-// 从 mail.ts 导入邮件发送函数
 import { sendEmail } from './mail';
 
 export default {
@@ -52,8 +47,8 @@ export default {
 		switch (url.pathname) {
 			case '/message':
 				return new Response('Hello, World!');
-					case '/random':
-			return new Response(generateUUID());
+			case '/random':
+				return new Response(crypto.randomUUID());
 			default:
 				return new Response('Not Found', { status: 404 });
 		}
@@ -180,8 +175,6 @@ async function handleAuthApi(request: Request, env: any): Promise<Response> {
     }
     return handleUserLogout(request, env);
   }
-
-
 
   // GET /api/auth/me -> 获取当前用户信息
   if (segments.length === 3 && segments[2] === 'me' && method === 'GET') {
@@ -392,7 +385,7 @@ async function handleUserLogin(request: Request, env: any): Promise<Response> {
     const tokenData: AuthToken = {
       userId: user.id,
       email: user.email,
-      expiresAt: generateExpiryTime(7 * 24), // 7天过期
+      expiresAt: generateExpiryTime(2), // 2小时过期（更安全）
       type: 'session',
       csrfToken: csrfTokenValue,
       ipAddress: clientIP,
@@ -401,7 +394,7 @@ async function handleUserLogin(request: Request, env: any): Promise<Response> {
 
     // 存储会话令牌
     await env.aeons_info_auth_tokens.put(sessionToken, JSON.stringify(tokenData), {
-      expirationTtl: 7 * 24 * 60 * 60 // 7天
+      expirationTtl: 2 * 60 * 60 // 2小时
     });
 
     // 设置安全的响应头
@@ -416,14 +409,9 @@ async function handleUserLogin(request: Request, env: any): Promise<Response> {
     });
 
     // 设置HttpOnly cookie
-    // 在开发环境中不使用Secure标志，生产环境中使用
-    const isProduction = request.url.includes('https://') || request.headers.get('cf-ray'); // Cloudflare特有header
-    const secureFlag = isProduction ? '; Secure' : '';
-    const cookieValue = `authToken=${sessionToken}${secureFlag}; SameSite=Lax; Max-Age=${7 * 24 * 60 * 60}; Path=/`;
-    
-
-    
-    response.headers.set('Set-Cookie', cookieValue);
+    response.headers.set('Set-Cookie', 
+      `authToken=${sessionToken}; HttpOnly; Secure; SameSite=Strict; Max-Age=${2 * 60 * 60}; Path=/`
+    );
 
     return response;
 
@@ -432,7 +420,6 @@ async function handleUserLogin(request: Request, env: any): Promise<Response> {
     return json({ error: '系统暂时不可用，请稍后重试' }, 500);
   }
 }
-
 
 // 验证邮箱
 async function handleEmailVerification(request: Request, env: any): Promise<Response> {
@@ -559,10 +546,8 @@ async function handleUserLogout(request: Request, env: any): Promise<Response> {
 
     // 清除HttpOnly cookie
     const response = json({ message: '登出成功' });
-    const isProduction = request.url.includes('https://') || request.headers.get('cf-ray');
-    const secureFlag = isProduction ? '; Secure' : '';
     response.headers.set('Set-Cookie', 
-      `authToken=${secureFlag}; SameSite=Lax; Max-Age=0; Path=/`
+      'authToken=; HttpOnly; Secure; SameSite=Strict; Max-Age=0; Path=/'
     );
     
     return response;
@@ -582,14 +567,16 @@ async function handleGetCurrentUser(request: Request, env: any): Promise<Respons
       return json({ error: '未授权访问' }, 401);
     }
 
-    // 返回现有的CSRF token，确保客户端和服务端同步
+    // 生成新的CSRF token（可选的额外安全措施）
+    const newCSRFToken = generateCSRFToken();
+    
     return json({
       user: {
         id: user.id,
         email: user.email,
         verified: user.verified
       },
-      csrfToken: tokenData.csrfToken
+      csrfToken: newCSRFToken
     });
 
   } catch (error) {
@@ -705,7 +692,106 @@ async function handleResetPassword(request: Request, env: any): Promise<Response
   }
 }
 
+// 从auth.ts导入的辅助函数
+function generateToken(length: number = 32): string {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  let result = '';
+  for (let i = 0; i < length; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return result;
+}
 
+function generateVerificationToken(): string {
+  return generateToken(16);
+}
+
+function generateSessionToken(): string {
+  return generateToken(32);
+}
+
+function generateUserId(): string {
+  return 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+}
+
+function generateExpiryTime(hours: number = 24): number {
+  return Date.now() + (hours * 60 * 60 * 1000);
+}
+
+function isValidEmail(email: string): boolean {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email);
+}
+
+function hashPassword(password: string): string {
+  // 简单的哈希实现，生产环境应使用更安全的算法
+  let hash = 0;
+  for (let i = 0; i < password.length; i++) {
+    const char = password.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash; // 转换为32位整数
+  }
+  return hash.toString(16);
+}
+
+function verifyPassword(password: string, hash: string): boolean {
+  return hashPassword(password) === hash;
+}
+
+function validatePassword(password: string): { valid: boolean; message: string } {
+  if (password.length < 6) {
+    return { valid: false, message: '密码长度至少6位' };
+  }
+  return { valid: true, message: '密码有效' };
+}
+
+// 从mail.ts导入的邮件函数
+async function sendEmail(emailData: any, env: any): Promise<boolean> {
+  try {
+    const fromEmail = env.MAIL_FROM_EMAIL || 'noreply@aeons.info';
+    const response = await fetch('https://api.mailchannels.net/tx/v1/send', {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        ...(env.MAILCHANNELS_API_KEY ? { 'Authorization': `Bearer ${env.MAILCHANNELS_API_KEY}` } : {}),
+        ...(env.MAILCHANNELS_API_KEY ? { 'X-Api-Key': env.MAILCHANNELS_API_KEY } : {}),
+        'X-Auth-User': fromEmail,
+      },
+      body: JSON.stringify({
+        personalizations: [
+          {
+            to: [{ email: emailData.to, name: emailData.to.split('@')[0] }],
+          },
+        ],
+        from: {
+          email: fromEmail,
+          name: env.MAIL_FROM_NAME || 'aeons.info',
+        },
+        subject: emailData.subject,
+        content: [
+          {
+            type: 'text/html',
+            value: emailData.html,
+          },
+          ...(emailData.text ? [{
+            type: 'text/plain',
+            value: emailData.text,
+          }] : []),
+        ],
+      }),
+    });
+
+    if (!response.ok) {
+      console.error('邮件发送失败:', response.status, response.statusText);
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.error('邮件发送错误:', error);
+    return false;
+  }
+}
 
 function generateVerificationEmail(email: string, token: string, baseUrl: string): any {
   const verificationUrl = `${baseUrl}/#/auth/verify/${token}`;
@@ -854,9 +940,7 @@ ${resetUrl}
 function json(data: unknown, status = 200): Response {
   return new Response(JSON.stringify(data), {
     status,
-    headers: { 
-      'content-type': 'application/json; charset=utf-8',
-    },
+    headers: { 'content-type': 'application/json; charset=utf-8' },
   });
 }
 
@@ -1130,14 +1214,4 @@ async function refreshSession(request: Request, env: any): Promise<{success: boo
     return { success: false };
   }
 }
-
-// 类型定义 - User, AuthToken, LoginAttempt 已从 auth.ts 导入
-interface EmailData {
-  to: string;
-  subject: string;
-  html: string;
-  text?: string;
-}
-
-// 所有工具函数已经从 auth.ts 和 mail.ts 导入
 

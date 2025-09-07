@@ -1,6 +1,62 @@
 // 练功计时器页面
 // Chart.js 将通过script标签加载，使用全局Chart对象
 
+// 用户认证状态
+let currentUser = null;
+let csrfToken = null; // CSRF token从登录响应获取
+
+// 安全的cookie操作函数
+function getCookie(name) {
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop().split(';').shift();
+}
+
+function deleteCookie(name) {
+  document.cookie = name + '=; expires=Thu, 01 Jan 1970 00:00:01 GMT; path=/; secure; samesite=strict';
+}
+
+// 检查是否已登录（通过检查cookie）
+function isLoggedIn() {
+  return getCookie('authToken') !== undefined;
+}
+
+// 将函数和变量导出到全局，以便其他模块访问
+window.isLoggedIn = isLoggedIn;
+window.currentUser = null;
+window.csrfToken = null;
+
+// 安全的文本清理函数
+function sanitizeInput(input) {
+  if (typeof input !== 'string') return '';
+  
+  // 移除潜在的XSS字符
+  return input
+    .replace(/[<>\"'&]/g, '') // 移除HTML特殊字符
+    .replace(/javascript:/gi, '') // 移除javascript协议
+    .replace(/on\w+=/gi, '') // 移除事件处理器
+    .trim();
+}
+
+// 验证邮箱格式
+function isValidEmail(email) {
+  // 更严格的邮箱验证正则
+  const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
+  
+  // 长度检查
+  if (email.length > 254) return false;
+  if (email.length < 5) return false;
+  
+  // 基本格式检查
+  if (!emailRegex.test(email)) return false;
+  
+  // 防止危险字符
+  const dangerousChars = /<|>|"|'|&|;|\||`/;
+  if (dangerousChars.test(email)) return false;
+  
+  return true;
+}
+
 // 等待Chart.js加载完成
 function waitForChart() {
   return new Promise((resolve) => {
@@ -31,6 +87,7 @@ export function cleanupPracticeTimerPage(container) {
 }
 
 export async function loadPracticeTimerPage(container) {
+  
   // 等待Chart.js加载完成
   await waitForChart();
   
@@ -43,6 +100,105 @@ export async function loadPracticeTimerPage(container) {
     ? "margin: -15px -15px 0 -15px; padding: 15px;" 
     : "margin: -20px -20px 0 -20px; padding: 20px;";
   
+  // 检查用户是否已登录
+  if (!isLoggedIn()) {
+    // 显示登录/注册界面
+    container.innerHTML = `
+      <div class="auth-page" style="${marginStyle}">
+        <div class="auth-container">
+          <div class="auth-header">
+            <h1>练功计时器</h1>
+            <p>请登录或注册以使用练功计时器功能</p>
+          </div>
+          
+          <!-- 登录表单 -->
+          <div class="auth-form" id="login-form">
+            <h2>登录</h2>
+            <div class="form-group">
+              <label for="login-email">邮箱</label>
+              <input type="email" id="login-email" class="form-input" placeholder="请输入邮箱" />
+            </div>
+            <div class="form-group">
+              <label for="login-password">密码</label>
+              <input type="password" id="login-password" class="form-input" placeholder="请输入密码" />
+            </div>
+            <button id="login-btn" class="auth-btn primary">登录</button>
+            <div class="auth-links">
+              <button id="show-register-btn" class="link-btn">没有账户？去注册</button>
+              <button id="forgot-password-btn" class="link-btn">忘记密码？</button>
+            </div>
+          </div>
+          
+          <!-- 注册表单 -->
+          <div class="auth-form hidden" id="register-form">
+            <h2>注册</h2>
+            <div class="form-group">
+              <label for="register-email">邮箱</label>
+              <input type="email" id="register-email" class="form-input" placeholder="请输入邮箱" />
+            </div>
+            <button id="register-btn" class="auth-btn primary">发送注册邮件</button>
+            <div class="auth-links">
+              <button id="show-login-btn" class="link-btn">已有账户？去登录</button>
+            </div>
+          </div>
+          
+          <!-- 忘记密码表单 -->
+          <div class="auth-form hidden" id="forgot-password-form">
+            <h2>忘记密码</h2>
+            <div class="form-group">
+              <label for="forgot-email">邮箱</label>
+              <input type="email" id="forgot-email" class="form-input" placeholder="请输入邮箱" />
+            </div>
+            <button id="send-reset-btn" class="auth-btn primary">发送重置邮件</button>
+            <div class="auth-links">
+              <button id="back-to-login-btn" class="link-btn">返回登录</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+    
+    // 添加认证页面样式
+    addAuthStyles();
+    
+    // 初始化认证功能
+    initAuth();
+    return;
+  }
+  
+  console.log('🔍 练功计时器页面加载 - 认证状态检查');
+  console.log('  - isLoggedIn():', isLoggedIn());
+  console.log('  - currentUser:', currentUser);
+  console.log('  - csrfToken:', csrfToken ? '存在' : '不存在');
+  
+  // 如果已登录但没有用户信息或CSRF token，先获取用户信息
+  if (!currentUser || !csrfToken) {
+    console.log('🔄 已登录但缺少用户信息或CSRF token，尝试获取...');
+    const user = await getCurrentUser();
+    if (!user) {
+      console.log('⚠️ 获取用户信息失败，可能token已过期');
+      console.log('🧹 清除无效cookie并重新加载');
+      // 清除可能无效的cookie
+      deleteCookie('authToken');
+      // 重新加载页面显示登录界面
+      location.reload();
+      return;
+    }
+  }
+  
+  // 再次检查CSRF token
+  if (!csrfToken) {
+    console.log('⚠️ 无法获取CSRF token，显示登录界面');
+    // 清除可能无效的cookie
+    deleteCookie('authToken');
+    // 重新加载页面显示登录界面
+    location.reload();
+    return;
+  }
+  
+  console.log('✅ 用户认证成功，显示练功计时器界面');
+  
+  // 如果已登录，显示练功计时器界面
   container.innerHTML = `
     <div class="practice-timer-page" style="${marginStyle}">
       <!-- 标题和添加按钮 -->
@@ -509,8 +665,10 @@ async function addPracticeRecord() {
   try {
     const response = await fetch('/api/kv/practice-time', {
       method: 'POST',
+      credentials: 'include',
       headers: {
         'Content-Type': 'application/json',
+        ...(csrfToken ? { 'X-CSRF-Token': csrfToken } : {})
       },
       body: JSON.stringify({
         date,
@@ -541,7 +699,13 @@ async function addPracticeRecord() {
 
 async function loadAndRenderData() {
   try {
-    const response = await fetch('/api/kv/practice-time');
+    const response = await fetch('/api/kv/practice-time', {
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(csrfToken ? { 'X-CSRF-Token': csrfToken } : {})
+      }
+    });
     if (!response.ok) {
       throw new Error('获取数据失败');
     }
@@ -596,10 +760,10 @@ function renderChart(records) {
   
   const data = records.map(record => (record.totalMinutes / 60).toFixed(1)); // 转换为小时
   
-  // 计算平均值
-  const averageHours = records.length > 0 
-    ? records.reduce((sum, record) => sum + record.totalMinutes, 0) / records.length / 60
-    : 0;
+  // 计算平均值（使用与汇总一致的方法）
+  const totalMinutes = records.reduce((sum, record) => sum + record.totalMinutes, 0);
+  const averageMinutes = records.length > 0 ? Math.round(totalMinutes / records.length) : 0;
+  const averageHours = averageMinutes / 60;
   
   const averageLine = new Array(records.length).fill(averageHours.toFixed(1));
   
@@ -663,16 +827,16 @@ function renderChart(records) {
           callbacks: {
             label: function(context) {
               if (context.datasetIndex === 0) {
-                const hours = parseFloat(context.parsed.y);
-                const totalMinutes = Math.round(hours * 60);
-                const h = Math.floor(totalMinutes / 60);
-                const m = totalMinutes % 60;
+                // 对于单个数据点，直接从records中获取原始数据
+                const recordIndex = context.dataIndex;
+                const originalMinutes = records[recordIndex].totalMinutes;
+                const h = Math.floor(originalMinutes / 60);
+                const m = originalMinutes % 60;
                 return `练功时长: ${h}小时${m}分钟`;
               } else {
-                const hours = parseFloat(context.parsed.y);
-                const totalMinutes = Math.round(hours * 60);
-                const h = Math.floor(totalMinutes / 60);
-                const m = totalMinutes % 60;
+                // 对于平均值，使用与汇总一致的计算方法
+                const h = Math.floor(averageMinutes / 60);
+                const m = averageMinutes % 60;
                 return `平均时长: ${h}小时${m}分钟`;
               }
             }
@@ -774,3 +938,550 @@ function showMessage(text, type = 'info') {
     }, 300);
   }, 3000);
 }
+
+// 添加认证页面样式
+function addAuthStyles() {
+  const existingStyle = document.getElementById('auth-styles');
+  if (existingStyle) return;
+
+  const style = document.createElement('style');
+  style.id = 'auth-styles';
+  style.textContent = `
+    .auth-page {
+      max-width: 500px;
+      margin: 0 auto;
+      padding: 40px 20px;
+    }
+    
+    .auth-container {
+      background: var(--card-bg, #ffffff);
+      border: 1px solid var(--border, #e2e8f0);
+      border-radius: 16px;
+      padding: 40px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    }
+    
+    .auth-header {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+    
+    .auth-header h1 {
+      font-size: 2rem;
+      font-weight: bold;
+      color: var(--text, #1f2937);
+      margin: 0 0 8px 0;
+    }
+    
+    .auth-header p {
+      color: var(--muted, #6b7280);
+      margin: 0;
+    }
+    
+    .auth-form {
+      transition: all 0.3s ease;
+    }
+    
+    .auth-form.hidden {
+      display: none;
+    }
+    
+    .auth-form h2 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: var(--text, #1f2937);
+      margin: 0 0 24px 0;
+      text-align: center;
+    }
+    
+    .form-group {
+      margin-bottom: 20px;
+    }
+    
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 500;
+      color: var(--text, #374151);
+    }
+    
+    .form-input {
+      width: 100%;
+      padding: 12px 16px;
+      border: 1px solid var(--border, #e2e8f0);
+      border-radius: 8px;
+      font-size: 14px;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+      box-sizing: border-box;
+    }
+    
+    .form-input:focus {
+      outline: none;
+      border-color: var(--primary, #3b82f6);
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+    
+    .auth-btn {
+      width: 100%;
+      padding: 12px 24px;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      margin-bottom: 20px;
+    }
+    
+    .auth-btn.primary {
+      background: var(--primary, #3b82f6);
+      color: white;
+    }
+    
+    .auth-btn.primary:hover {
+      background: var(--primary-dark, #2563eb);
+      transform: translateY(-1px);
+    }
+    
+    .auth-btn:disabled {
+      background: var(--muted, #9ca3af);
+      cursor: not-allowed;
+      transform: none;
+    }
+    
+    .auth-links {
+      text-align: center;
+    }
+    
+    .link-btn {
+      background: none;
+      border: none;
+      color: var(--primary, #3b82f6);
+      cursor: pointer;
+      font-size: 14px;
+      text-decoration: underline;
+      margin: 0 8px;
+      padding: 4px 8px;
+      border-radius: 4px;
+      transition: background 0.2s ease;
+    }
+    
+    .link-btn:hover {
+      background: rgba(59, 130, 246, 0.1);
+    }
+    
+    
+    @media (max-width: 768px) {
+      .auth-page {
+        padding: 20px 15px;
+      }
+      
+      .auth-container {
+        padding: 30px 20px;
+      }
+      
+      .auth-header h1 {
+        font-size: 1.75rem;
+      }
+    }
+  `;
+  
+  document.head.appendChild(style);
+}
+
+// 初始化认证功能
+function initAuth() {
+  // 绑定事件
+  bindAuthEvents();
+  
+  // 如果已登录，尝试获取用户信息
+  if (isLoggedIn()) {
+    getCurrentUser();
+  }
+}
+
+// 绑定认证相关事件
+function bindAuthEvents() {
+  // 登录表单事件
+  const loginBtn = document.getElementById('login-btn');
+  const loginEmail = document.getElementById('login-email');
+  const loginPassword = document.getElementById('login-password');
+  
+  loginBtn.addEventListener('click', () => handleLogin());
+  loginPassword.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') handleLogin();
+  });
+  
+  // 注册表单事件
+  const registerBtn = document.getElementById('register-btn');
+  const registerEmail = document.getElementById('register-email');
+  
+  registerBtn.addEventListener('click', () => handleRegister());
+  registerEmail.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') handleRegister();
+  });
+  
+  // 忘记密码表单事件
+  const sendResetBtn = document.getElementById('send-reset-btn');
+  const forgotEmail = document.getElementById('forgot-email');
+  
+  sendResetBtn.addEventListener('click', () => handleForgotPassword());
+  forgotEmail.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') handleForgotPassword();
+  });
+  
+  // 切换表单事件
+  document.getElementById('show-register-btn').addEventListener('click', () => showForm('register'));
+  document.getElementById('show-login-btn').addEventListener('click', () => showForm('login'));
+  document.getElementById('forgot-password-btn').addEventListener('click', () => showForm('forgot-password'));
+  document.getElementById('back-to-login-btn').addEventListener('click', () => showForm('login'));
+}
+
+// 显示指定表单
+function showForm(formType) {
+  const forms = ['login', 'register', 'forgot-password'];
+  forms.forEach(form => {
+    const formElement = document.getElementById(`${form}-form`);
+    if (form === formType) {
+      formElement.classList.remove('hidden');
+    } else {
+      formElement.classList.add('hidden');
+    }
+  });
+}
+
+// 处理登录
+async function handleLogin() {
+  let email = document.getElementById('login-email').value.trim();
+  const password = document.getElementById('login-password').value;
+  
+  // 清理邮箱输入（防止XSS）
+  email = sanitizeInput(email);
+  
+  if (!email || !password) {
+    showMessage('请填写完整的登录信息', 'error');
+    return;
+  }
+  
+  if (!isValidEmail(email)) {
+    showMessage('请输入有效的邮箱地址', 'error');
+    return;
+  }
+  
+  const loginBtn = document.getElementById('login-btn');
+  loginBtn.disabled = true;
+  loginBtn.textContent = '登录中...';
+  
+  try {
+    const response = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+      body: JSON.stringify({ email, password })
+    });
+    
+    const data = await response.json();
+    
+    if (!response.ok) {
+      throw new Error(data.error || '登录失败');
+    }
+    
+    // 保存用户信息和CSRF token
+    currentUser = data.user;
+    csrfToken = data.csrfToken;
+    window.currentUser = currentUser;
+    window.csrfToken = csrfToken;
+    
+    showMessage('登录成功！', 'success');
+    
+    // 清空表单
+    document.getElementById('login-email').value = '';
+    document.getElementById('login-password').value = '';
+    
+    // 延迟一下让用户看到成功消息，然后重新加载练功计时器界面
+    setTimeout(async () => {
+      try {
+        // 确保用户信息和CSRF token已经设置
+        console.log('🔄 登录成功，重新加载练功计时器界面');
+        console.log('👤 当前用户:', currentUser);
+        console.log('🔐 CSRF Token:', csrfToken ? '存在' : '缺失');
+        
+        // 验证认证状态
+        if (!currentUser || !csrfToken) {
+          console.log('⚠️ 认证信息不完整，尝试获取用户信息');
+          const user = await getCurrentUser();
+          if (!user || !csrfToken) {
+            console.log('❌ 无法获取完整的认证信息，刷新页面');
+            window.location.reload();
+            return;
+          }
+        }
+        
+        // 重新加载练功计时器页面内容
+        const container = document.getElementById('article');
+        if (container) {
+          await loadPracticeTimerPage(container);
+          console.log('✅ 练功计时器界面已重新加载');
+          
+          // 更新侧边栏的用户信息
+          if (window.updateUserInfoInSidebar) {
+            window.updateUserInfoInSidebar();
+          }
+        } else {
+          console.error('❌ 找不到容器元素 #article');
+          window.location.reload();
+        }
+      } catch (error) {
+        console.error('❌ 重新加载练功计时器失败:', error);
+        // 如果出错，使用页面刷新作为备用方案
+        window.location.reload();
+      }
+    }, 1500);
+    
+  } catch (error) {
+    showMessage('登录失败: ' + error.message, 'error');
+  } finally {
+    loginBtn.disabled = false;
+    loginBtn.textContent = '登录';
+  }
+}
+
+// 处理注册
+async function handleRegister() {
+  let email = document.getElementById('register-email').value.trim();
+  
+  // 清理邮箱输入（防止XSS）
+  email = sanitizeInput(email);
+  
+  if (!email) {
+    showMessage('请输入邮箱地址', 'error');
+    return;
+  }
+  
+  if (!isValidEmail(email)) {
+    showMessage('请输入有效的邮箱地址', 'error');
+    return;
+  }
+  
+  const registerBtn = document.getElementById('register-btn');
+  registerBtn.disabled = true;
+  registerBtn.textContent = '发送中...';
+  
+  try {
+    const response = await fetch('/api/auth/register', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ email })
+    });
+    
+    const data = await response.json();
+    
+    if (!response.ok) {
+      throw new Error(data.error || '注册失败');
+    }
+    
+    showMessage('注册邮件已发送，请检查您的邮箱并点击验证链接', 'success');
+    
+    // 清空邮箱输入
+    document.getElementById('register-email').value = '';
+    
+  } catch (error) {
+    console.error('注册失败:', error);
+    showMessage('注册失败: ' + error.message, 'error');
+  } finally {
+    registerBtn.disabled = false;
+    registerBtn.textContent = '发送注册邮件';
+  }
+}
+
+// 处理忘记密码
+async function handleForgotPassword() {
+  let email = document.getElementById('forgot-email').value.trim();
+  
+  // 清理邮箱输入（防止XSS）
+  email = sanitizeInput(email);
+  
+  if (!email) {
+    showMessage('请输入邮箱地址', 'error');
+    return;
+  }
+  
+  if (!isValidEmail(email)) {
+    showMessage('请输入有效的邮箱地址', 'error');
+    return;
+  }
+  
+  const sendResetBtn = document.getElementById('send-reset-btn');
+  sendResetBtn.disabled = true;
+  sendResetBtn.textContent = '发送中...';
+  
+  try {
+    const response = await fetch('/api/auth/forgot-password', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ email })
+    });
+    
+    const data = await response.json();
+    
+    if (!response.ok) {
+      throw new Error(data.error || '发送失败');
+    }
+    
+    showMessage('重置邮件已发送，请检查您的邮箱', 'success');
+    
+    // 清空邮箱输入
+    document.getElementById('forgot-email').value = '';
+    
+  } catch (error) {
+    console.error('发送失败:', error);
+    showMessage('发送失败: ' + error.message, 'error');
+  } finally {
+    sendResetBtn.disabled = false;
+    sendResetBtn.textContent = '发送重置邮件';
+  }
+}
+
+// 获取当前用户信息
+async function getCurrentUser() {
+  if (!isLoggedIn()) {
+    console.log('🔍 getCurrentUser: 用户未登录');
+    return null;
+  }
+  
+  try {
+    const response = await fetch('/api/auth/me', {
+      method: 'GET',
+      credentials: 'include'
+    });
+    
+    if (!response.ok) {
+      console.log('🔍 getCurrentUser: 响应失败', response.status);
+      return null;
+    }
+    
+    const data = await response.json();
+    console.log('🔍 getCurrentUser: 获取到数据', {
+      hasUser: !!data.user,
+      hasCSRFToken: !!data.csrfToken
+    });
+    
+    // 更新全局状态
+    currentUser = data.user;
+    window.currentUser = currentUser;
+    if (data.csrfToken) {
+      csrfToken = data.csrfToken;
+      window.csrfToken = csrfToken;
+      console.log('🔍 getCurrentUser: CSRF token已更新');
+    } else {
+      console.log('⚠️ getCurrentUser: 响应中没有CSRF token');
+    }
+    
+    // 更新侧边栏用户信息
+    if (window.updateUserInfoInSidebar) {
+      window.updateUserInfoInSidebar();
+    }
+    
+    return data.user;
+  } catch (error) {
+    console.error('🔍 getCurrentUser: 请求失败', error);
+    return null;
+  }
+}
+
+// 全局调试函数 - 检查认证状态
+function debugAuthStatus() {
+  console.log('🔍 === 认证状态调试信息 ===');
+  console.log('📅 时间:', new Date().toLocaleString());
+  console.log('🍪 所有cookies:', document.cookie);
+  
+  // 详细的Cookie解析调试
+  console.log('🔧 === Cookie解析详情 ===');
+  const cookieString = document.cookie;
+  console.log('📝 原始cookie字符串:', JSON.stringify(cookieString));
+  console.log('📝 cookie字符串长度:', cookieString.length);
+  
+  if (cookieString.includes('authToken')) {
+    console.log('✅ cookie字符串包含 authToken');
+    const authTokenMatch = cookieString.match(/authToken=([^;]*)/);
+    console.log('🎯 正则匹配结果:', authTokenMatch);
+    if (authTokenMatch) {
+      console.log('🎯 匹配到的token值:', authTokenMatch[1]);
+      console.log('🎯 token值长度:', authTokenMatch[1].length);
+    }
+  } else {
+    console.log('❌ cookie字符串不包含 authToken');
+  }
+  
+  const authToken = getCookie('authToken');
+  console.log('🔑 getCookie() 返回值:', authToken);
+  console.log('🔑 getCookie() 返回值类型:', typeof authToken);
+  console.log('🔑 authToken === undefined:', authToken === undefined);
+  console.log('🔑 authToken || "无":', authToken || '无');
+  console.log('📏 authToken 长度:', authToken ? authToken.length : 0);
+  console.log('👤 currentUser 变量:', currentUser || '无');
+  console.log('🔐 csrfToken 变量:', csrfToken || '无');
+  console.log('✅ isLoggedIn() 返回:', isLoggedIn());
+  
+  // 尝试获取当前用户信息
+  getCurrentUser().then(user => {
+    console.log('📡 getCurrentUser() 结果:', user || '获取失败');
+  }).catch(error => {
+    console.error('❌ getCurrentUser() 错误:', error);
+  });
+  
+  console.log('🔍 === 调试信息结束 ===');
+}
+
+// 将调试函数挂载到全局，方便在控制台调用
+window.debugAuthStatus = debugAuthStatus;
+
+// 手动触发页面重载的函数（调试用）
+window.manualReload = function() {
+  console.log('🔄 手动触发页面重载...');
+  location.reload();
+};
+
+// 显示所有可用的调试函数
+window.showDebugFunctions = function() {
+  console.log('🛠️ === 可用的调试函数 ===');
+  console.log('debugAuthStatus() - 检查认证状态');
+  console.log('manualReload() - 手动重载页面');
+  console.log('showDebugFunctions() - 显示此帮助');
+  console.log('🛠️ === 调试函数列表结束 ===');
+};
+
+// 处理登出
+async function handleLogout() {
+  try {
+    await fetch('/api/auth/logout', {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(csrfToken ? { 'X-CSRF-Token': csrfToken } : {})
+      }
+    });
+  } catch (error) {
+    console.error('登出失败:', error);
+  }
+  
+  // 清除本地状态
+  currentUser = null;
+  csrfToken = null;
+  window.currentUser = null;
+  window.csrfToken = null;
+  // HttpOnly cookie会被服务器端清除
+  
+  // 重新加载页面
+  location.reload();
+}
+
+// 导出登出函数到全局
+window.handleLogout = handleLogout;

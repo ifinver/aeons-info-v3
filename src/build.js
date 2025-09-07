@@ -75,9 +75,9 @@ async function build() {
   console.log('构建内容...');
   await buildContent(distContentDir);
   
-  // 5. 复制客户端文件到 dist（排除 content 目录中的源 MD 文件）
+  // 5. 复制客户端文件到 dist（排除 content 目录和 styles.css）
   console.log('\n复制客户端文件...');
-  copyDirectory(clientDir, distDir, ['content']);
+  copyDirectory(clientDir, distDir, ['content', 'styles.css']);
   
   // 6. 构建 CSS 到 dist
   console.log('\n构建 CSS...');
