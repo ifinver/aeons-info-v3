@@ -55,7 +55,7 @@ function addHeaderIds(html) {
 
 // 文件清单配置
 const manifest = [
-  { title: '张三丰丹道——《张三丰内丹36诀》全文版', path: 'posts/zhang-sanfeng-36-instructions-on-internal-alchemy.md', group: '博文', subgroup: null },
+  { title: '张三丰丹道——《张三丰内丹36诀》', path: 'posts/zhang-sanfeng-36-instructions-on-internal-alchemy.md', group: '博文', subgroup: null },
   { title: '30天学会灵魂出体', path: 'posts/30-days-master-obe.zh.md', group: '博文', subgroup: null },
   { title: 'Out-of-body adventures (30 days)', path: 'posts/30-days-master-obe.en.md', group: '博文', subgroup: null },
   { title: 'Treatise on Astral Projection (EN)', path: 'posts/treatise-on-astral-projection.en.md', group: '博文', subgroup: null, hidden: true },
