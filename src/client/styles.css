@@ -199,7 +199,8 @@
   }
   
   #article em, #article i {
-    @apply italic text-gray-800;
+    @apply italic;
+    color: #999999;
   }
   
   /* 列表样式 */
