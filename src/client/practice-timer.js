@@ -57,22 +57,259 @@ function isValidEmail(email) {
   return true;
 }
 
-// 等待Chart.js加载完成
-function waitForChart() {
-  return new Promise((resolve) => {
-    if (typeof Chart !== 'undefined') {
-      resolve();
-    } else {
-      const checkChart = () => {
-        if (typeof Chart !== 'undefined') {
-          resolve();
-        } else {
-          setTimeout(checkChart, 100);
-        }
-      };
-      checkChart();
+// Chart.js 管理器 - 优化加载和复用
+class ChartManager {
+  constructor() {
+    this.isChartReady = false;
+    this.chartLoadPromise = null;
+    this.practiceChart = null;
+    this.chartContainer = null;
+  }
+
+  // 预加载 Chart.js
+  preloadChart() {
+    if (!this.chartLoadPromise) {
+      this.chartLoadPromise = this.waitForChart();
     }
-  });
+    return this.chartLoadPromise;
+  }
+
+  async waitForChart() {
+    if (this.isChartReady) {
+      return Promise.resolve();
+    }
+
+    return new Promise((resolve) => {
+      if (typeof Chart !== 'undefined') {
+        this.isChartReady = true;
+        console.log('📊 Chart.js 已就绪');
+        resolve();
+      } else {
+        const checkChart = () => {
+          if (typeof Chart !== 'undefined') {
+            this.isChartReady = true;
+            console.log('📊 Chart.js 加载完成');
+            resolve();
+          } else {
+            setTimeout(checkChart, 50); // 更短的检查间隔
+          }
+        };
+        checkChart();
+      }
+    });
+  }
+
+  // 优化的图表创建
+  async createChart(container, records) {
+    await this.preloadChart();
+    
+    const canvas = container.querySelector('#practice-chart');
+    if (!canvas) {
+      throw new Error('找不到图表画布元素');
+    }
+
+    const ctx = canvas.getContext('2d');
+    this.chartContainer = container;
+    
+    // 销毁现有图表
+    if (this.practiceChart) {
+      this.practiceChart.destroy();
+      this.practiceChart = null;
+    }
+
+    // 准备图表数据
+    const chartData = this.prepareChartData(records);
+
+    // 使用 requestAnimationFrame 确保DOM更新完成
+    return new Promise((resolve) => {
+      requestAnimationFrame(() => {
+        this.practiceChart = new Chart(ctx, {
+          type: 'line',
+          data: chartData,
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            animation: {
+              duration: 200 // 减少动画时间
+            },
+            plugins: {
+              legend: {
+                position: 'top',
+                labels: {
+                  usePointStyle: true,
+                  padding: 20,
+                  font: {
+                    size: 12,
+                    weight: '500'
+                  }
+                }
+              },
+              tooltip: {
+                mode: 'index',
+                intersect: false,
+                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                titleColor: '#ffffff',
+                bodyColor: '#ffffff',
+                borderColor: '#3b82f6',
+                borderWidth: 1,
+                cornerRadius: 8,
+                displayColors: false,
+                callbacks: {
+                  label: function(context) {
+                    if (context.datasetIndex === 0) {
+                      // 对于单个数据点，从records中获取原始数据
+                      const recordIndex = context.dataIndex;
+                      const originalMinutes = records[recordIndex].totalMinutes;
+                      const h = Math.floor(originalMinutes / 60);
+                      const m = originalMinutes % 60;
+                      return `练功时长: ${h}小时${m}分钟`;
+                    } else {
+                      // 对于平均值
+                      const totalMinutes = records.reduce((sum, record) => sum + record.totalMinutes, 0);
+                      const averageMinutes = records.length > 0 ? Math.round(totalMinutes / records.length) : 0;
+                      const h = Math.floor(averageMinutes / 60);
+                      const m = averageMinutes % 60;
+                      return `平均时长: ${h}小时${m}分钟`;
+                    }
+                  }
+                }
+              }
+            },
+            scales: {
+              x: {
+                display: true,
+                title: {
+                  display: true,
+                  text: '日期',
+                  font: {
+                    size: 14,
+                    weight: '600'
+                  }
+                },
+                grid: {
+                  color: 'rgba(0, 0, 0, 0.1)',
+                }
+              },
+              y: {
+                display: true,
+                title: {
+                  display: true,
+                  text: '时长 (小时)',
+                  font: {
+                    size: 14,
+                    weight: '600'
+                  }
+                },
+                beginAtZero: true,
+                grid: {
+                  color: 'rgba(0, 0, 0, 0.1)',
+                },
+                ticks: {
+                  callback: function(value) {
+                    return value + 'h';
+                  }
+                }
+              }
+            },
+            interaction: {
+              mode: 'nearest',
+              axis: 'x',
+              intersect: false
+            }
+          }
+        });
+        
+        console.log('📊 图表创建完成');
+        resolve(this.practiceChart);
+      });
+    });
+  }
+
+  // 准备图表数据
+  prepareChartData(records) {
+    if (!records || records.length === 0) {
+      return {
+        labels: [],
+        datasets: []
+      };
+    }
+
+    const labels = records.map(record => {
+      const date = new Date(record.date);
+      return date.toLocaleDateString('zh-CN', { month: 'short', day: 'numeric' });
+    });
+    
+    const data = records.map(record => (record.totalMinutes / 60).toFixed(1)); // 转换为小时
+    
+    // 计算平均值
+    const totalMinutes = records.reduce((sum, record) => sum + record.totalMinutes, 0);
+    const averageMinutes = records.length > 0 ? Math.round(totalMinutes / records.length) : 0;
+    const averageHours = averageMinutes / 60;
+    const averageLine = new Array(records.length).fill(averageHours.toFixed(1));
+
+    return {
+      labels: labels,
+      datasets: [
+        {
+          label: '练功时长 (小时)',
+          data: data,
+          borderColor: '#3b82f6',
+          backgroundColor: 'rgba(59, 130, 246, 0.1)',
+          borderWidth: 3,
+          fill: true,
+          tension: 0.4,
+          pointBackgroundColor: '#3b82f6',
+          pointBorderColor: '#ffffff',
+          pointBorderWidth: 2,
+          pointRadius: 6,
+          pointHoverRadius: 8,
+        },
+        {
+          label: '平均时长',
+          data: averageLine,
+          borderColor: '#ef4444',
+          backgroundColor: 'transparent',
+          borderWidth: 2,
+          borderDash: [5, 5],
+          fill: false,
+          pointRadius: 0,
+          pointHoverRadius: 0,
+        }
+      ]
+    };
+  }
+
+  // 更新图表数据（避免重新创建）
+  async updateChartData(records) {
+    if (this.practiceChart && records) {
+      const newData = this.prepareChartData(records);
+      this.practiceChart.data = newData;
+      this.practiceChart.update('none'); // 无动画更新
+      console.log('📊 图表数据已更新');
+    }
+  }
+
+  // 销毁图表
+  destroy() {
+    if (this.practiceChart) {
+      this.practiceChart.destroy();
+      this.practiceChart = null;
+      console.log('📊 图表已销毁');
+    }
+  }
+
+  // 检查是否已初始化
+  isInitialized() {
+    return !!this.practiceChart;
+  }
+}
+
+// 创建全局图表管理器实例
+const chartManager = new ChartManager();
+
+// 等待Chart.js加载完成（保持向后兼容）
+function waitForChart() {
+  return chartManager.preloadChart();
 }
 
 // 清理练功计时器页面的样式影响
@@ -80,16 +317,12 @@ export function cleanupPracticeTimerPage(container) {
   // 移除可能添加的类名
   container.classList.remove('practice-timer-container');
   // 清理图表实例
-  if (practiceChart) {
-    practiceChart.destroy();
-    practiceChart = null;
-  }
+  chartManager.destroy();
 }
 
 export async function loadPracticeTimerPage(container) {
-  
-  // 等待Chart.js加载完成
-  await waitForChart();
+  console.log('🚀 开始加载练功计时器页面...');
+  performanceMonitor.start('页面总加载时间');
   
   // 清理之前可能存在的类名
   container.classList.remove('practice-timer-container');
@@ -100,105 +333,194 @@ export async function loadPracticeTimerPage(container) {
     ? "margin: -15px -15px 0 -15px; padding: 15px;" 
     : "margin: -20px -20px 0 -20px; padding: 20px;";
   
-  // 检查用户是否已登录
+  // 立即显示加载状态
+  container.innerHTML = `
+    <div class="practice-timer-loading" style="${marginStyle}">
+      <div class="loading-container">
+        <div class="loading-spinner"></div>
+        <p class="loading-text">正在加载练功计时器...</p>
+        <div class="loading-steps">
+          <div class="step" id="step-auth">🔐 验证用户身份</div>
+          <div class="step" id="step-chart">📊 准备图表组件</div>
+          <div class="step" id="step-data">📊 加载练功数据</div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  // 添加加载状态样式
+  addLoadingStyles();
+
+  try {
+    // 第一步：并行执行认证检查和Chart.js预加载
+    console.log('⚡ 并行执行认证检查和Chart.js预加载...');
+    updateLoadingStep('step-auth', 'active');
+    updateLoadingStep('step-chart', 'active');
+
+    performanceMonitor.start('认证检查');
+    performanceMonitor.start('Chart.js加载');
+
+    const [authResult, chartReady] = await Promise.allSettled([
+      checkUserAuthentication(),
+      waitForChart()
+    ]);
+
+    performanceMonitor.end('认证检查');
+    performanceMonitor.end('Chart.js加载');
+
+    // 检查认证结果
+    if (authResult.status === 'rejected' || !authResult.value.authenticated) {
+      console.log('❌ 用户未认证，显示登录界面');
+      updateLoadingStep('step-auth', 'error');
+      
+      // 显示登录界面
+      showAuthInterface(container, marginStyle);
+      return;
+    }
+
+    updateLoadingStep('step-auth', 'completed');
+    console.log('✅ 用户认证成功');
+
+    // 检查Chart.js加载结果
+    if (chartReady.status === 'rejected') {
+      console.error('❌ Chart.js 加载失败:', chartReady.reason);
+      updateLoadingStep('step-chart', 'error');
+      throw new Error('Chart.js 加载失败');
+    }
+
+    updateLoadingStep('step-chart', 'completed');
+    console.log('✅ Chart.js 已就绪');
+
+    // 第二步：立即显示UI结构
+    console.log('🎨 立即显示练功计时器界面结构...');
+    renderPracticeTimerInterface(container, marginStyle);
+
+    // 第三步：异步加载数据
+    updateLoadingStep('step-data', 'active');
+    console.log('📊 开始加载练功数据...');
+    
+    // 不等待数据加载完成，立即初始化界面
+    initPracticeTimerInterface();
+    
+    // 异步加载数据
+    loadPracticeDataAsync();
+
+    // 记录页面加载完成时间
+    performanceMonitor.end('页面总加载时间');
+    performanceMonitor.logSummary();
+
+  } catch (error) {
+    console.error('❌ 练功计时器加载失败:', error);
+    performanceMonitor.end('页面总加载时间');
+    showErrorState(container, error.message, marginStyle);
+  }
+}
+
+// 认证状态检查（优化版本）
+async function checkUserAuthentication() {
+  // 快速检查cookie
   if (!isLoggedIn()) {
-    // 显示登录/注册界面
-    container.innerHTML = `
-      <div class="auth-page" style="${marginStyle}">
-        <div class="auth-container">
-          <div class="auth-header">
-            <h1>练功计时器</h1>
-            <p>请登录或注册以使用练功计时器功能</p>
+    return { authenticated: false, reason: 'no_token' };
+  }
+
+  // 如果已有用户信息和CSRF token，直接返回成功
+  if (currentUser && csrfToken) {
+    console.log('🚀 使用缓存的认证信息');
+    return { 
+      authenticated: true, 
+      user: currentUser, 
+      csrfToken: csrfToken 
+    };
+  }
+
+  // 需要获取用户信息
+  console.log('🔄 获取用户信息...');
+  try {
+    const user = await getCurrentUser();
+    if (!user || !csrfToken) {
+      // 清除无效cookie
+      deleteCookie('authToken');
+      return { authenticated: false, reason: 'invalid_token' };
+    }
+
+    return { 
+      authenticated: true, 
+      user: user, 
+      csrfToken: csrfToken 
+    };
+  } catch (error) {
+    console.error('获取用户信息失败:', error);
+    deleteCookie('authToken');
+    return { authenticated: false, reason: 'auth_error' };
+  }
+}
+
+// 显示认证界面
+function showAuthInterface(container, marginStyle) {
+  container.innerHTML = `
+    <div class="auth-page" style="${marginStyle}">
+      <div class="auth-container">
+        <div class="auth-header">
+          <h1>练功计时器</h1>
+          <p>请登录或注册以使用练功计时器功能</p>
+        </div>
+        
+        <!-- 登录表单 -->
+        <div class="auth-form" id="login-form">
+          <h2>登录</h2>
+          <div class="form-group">
+            <label for="login-email">邮箱</label>
+            <input type="email" id="login-email" class="form-input" placeholder="请输入邮箱" />
           </div>
-          
-          <!-- 登录表单 -->
-          <div class="auth-form" id="login-form">
-            <h2>登录</h2>
-            <div class="form-group">
-              <label for="login-email">邮箱</label>
-              <input type="email" id="login-email" class="form-input" placeholder="请输入邮箱" />
-            </div>
-            <div class="form-group">
-              <label for="login-password">密码</label>
-              <input type="password" id="login-password" class="form-input" placeholder="请输入密码" />
-            </div>
-            <button id="login-btn" class="auth-btn primary">登录</button>
-            <div class="auth-links">
-              <button id="show-register-btn" class="link-btn">没有账户？去注册</button>
-              <button id="forgot-password-btn" class="link-btn">忘记密码？</button>
-            </div>
+          <div class="form-group">
+            <label for="login-password">密码</label>
+            <input type="password" id="login-password" class="form-input" placeholder="请输入密码" />
           </div>
-          
-          <!-- 注册表单 -->
-          <div class="auth-form hidden" id="register-form">
-            <h2>注册</h2>
-            <div class="form-group">
-              <label for="register-email">邮箱</label>
-              <input type="email" id="register-email" class="form-input" placeholder="请输入邮箱" />
-            </div>
-            <button id="register-btn" class="auth-btn primary">发送注册邮件</button>
-            <div class="auth-links">
-              <button id="show-login-btn" class="link-btn">已有账户？去登录</button>
-            </div>
+          <button id="login-btn" class="auth-btn primary">登录</button>
+          <div class="auth-links">
+            <button id="show-register-btn" class="link-btn">没有账户？去注册</button>
+            <button id="forgot-password-btn" class="link-btn">忘记密码？</button>
           </div>
-          
-          <!-- 忘记密码表单 -->
-          <div class="auth-form hidden" id="forgot-password-form">
-            <h2>忘记密码</h2>
-            <div class="form-group">
-              <label for="forgot-email">邮箱</label>
-              <input type="email" id="forgot-email" class="form-input" placeholder="请输入邮箱" />
-            </div>
-            <button id="send-reset-btn" class="auth-btn primary">发送重置邮件</button>
-            <div class="auth-links">
-              <button id="back-to-login-btn" class="link-btn">返回登录</button>
-            </div>
+        </div>
+        
+        <!-- 注册表单 -->
+        <div class="auth-form hidden" id="register-form">
+          <h2>注册</h2>
+          <div class="form-group">
+            <label for="register-email">邮箱</label>
+            <input type="email" id="register-email" class="form-input" placeholder="请输入邮箱" />
+          </div>
+          <button id="register-btn" class="auth-btn primary">发送注册邮件</button>
+          <div class="auth-links">
+            <button id="show-login-btn" class="link-btn">已有账户？去登录</button>
+          </div>
+        </div>
+        
+        <!-- 忘记密码表单 -->
+        <div class="auth-form hidden" id="forgot-password-form">
+          <h2>忘记密码</h2>
+          <div class="form-group">
+            <label for="forgot-email">邮箱</label>
+            <input type="email" id="forgot-email" class="form-input" placeholder="请输入邮箱" />
+          </div>
+          <button id="send-reset-btn" class="auth-btn primary">发送重置邮件</button>
+          <div class="auth-links">
+            <button id="back-to-login-btn" class="link-btn">返回登录</button>
           </div>
         </div>
       </div>
-    `;
-    
-    // 添加认证页面样式
-    addAuthStyles();
-    
-    // 初始化认证功能
-    initAuth();
-    return;
-  }
+    </div>
+  `;
   
-  console.log('🔍 练功计时器页面加载 - 认证状态检查');
-  console.log('  - isLoggedIn():', isLoggedIn());
-  console.log('  - currentUser:', currentUser);
-  console.log('  - csrfToken:', csrfToken ? '存在' : '不存在');
+  // 添加认证页面样式
+  addAuthStyles();
   
-  // 如果已登录但没有用户信息或CSRF token，先获取用户信息
-  if (!currentUser || !csrfToken) {
-    console.log('🔄 已登录但缺少用户信息或CSRF token，尝试获取...');
-    const user = await getCurrentUser();
-    if (!user) {
-      console.log('⚠️ 获取用户信息失败，可能token已过期');
-      console.log('🧹 清除无效cookie并重新加载');
-      // 清除可能无效的cookie
-      deleteCookie('authToken');
-      // 重新加载页面显示登录界面
-      location.reload();
-      return;
-    }
-  }
-  
-  // 再次检查CSRF token
-  if (!csrfToken) {
-    console.log('⚠️ 无法获取CSRF token，显示登录界面');
-    // 清除可能无效的cookie
-    deleteCookie('authToken');
-    // 重新加载页面显示登录界面
-    location.reload();
-    return;
-  }
-  
-  console.log('✅ 用户认证成功，显示练功计时器界面');
-  
-  // 如果已登录，显示练功计时器界面
+  // 初始化认证功能
+  initAuth();
+}
+
+// 渲染练功计时器界面结构
+function renderPracticeTimerInterface(container, marginStyle) {
   container.innerHTML = `
     <div class="practice-timer-page" style="${marginStyle}">
       <!-- 标题和添加按钮 -->
@@ -209,22 +531,26 @@ export async function loadPracticeTimerPage(container) {
       
       <!-- 图表容器 -->
       <div class="chart-container mb-8">
-        <canvas id="practice-chart" width="400" height="200"></canvas>
+        <div class="chart-loading">
+          <div class="chart-skeleton"></div>
+          <p>正在加载图表...</p>
+        </div>
+        <canvas id="practice-chart" width="400" height="200" style="display: none;"></canvas>
       </div>
 
       <!-- 统计信息 -->
       <div class="stats-grid mb-8">
         <div class="stat-card">
           <div class="stat-label">总时长</div>
-          <div class="stat-value" id="total-time">0小时0分钟</div>
+          <div class="stat-value skeleton-text" id="total-time">加载中...</div>
         </div>
         <div class="stat-card">
           <div class="stat-label">平均每天</div>
-          <div class="stat-value" id="average-time">0小时0分钟</div>
+          <div class="stat-value skeleton-text" id="average-time">加载中...</div>
         </div>
         <div class="stat-card">
           <div class="stat-label">记录天数</div>
-          <div class="stat-value" id="total-days">0天</div>
+          <div class="stat-value skeleton-text" id="total-days">加载中...</div>
         </div>
       </div>
 
@@ -262,9 +588,265 @@ export async function loadPracticeTimerPage(container) {
 
   // 添加样式
   addPracticeTimerStyles();
+}
+
+// 初始化练功计时器界面（不等待数据）
+function initPracticeTimerInterface() {
+  // 设置默认日期为今天
+  const today = new Date().toISOString().split('T')[0];
+  const dateInput = document.getElementById('practice-date');
+  if (dateInput) {
+    dateInput.value = today;
+  }
   
-  // 初始化功能
-  await initPracticeTimer();
+  // 绑定事件
+  bindEvents();
+  
+  console.log('✅ 练功计时器界面初始化完成');
+}
+
+// 异步加载练功数据
+async function loadPracticeDataAsync() {
+  performanceMonitor.start('数据加载');
+  try {
+    const response = await fetch('/api/kv/practice-time', {
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(csrfToken ? { 'X-CSRF-Token': csrfToken } : {})
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error('获取数据失败');
+    }
+    
+    const records = await response.json();
+    console.log(`✅ 成功获取 ${records.length} 条练功记录`);
+    
+    // 更新统计信息
+    updateStats(records);
+    
+    // 隐藏骨架屏，显示真实数据
+    const chartLoading = document.querySelector('.chart-loading');
+    const chartCanvas = document.getElementById('practice-chart');
+    
+    if (chartLoading && chartCanvas) {
+      chartLoading.style.display = 'none';
+      chartCanvas.style.display = 'block';
+    }
+    
+    // 创建图表
+    const container = document.querySelector('.practice-timer-page');
+    if (container) {
+      await chartManager.createChart(container, records);
+    }
+    
+    // 移除骨架屏样式
+    document.querySelectorAll('.skeleton-text').forEach(el => {
+      el.classList.remove('skeleton-text');
+    });
+    
+    console.log('✅ 练功数据加载完成');
+    performanceMonitor.end('数据加载');
+    
+  } catch (error) {
+    console.error('加载练功数据失败:', error);
+    performanceMonitor.end('数据加载');
+    
+    // 显示错误状态
+    const chartLoading = document.querySelector('.chart-loading');
+    if (chartLoading) {
+      chartLoading.innerHTML = `
+        <div class="error-state">
+          <p>❌ 数据加载失败</p>
+          <button onclick="loadPracticeDataAsync()" class="retry-btn">重试</button>
+        </div>
+      `;
+    }
+    
+    showMessage('加载数据失败: ' + error.message, 'error');
+  }
+}
+
+// 显示错误状态
+function showErrorState(container, message, marginStyle) {
+  container.innerHTML = `
+    <div class="error-page" style="${marginStyle}">
+      <div class="error-container">
+        <h2>😔 加载失败</h2>
+        <p>${message}</p>
+        <button onclick="location.reload()" class="retry-btn">重新加载</button>
+      </div>
+    </div>
+  `;
+}
+
+// 更新加载步骤状态
+function updateLoadingStep(stepId, status) {
+  const step = document.getElementById(stepId);
+  if (step) {
+    step.className = `step ${status}`;
+    
+    const statusIcons = {
+      'active': '⏳',
+      'completed': '✅',
+      'error': '❌'
+    };
+    
+    const icon = statusIcons[status] || '⏳';
+    const text = step.textContent.replace(/^[⏳✅❌]\s*/, '');
+    step.textContent = `${icon} ${text}`;
+  }
+}
+
+// 添加加载状态样式
+function addLoadingStyles() {
+  const existingStyle = document.getElementById('loading-styles');
+  if (existingStyle) return;
+
+  const style = document.createElement('style');
+  style.id = 'loading-styles';
+  style.textContent = `
+    .practice-timer-loading {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 400px;
+      text-align: center;
+    }
+    
+    .loading-container {
+      max-width: 300px;
+    }
+    
+    .loading-spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid var(--border, #e2e8f0);
+      border-top: 4px solid var(--primary, #3b82f6);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 20px;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    .loading-text {
+      font-size: 18px;
+      font-weight: 500;
+      color: var(--text, #1f2937);
+      margin-bottom: 20px;
+    }
+    
+    .loading-steps {
+      text-align: left;
+    }
+    
+    .step {
+      padding: 8px 0;
+      font-size: 14px;
+      color: var(--muted, #6b7280);
+      transition: color 0.3s ease;
+    }
+    
+    .step.active {
+      color: var(--primary, #3b82f6);
+      font-weight: 500;
+    }
+    
+    .step.completed {
+      color: var(--success, #10b981);
+      font-weight: 500;
+    }
+    
+    .step.error {
+      color: var(--error, #ef4444);
+      font-weight: 500;
+    }
+    
+    .chart-loading {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 300px;
+      text-align: center;
+    }
+    
+    .chart-skeleton {
+      width: 100%;
+      height: 200px;
+      background: linear-gradient(90deg, 
+        var(--border, #e2e8f0) 25%, 
+        var(--card-bg, #f9fafb) 50%, 
+        var(--border, #e2e8f0) 75%);
+      background-size: 200% 100%;
+      animation: skeleton-loading 1.5s infinite;
+      border-radius: 8px;
+      margin-bottom: 15px;
+    }
+    
+    @keyframes skeleton-loading {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+    
+    .skeleton-text {
+      background: linear-gradient(90deg, 
+        var(--border, #e2e8f0) 25%, 
+        var(--card-bg, #f9fafb) 50%, 
+        var(--border, #e2e8f0) 75%);
+      background-size: 200% 100%;
+      animation: skeleton-loading 1.5s infinite;
+      border-radius: 4px;
+      color: transparent !important;
+    }
+    
+    .error-state {
+      padding: 20px;
+      text-align: center;
+    }
+    
+    .retry-btn {
+      background: var(--primary, #3b82f6);
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      margin-top: 10px;
+      transition: background 0.2s ease;
+    }
+    
+    .retry-btn:hover {
+      background: var(--primary-dark, #2563eb);
+    }
+    
+    .error-page {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 400px;
+      text-align: center;
+    }
+    
+    .error-container h2 {
+      color: var(--error, #ef4444);
+      margin-bottom: 10px;
+    }
+    
+    .error-container p {
+      color: var(--muted, #6b7280);
+      margin-bottom: 20px;
+    }
+  `;
+  
+  document.head.appendChild(style);
 }
 
 function addPracticeTimerStyles() {
@@ -585,19 +1167,7 @@ function addPracticeTimerStyles() {
   document.head.appendChild(style);
 }
 
-let practiceChart = null;
 
-async function initPracticeTimer() {
-  // 设置默认日期为今天
-  const today = new Date().toISOString().split('T')[0];
-  document.getElementById('practice-date').value = today;
-  
-  // 绑定事件
-  bindEvents();
-  
-  // 加载数据并绘制图表
-  await loadAndRenderData();
-}
 
 function bindEvents() {
   const addDataBtn = document.getElementById('add-data-btn');
@@ -686,7 +1256,7 @@ async function addPracticeRecord() {
     document.getElementById('add-data-modal').classList.add('hidden');
     
     // 重新加载数据
-    await loadAndRenderData();
+    await loadPracticeDataAsync();
     
     // 显示成功消息
     showMessage('练功记录添加成功！', 'success');
@@ -697,32 +1267,6 @@ async function addPracticeRecord() {
   }
 }
 
-async function loadAndRenderData() {
-  try {
-    const response = await fetch('/api/kv/practice-time', {
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(csrfToken ? { 'X-CSRF-Token': csrfToken } : {})
-      }
-    });
-    if (!response.ok) {
-      throw new Error('获取数据失败');
-    }
-    
-    const records = await response.json();
-    
-    // 更新统计信息
-    updateStats(records);
-    
-    // 绘制图表
-    renderChart(records);
-    
-  } catch (error) {
-    console.error('加载数据失败:', error);
-    showMessage('加载数据失败: ' + error.message, 'error');
-  }
-}
 
 function updateStats(records) {
   const totalMinutes = records.reduce((sum, record) => sum + record.totalMinutes, 0);
@@ -744,149 +1288,6 @@ function updateStats(records) {
   document.getElementById('total-days').textContent = `${totalDays}天`;
 }
 
-function renderChart(records) {
-  const ctx = document.getElementById('practice-chart').getContext('2d');
-  
-  // 销毁现有图表
-  if (practiceChart) {
-    practiceChart.destroy();
-  }
-  
-  // 准备数据
-  const labels = records.map(record => {
-    const date = new Date(record.date);
-    return date.toLocaleDateString('zh-CN', { month: 'short', day: 'numeric' });
-  });
-  
-  const data = records.map(record => (record.totalMinutes / 60).toFixed(1)); // 转换为小时
-  
-  // 计算平均值（使用与汇总一致的方法）
-  const totalMinutes = records.reduce((sum, record) => sum + record.totalMinutes, 0);
-  const averageMinutes = records.length > 0 ? Math.round(totalMinutes / records.length) : 0;
-  const averageHours = averageMinutes / 60;
-  
-  const averageLine = new Array(records.length).fill(averageHours.toFixed(1));
-  
-  practiceChart = new Chart(ctx, {
-    type: 'line',
-    data: {
-      labels: labels,
-      datasets: [
-        {
-          label: '练功时长 (小时)',
-          data: data,
-          borderColor: '#3b82f6',
-          backgroundColor: 'rgba(59, 130, 246, 0.1)',
-          borderWidth: 3,
-          fill: true,
-          tension: 0.4,
-          pointBackgroundColor: '#3b82f6',
-          pointBorderColor: '#ffffff',
-          pointBorderWidth: 2,
-          pointRadius: 6,
-          pointHoverRadius: 8,
-        },
-        {
-          label: '平均时长',
-          data: averageLine,
-          borderColor: '#ef4444',
-          backgroundColor: 'transparent',
-          borderWidth: 2,
-          borderDash: [5, 5],
-          fill: false,
-          pointRadius: 0,
-          pointHoverRadius: 0,
-        }
-      ]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: {
-          position: 'top',
-          labels: {
-            usePointStyle: true,
-            padding: 20,
-            font: {
-              size: 12,
-              weight: '500'
-            }
-          }
-        },
-        tooltip: {
-          mode: 'index',
-          intersect: false,
-          backgroundColor: 'rgba(0, 0, 0, 0.8)',
-          titleColor: '#ffffff',
-          bodyColor: '#ffffff',
-          borderColor: '#3b82f6',
-          borderWidth: 1,
-          cornerRadius: 8,
-          displayColors: false,
-          callbacks: {
-            label: function(context) {
-              if (context.datasetIndex === 0) {
-                // 对于单个数据点，直接从records中获取原始数据
-                const recordIndex = context.dataIndex;
-                const originalMinutes = records[recordIndex].totalMinutes;
-                const h = Math.floor(originalMinutes / 60);
-                const m = originalMinutes % 60;
-                return `练功时长: ${h}小时${m}分钟`;
-              } else {
-                // 对于平均值，使用与汇总一致的计算方法
-                const h = Math.floor(averageMinutes / 60);
-                const m = averageMinutes % 60;
-                return `平均时长: ${h}小时${m}分钟`;
-              }
-            }
-          }
-        }
-      },
-      scales: {
-        x: {
-          display: true,
-          title: {
-            display: true,
-            text: '日期',
-            font: {
-              size: 14,
-              weight: '600'
-            }
-          },
-          grid: {
-            color: 'rgba(0, 0, 0, 0.1)',
-          }
-        },
-        y: {
-          display: true,
-          title: {
-            display: true,
-            text: '时长 (小时)',
-            font: {
-              size: 14,
-              weight: '600'
-            }
-          },
-          beginAtZero: true,
-          grid: {
-            color: 'rgba(0, 0, 0, 0.1)',
-          },
-          ticks: {
-            callback: function(value) {
-              return value + 'h';
-            }
-          }
-        }
-      },
-      interaction: {
-        mode: 'nearest',
-        axis: 'x',
-        intersect: false
-      }
-    }
-  });
-}
 
 function showMessage(text, type = 'info') {
   // 创建消息元素
@@ -1485,3 +1886,50 @@ async function handleLogout() {
 
 // 导出登出函数到全局
 window.handleLogout = handleLogout;
+
+// 导出数据加载函数到全局（用于重试按钮）
+window.loadPracticeDataAsync = loadPracticeDataAsync;
+
+// 性能监控
+class PerformanceMonitor {
+  constructor() {
+    this.metrics = {};
+    this.startTimes = {};
+  }
+
+  start(operation) {
+    this.startTimes[operation] = performance.now();
+    console.log(`⏱️ 开始计时: ${operation}`);
+  }
+
+  end(operation) {
+    if (this.startTimes[operation]) {
+      const duration = performance.now() - this.startTimes[operation];
+      this.metrics[operation] = duration;
+      console.log(`✅ 完成计时: ${operation} - ${duration.toFixed(2)}ms`);
+      delete this.startTimes[operation];
+      return duration;
+    }
+  }
+
+  getMetrics() {
+    return { ...this.metrics };
+  }
+
+  logSummary() {
+    console.log('📊 === 性能监控摘要 ===');
+    Object.entries(this.metrics).forEach(([operation, duration]) => {
+      console.log(`  ${operation}: ${duration.toFixed(2)}ms`);
+    });
+    
+    const totalTime = Object.values(this.metrics).reduce((sum, time) => sum + time, 0);
+    console.log(`  总耗时: ${totalTime.toFixed(2)}ms`);
+    console.log('📊 === 摘要结束 ===');
+  }
+}
+
+// 创建全局性能监控实例
+const performanceMonitor = new PerformanceMonitor();
+
+// 导出性能监控到全局（调试用）
+window.performanceMonitor = performanceMonitor;

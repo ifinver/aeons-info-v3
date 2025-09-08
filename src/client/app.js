@@ -403,6 +403,14 @@ async function initApp() {
   
   await buildSidebar();
   
+  // 预加载Chart.js（为练功计时器页面准备）
+  if (typeof Chart !== 'undefined') {
+    console.log('📊 Chart.js 已可用，无需预加载');
+  } else {
+    console.log('📊 开始预加载 Chart.js...');
+    // Chart.js 会通过HTML中的script标签异步加载
+  }
+  
   // 绑定移动端事件
   if (drawerToggle) {
     drawerToggle.addEventListener('click', toggleDrawer);

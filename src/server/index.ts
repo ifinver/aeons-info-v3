@@ -860,6 +860,138 @@ function json(data: unknown, status = 200): Response {
   });
 }
 
+// --- Practice Time Memory Cache ---
+class PracticeDataCache {
+  private cache = new Map<string, Map<string, any>>(); // userId -> Map<date, record>
+  private readonly MAX_DAYS = 60; // 最多缓存60天数据
+
+  // 获取用户缓存的键
+  private getUserCacheKey(userId: string): string {
+    return `user_${userId}`;
+  }
+
+  // 检查缓存是否存在
+  private isCacheExists(userId: string): boolean {
+    const cacheKey = this.getUserCacheKey(userId);
+    return this.cache.has(cacheKey);
+  }
+
+  // 获取用户的练功数据（从缓存或KV）
+  async getUserPracticeData(userId: string, kv: any): Promise<any[]> {
+    const cacheKey = this.getUserCacheKey(userId);
+    
+    // 检查缓存是否存在
+    if (this.isCacheExists(userId)) {
+      console.log(`📦 从内存缓存获取用户 ${userId} 的练功数据`);
+      const userCache = this.cache.get(cacheKey)!;
+      return Array.from(userCache.entries()).map(([date, record]) => ({
+        date,
+        ...record
+      })).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    }
+
+    // 缓存不存在，从KV加载
+    console.log(`💾 缓存为空，从KV加载用户 ${userId} 的练功数据`);
+    return await this.loadFromKV(userId, kv);
+  }
+
+  // 从KV加载数据并更新缓存
+  private async loadFromKV(userId: string, kv: any): Promise<any[]> {
+    const userKeyPrefix = `user_${userId}_`;
+    const list = await kv.list({ prefix: userKeyPrefix });
+    const records: any[] = [];
+    const userCache = new Map<string, any>();
+
+    // 计算60天前的日期
+    const sixtyDaysAgo = new Date();
+    sixtyDaysAgo.setDate(sixtyDaysAgo.getDate() - this.MAX_DAYS);
+    const cutoffDate = sixtyDaysAgo.toISOString().split('T')[0];
+
+    for (const key of list.keys) {
+      const value = await kv.get(key.name, { type: 'json' });
+      if (value) {
+        const date = key.name.replace(userKeyPrefix, '');
+        
+        // 只缓存最近60天的数据
+        if (date >= cutoffDate) {
+          userCache.set(date, value);
+          records.push({
+            date,
+            ...value
+          });
+        }
+      }
+    }
+
+    // 更新缓存
+    const cacheKey = this.getUserCacheKey(userId);
+    this.cache.set(cacheKey, userCache);
+
+    // 按日期排序
+    records.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    
+    console.log(`✅ 已缓存用户 ${userId} 的 ${records.length} 条练功记录`);
+    return records;
+  }
+
+  // 添加或更新练功记录
+  updatePracticeRecord(userId: string, date: string, record: any): void {
+    const cacheKey = this.getUserCacheKey(userId);
+    
+    // 检查是否在60天内
+    const sixtyDaysAgo = new Date();
+    sixtyDaysAgo.setDate(sixtyDaysAgo.getDate() - this.MAX_DAYS);
+    const cutoffDate = sixtyDaysAgo.toISOString().split('T')[0];
+    
+    if (date >= cutoffDate) {
+      if (!this.cache.has(cacheKey)) {
+        this.cache.set(cacheKey, new Map());
+      }
+      
+      const userCache = this.cache.get(cacheKey)!;
+      userCache.set(date, record);
+      
+      console.log(`🔄 已更新用户 ${userId} 在 ${date} 的练功记录缓存`);
+    }
+  }
+
+  // 删除练功记录
+  deletePracticeRecord(userId: string, date: string): void {
+    const cacheKey = this.getUserCacheKey(userId);
+    
+    if (this.cache.has(cacheKey)) {
+      const userCache = this.cache.get(cacheKey)!;
+      userCache.delete(date);
+      
+      console.log(`🗑️ 已删除用户 ${userId} 在 ${date} 的练功记录缓存`);
+    }
+  }
+
+  // 清除用户缓存
+  clearUserCache(userId: string): void {
+    const cacheKey = this.getUserCacheKey(userId);
+    this.cache.delete(cacheKey);
+    
+    console.log(`🧹 已清除用户 ${userId} 的练功数据缓存`);
+  }
+
+  // 获取缓存统计信息
+  getCacheStats(): { totalUsers: number; totalRecords: number } {
+    let totalRecords = 0;
+    for (const userCache of this.cache.values()) {
+      totalRecords += userCache.size;
+    }
+    
+    return {
+      totalUsers: this.cache.size,
+      totalRecords: totalRecords
+    };
+  }
+}
+
+// 创建全局缓存实例
+const practiceDataCache = new PracticeDataCache();
+
 // --- Practice Time KV handlers ---
 async function handlePracticeTimeKv(request: Request, kv: any, segments: string[], env: any): Promise<Response> {
   const url = new URL(request.url);
@@ -873,26 +1005,21 @@ async function handlePracticeTimeKv(request: Request, kv: any, segments: string[
 
   // GET /api/kv/practice-time -> 获取用户的所有练功记录
   if (segments.length === 0 && method === 'GET') {
-    const userKeyPrefix = `user_${user.id}_`;
-    const list = await kv.list({ prefix: userKeyPrefix });
-    const records = [];
-    
-    for (const key of list.keys) {
-      const value = await kv.get(key.name, { type: 'json' });
-      if (value) {
-        // 从key中提取日期（移除用户前缀）
-        const date = key.name.replace(userKeyPrefix, '');
-        records.push({
-          date,
-          ...value
-        });
-      }
+    try {
+      // 使用缓存系统获取数据
+      const records = await practiceDataCache.getUserPracticeData(user.id, kv);
+      
+      // 返回最新数据，不设置客户端缓存（确保数据实时性）
+      const response = json(records);
+      response.headers.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+      response.headers.set('Pragma', 'no-cache');
+      response.headers.set('Expires', '0');
+      
+      return response;
+    } catch (error) {
+      console.error('获取练功数据失败:', error);
+      return json({ error: '获取数据失败' }, 500);
     }
-    
-    // 按日期排序
-    records.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-    
-    return json(records);
   }
 
   // POST /api/kv/practice-time -> 添加新的练功记录（需要CSRF验证）
@@ -934,8 +1061,17 @@ async function handlePracticeTimeKv(request: Request, kv: any, segments: string[
     };
 
     const userKey = `user_${user.id}_${body.date}`;
-    await kv.put(userKey, JSON.stringify(record));
-    return json({ ok: true, record });
+    
+    try {
+      // 同时更新KV和缓存
+      await kv.put(userKey, JSON.stringify(record));
+      practiceDataCache.updatePracticeRecord(user.id, body.date, record);
+      
+      return json({ ok: true, record });
+    } catch (error) {
+      console.error('保存练功记录失败:', error);
+      return json({ error: '保存失败' }, 500);
+    }
   }
 
   // DELETE /api/kv/practice-time/:date -> 删除指定日期的记录（需要CSRF验证）
@@ -946,8 +1082,17 @@ async function handlePracticeTimeKv(request: Request, kv: any, segments: string[
     }
     const date = decodeURIComponent(segments[0]);
     const userKey = `user_${user.id}_${date}`;
-    await kv.delete(userKey);
-    return json({ ok: true });
+    
+    try {
+      // 同时删除KV和缓存
+      await kv.delete(userKey);
+      practiceDataCache.deletePracticeRecord(user.id, date);
+      
+      return json({ ok: true });
+    } catch (error) {
+      console.error('删除练功记录失败:', error);
+      return json({ error: '删除失败' }, 500);
+    }
   }
 
   return json({ error: 'Method not allowed or invalid path' }, 405);
