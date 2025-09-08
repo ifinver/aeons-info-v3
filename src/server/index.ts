@@ -41,6 +41,9 @@ import { sendEmail } from './mail';
 export default {
 	async fetch(request, env, ctx): Promise<Response> {
 		const url = new URL(request.url);
+		
+		// 记录所有请求（调试用）
+		console.log(`📨 收到请求: ${request.method} ${url.pathname}`);
 		// KV API routing
 		if (url.pathname === '/api/kv' || url.pathname.startsWith('/api/kv/')) {
 			return handleKvApi(request, env);
@@ -863,7 +866,8 @@ function json(data: unknown, status = 200): Response {
 // --- Practice Time Memory Cache ---
 class PracticeDataCache {
   private cache = new Map<string, Map<string, any>>(); // userId -> Map<date, record>
-  private readonly MAX_DAYS = 60; // 最多缓存60天数据
+  private cacheMetadata = new Map<string, { lastUpdated: number, recordCount: number }>(); // 缓存元数据
+  private readonly CACHE_METADATA_KEY = 'cache_metadata_'; // KV中存储缓存元数据的键前缀
 
   // 获取用户缓存的键
   private getUserCacheKey(userId: string): string {
@@ -880,46 +884,136 @@ class PracticeDataCache {
   async getUserPracticeData(userId: string, kv: any): Promise<any[]> {
     const cacheKey = this.getUserCacheKey(userId);
     
-    // 检查缓存是否存在
+    // 输出当前缓存状态
+    const stats = this.getCacheStats();
+    console.log(`🔍 缓存状态检查 - 用户: ${userId}, 总缓存用户数: ${stats.totalUsers}, 总记录数: ${stats.totalRecords}`);
+    
+    // 检查内存缓存是否存在
     if (this.isCacheExists(userId)) {
-      console.log(`📦 从内存缓存获取用户 ${userId} 的练功数据`);
+      console.log(`📦 从内存缓存获取用户 ${userId} 的练功数据 (缓存命中)`);
       const userCache = this.cache.get(cacheKey)!;
-      return Array.from(userCache.entries()).map(([date, record]) => ({
+      const records = Array.from(userCache.entries()).map(([date, record]) => ({
         date,
         ...record
       })).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+      
+      console.log(`✅ 缓存命中返回 ${records.length} 条记录`);
+      return records;
     }
 
-    // 缓存不存在，从KV加载
-    console.log(`💾 缓存为空，从KV加载用户 ${userId} 的练功数据`);
+    // 内存缓存不存在，尝试从聚合数据或分散数据加载
+    console.log(`💾 内存缓存未命中，尝试从KV恢复缓存...`);
+    console.log(`📊 当前缓存中的用户: [${Array.from(this.cache.keys()).join(', ')}]`);
+    
+    // 优先尝试从聚合数据加载（1次KV查询）
+    const aggregatedRecords = await this.tryLoadFromAggregatedData(userId, kv);
+    if (aggregatedRecords) {
+      console.log(`⚡ 使用聚合数据，极速加载 ${aggregatedRecords.length} 条记录`);
+      
+      // 更新内存缓存
+      const cacheKey = this.getUserCacheKey(userId);
+      const userCache = new Map<string, any>();
+      for (const record of aggregatedRecords) {
+        userCache.set(record.date, {
+          hours: record.hours,
+          minutes: record.minutes,
+          totalMinutes: record.totalMinutes,
+          timestamp: record.timestamp
+        });
+      }
+      this.cache.set(cacheKey, userCache);
+      
+      return aggregatedRecords;
+    }
+    
+    // 聚合数据不存在，使用传统的分批加载
+    console.log(`🐌 聚合数据不存在，使用分批加载模式`);
     return await this.loadFromKV(userId, kv);
+  }
+
+  // 尝试从聚合数据加载
+  private async tryLoadFromAggregatedData(userId: string, kv: any): Promise<any[] | null> {
+    try {
+      const aggregatedKey = `user_${userId}_aggregated`;
+      console.log(`🔍 尝试从聚合数据加载用户 ${userId} 的练功数据...`);
+      
+      const aggregatedData = await kv.get(aggregatedKey, { type: 'json' });
+      
+      if (aggregatedData && aggregatedData.records) {
+        console.log(`✅ 找到聚合数据，包含 ${Object.keys(aggregatedData.records).length} 条记录`);
+        
+        // 转换为标准格式
+        const records = Object.entries(aggregatedData.records).map(([date, record]: [string, any]) => ({
+          date,
+          ...record
+        })).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+        
+        // 返回所有数据（取消60天限制）
+        console.log(`📊 聚合数据中共有 ${records.length} 条记录`);
+        return records;
+      }
+      
+      console.log(`📊 未找到聚合数据`);
+      return null;
+    } catch (error) {
+      console.error('从聚合数据加载失败:', error);
+      return null;
+    }
   }
 
   // 从KV加载数据并更新缓存
   private async loadFromKV(userId: string, kv: any): Promise<any[]> {
+    console.log(`⏱️ 开始从KV加载用户 ${userId} 的练功数据...`);
+    const startTime = performance.now();
+    
     const userKeyPrefix = `user_${userId}_`;
     const list = await kv.list({ prefix: userKeyPrefix });
+    console.log(`📋 找到 ${list.keys.length} 个键，耗时: ${(performance.now() - startTime).toFixed(2)}ms`);
+    
     const records: any[] = [];
     const userCache = new Map<string, any>();
 
-    // 计算60天前的日期
-    const sixtyDaysAgo = new Date();
-    sixtyDaysAgo.setDate(sixtyDaysAgo.getDate() - this.MAX_DAYS);
-    const cutoffDate = sixtyDaysAgo.toISOString().split('T')[0];
+    // 处理所有数据（取消日期限制）
 
-    for (const key of list.keys) {
-      const value = await kv.get(key.name, { type: 'json' });
-      if (value) {
-        const date = key.name.replace(userKeyPrefix, '');
-        
-        // 只缓存最近60天的数据
-        if (date >= cutoffDate) {
-          userCache.set(date, value);
-          records.push({
-            date,
-            ...value
-          });
+    // 分批并行获取KV值，避免超过并发限制（Cloudflare Workers限制6个并发）
+    const loadStartTime = performance.now();
+    const BATCH_SIZE = 5; // 使用5个并发，留1个余量
+    const results: any[] = [];
+    
+    console.log(`📦 开始分批加载，总键数: ${list.keys.length}, 批次大小: ${BATCH_SIZE}`);
+    
+    for (let i = 0; i < list.keys.length; i += BATCH_SIZE) {
+      const batch = list.keys.slice(i, i + BATCH_SIZE);
+      const batchStartTime = performance.now();
+      
+      const batchPromises = batch.map(async (key: any) => {
+        try {
+          const value = await kv.get(key.name, { type: 'json' });
+          const date = key.name.replace(userKeyPrefix, '');
+          return { key: key.name, date, value };
+        } catch (error) {
+          console.error(`获取键 ${key.name} 失败:`, error);
+          return null;
         }
+      });
+
+      const batchResults = await Promise.all(batchPromises);
+      results.push(...batchResults);
+      
+      const batchTime = performance.now() - batchStartTime;
+      console.log(`📦 批次 ${Math.floor(i/BATCH_SIZE) + 1} 完成，${batch.length} 个键，耗时: ${batchTime.toFixed(2)}ms`);
+    }
+    
+    console.log(`📦 所有批次加载完成，总耗时: ${(performance.now() - loadStartTime).toFixed(2)}ms`);
+
+    // 处理结果 - 缓存所有数据
+    for (const result of results) {
+      if (result && result.value) {
+        userCache.set(result.date, result.value);
+        records.push({
+          date: result.date,
+          ...result.value
+        });
       }
     }
 
@@ -930,33 +1024,151 @@ class PracticeDataCache {
     // 按日期排序
     records.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
     
-    console.log(`✅ 已缓存用户 ${userId} 的 ${records.length} 条练功记录`);
+    const totalTime = performance.now() - startTime;
+    console.log(`✅ 已缓存用户 ${userId} 的 ${records.length} 条练功记录，总耗时: ${totalTime.toFixed(2)}ms`);
+    
+    // 自动创建聚合数据以提升未来的加载性能，并清理离散数据
+    if (records.length > 0) {
+      console.log(`🔄 开始创建聚合数据以优化未来加载性能...`);
+      await this.createAggregatedData(userId, records, kv);
+      
+      // 创建聚合数据后，删除离散的数据
+      console.log(`🧹 开始清理离散数据...`);
+      await this.cleanupScatteredData(userId, records, kv);
+    }
+    
     return records;
   }
 
-  // 添加或更新练功记录
-  updatePracticeRecord(userId: string, date: string, record: any): void {
-    const cacheKey = this.getUserCacheKey(userId);
-    
-    // 检查是否在60天内
-    const sixtyDaysAgo = new Date();
-    sixtyDaysAgo.setDate(sixtyDaysAgo.getDate() - this.MAX_DAYS);
-    const cutoffDate = sixtyDaysAgo.toISOString().split('T')[0];
-    
-    if (date >= cutoffDate) {
-      if (!this.cache.has(cacheKey)) {
-        this.cache.set(cacheKey, new Map());
+  // 创建聚合数据
+  private async createAggregatedData(userId: string, records: any[], kv: any): Promise<void> {
+    try {
+      const aggregatedKey = `user_${userId}_aggregated`;
+      
+      // 构建聚合数据结构
+      const aggregatedData = {
+        userId: userId,
+        records: {} as Record<string, any>,
+        summary: {
+          totalRecords: records.length,
+          totalMinutes: records.reduce((sum, record) => sum + record.totalMinutes, 0),
+          lastUpdated: new Date().toISOString(),
+          migratedAt: new Date().toISOString() // 记录迁移时间
+        }
+      };
+      
+      // 将记录转换为以日期为键的对象
+      for (const record of records) {
+        aggregatedData.records[record.date] = {
+          hours: record.hours,
+          minutes: record.minutes,
+          totalMinutes: record.totalMinutes,
+          timestamp: record.timestamp
+        };
       }
       
-      const userCache = this.cache.get(cacheKey)!;
-      userCache.set(date, record);
+      // 存储聚合数据
+      await kv.put(aggregatedKey, JSON.stringify(aggregatedData));
+      console.log(`✅ 已创建用户 ${userId} 的聚合数据，包含 ${records.length} 条记录`);
       
-      console.log(`🔄 已更新用户 ${userId} 在 ${date} 的练功记录缓存`);
+    } catch (error) {
+      console.error(`❌ 创建聚合数据失败 - 用户: ${userId}`, error);
+      throw error; // 重新抛出错误，阻止后续的清理操作
+    }
+  }
+
+  // 清理离散数据
+  private async cleanupScatteredData(userId: string, records: any[], kv: any): Promise<void> {
+    try {
+      const userKeyPrefix = `user_${userId}_`;
+      const deletePromises: Promise<void>[] = [];
+      
+      console.log(`🗑️ 准备删除 ${records.length} 个离散数据键...`);
+      
+      // 分批删除离散数据，避免超过并发限制
+      const BATCH_SIZE = 5;
+      let deletedCount = 0;
+      
+      for (let i = 0; i < records.length; i += BATCH_SIZE) {
+        const batch = records.slice(i, i + BATCH_SIZE);
+        const batchPromises = batch.map(async (record) => {
+          const key = `${userKeyPrefix}${record.date}`;
+          try {
+            await kv.delete(key);
+            deletedCount++;
+            console.log(`🗑️ 已删除离散数据: ${key}`);
+          } catch (error) {
+            console.error(`❌ 删除离散数据失败: ${key}`, error);
+          }
+        });
+        
+        await Promise.all(batchPromises);
+        console.log(`🗑️ 批次删除完成，已删除 ${Math.min(i + BATCH_SIZE, records.length)}/${records.length} 个键`);
+      }
+      
+      console.log(`✅ 离散数据清理完成，共删除 ${deletedCount} 个键`);
+      
+    } catch (error) {
+      console.error(`❌ 清理离散数据失败 - 用户: ${userId}`, error);
+    }
+  }
+
+  // 更新聚合数据中的单条记录
+  private async updateAggregatedData(userId: string, date: string, record: any, kv: any): Promise<void> {
+    try {
+      const aggregatedKey = `user_${userId}_aggregated`;
+      const aggregatedData = await kv.get(aggregatedKey, { type: 'json' });
+      
+      if (aggregatedData && aggregatedData.records) {
+        // 更新记录
+        aggregatedData.records[date] = {
+          hours: record.hours,
+          minutes: record.minutes,
+          totalMinutes: record.totalMinutes,
+          timestamp: record.timestamp
+        };
+        
+        // 更新摘要信息
+        const allRecords = Object.values(aggregatedData.records) as any[];
+        aggregatedData.summary = {
+          totalRecords: allRecords.length,
+          totalMinutes: allRecords.reduce((sum: number, r: any) => sum + r.totalMinutes, 0),
+          lastUpdated: new Date().toISOString()
+        };
+        
+        // 保存更新后的聚合数据
+        await kv.put(aggregatedKey, JSON.stringify(aggregatedData));
+        console.log(`✅ 已更新聚合数据 - 用户: ${userId}, 日期: ${date}`);
+      }
+    } catch (error) {
+      console.error(`❌ 更新聚合数据失败 - 用户: ${userId}, 日期: ${date}`, error);
+    }
+  }
+
+  // 添加或更新练功记录（取消日期限制）
+  updatePracticeRecord(userId: string, date: string, record: any, kv?: any): void {
+    const cacheKey = this.getUserCacheKey(userId);
+    
+    // 更新内存缓存（处理所有数据）
+    if (!this.cache.has(cacheKey)) {
+      this.cache.set(cacheKey, new Map());
+    }
+    
+    const userCache = this.cache.get(cacheKey)!;
+    userCache.set(date, record);
+    
+    console.log(`🔄 已更新用户 ${userId} 在 ${date} 的练功记录缓存`);
+    
+    // 同时更新聚合数据（异步执行，不阻塞主流程）
+    if (kv) {
+      this.updateAggregatedData(userId, date, record, kv).catch(error => {
+        console.error('异步更新聚合数据失败:', error);
+      });
     }
   }
 
   // 删除练功记录
-  deletePracticeRecord(userId: string, date: string): void {
+  deletePracticeRecord(userId: string, date: string, kv?: any): void {
     const cacheKey = this.getUserCacheKey(userId);
     
     if (this.cache.has(cacheKey)) {
@@ -964,6 +1176,41 @@ class PracticeDataCache {
       userCache.delete(date);
       
       console.log(`🗑️ 已删除用户 ${userId} 在 ${date} 的练功记录缓存`);
+    }
+    
+    // 同时更新聚合数据（异步执行，不阻塞主流程）
+    if (kv) {
+      this.deleteFromAggregatedData(userId, date, kv).catch(error => {
+        console.error('异步删除聚合数据失败:', error);
+      });
+    }
+  }
+
+  // 从聚合数据中删除记录
+  private async deleteFromAggregatedData(userId: string, date: string, kv: any): Promise<void> {
+    try {
+      const aggregatedKey = `user_${userId}_aggregated`;
+      const aggregatedData = await kv.get(aggregatedKey, { type: 'json' });
+      
+      if (aggregatedData && aggregatedData.records) {
+        // 删除记录
+        delete aggregatedData.records[date];
+        
+        // 更新摘要信息
+        const allRecords = Object.values(aggregatedData.records) as any[];
+        aggregatedData.summary = {
+          ...aggregatedData.summary,
+          totalRecords: allRecords.length,
+          totalMinutes: allRecords.reduce((sum: number, r: any) => sum + r.totalMinutes, 0),
+          lastUpdated: new Date().toISOString()
+        };
+        
+        // 保存更新后的聚合数据
+        await kv.put(aggregatedKey, JSON.stringify(aggregatedData));
+        console.log(`✅ 已从聚合数据删除记录 - 用户: ${userId}, 日期: ${date}`);
+      }
+    } catch (error) {
+      console.error(`❌ 从聚合数据删除记录失败 - 用户: ${userId}, 日期: ${date}`, error);
     }
   }
 
@@ -992,6 +1239,13 @@ class PracticeDataCache {
 // 创建全局缓存实例
 const practiceDataCache = new PracticeDataCache();
 
+// 启动时输出缓存状态
+console.log('🔧 Worker 启动 - 练功数据缓存实例已创建');
+
+// 添加一个全局变量来跟踪Worker实例
+let workerInstanceId = Math.random().toString(36).substring(2, 8);
+console.log(`🆔 Worker 实例ID: ${workerInstanceId}`);
+
 // --- Practice Time KV handlers ---
 async function handlePracticeTimeKv(request: Request, kv: any, segments: string[], env: any): Promise<Response> {
   const url = new URL(request.url);
@@ -1005,9 +1259,15 @@ async function handlePracticeTimeKv(request: Request, kv: any, segments: string[
 
   // GET /api/kv/practice-time -> 获取用户的所有练功记录
   if (segments.length === 0 && method === 'GET') {
+    const requestStart = performance.now();
+    console.log(`🚀 开始处理练功数据请求 - 用户: ${user.id}, Worker实例: ${workerInstanceId}`);
+    
     try {
       // 使用缓存系统获取数据
       const records = await practiceDataCache.getUserPracticeData(user.id, kv);
+      
+      const requestTime = performance.now() - requestStart;
+      console.log(`✅ 练功数据请求完成 - 用户: ${user.id}, 记录数: ${records.length}, 耗时: ${requestTime.toFixed(2)}ms`);
       
       // 返回最新数据，不设置客户端缓存（确保数据实时性）
       const response = json(records);
@@ -1017,7 +1277,8 @@ async function handlePracticeTimeKv(request: Request, kv: any, segments: string[
       
       return response;
     } catch (error) {
-      console.error('获取练功数据失败:', error);
+      const requestTime = performance.now() - requestStart;
+      console.error(`❌ 获取练功数据失败 - 用户: ${user.id}, 耗时: ${requestTime.toFixed(2)}ms`, error);
       return json({ error: '获取数据失败' }, 500);
     }
   }
@@ -1065,7 +1326,7 @@ async function handlePracticeTimeKv(request: Request, kv: any, segments: string[
     try {
       // 同时更新KV和缓存
       await kv.put(userKey, JSON.stringify(record));
-      practiceDataCache.updatePracticeRecord(user.id, body.date, record);
+      practiceDataCache.updatePracticeRecord(user.id, body.date, record, kv);
       
       return json({ ok: true, record });
     } catch (error) {
@@ -1086,7 +1347,7 @@ async function handlePracticeTimeKv(request: Request, kv: any, segments: string[
     try {
       // 同时删除KV和缓存
       await kv.delete(userKey);
-      practiceDataCache.deletePracticeRecord(user.id, date);
+      practiceDataCache.deletePracticeRecord(user.id, date, kv);
       
       return json({ ok: true });
     } catch (error) {
