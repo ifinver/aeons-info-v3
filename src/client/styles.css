@@ -370,29 +370,17 @@
     @apply max-w-none m-0 bg-transparent border-none rounded-none p-0 shadow-none;
   }
   
-  .home-header {
-    @apply text-center py-16 px-0 bg-gradient-to-br from-indigo-500 to-purple-600;
-    @apply text-white rounded-2xl mb-10;
-  }
-  
-  .home-header h1 {
-    @apply text-6xl m-0 mb-4 font-bold text-white;
-  }
-  
-  .home-subtitle {
-    @apply text-xl m-0 opacity-90 font-light;
-  }
   
   .home-content {
     @apply max-w-4xl mx-auto;
   }
   
   .home-intro {
-    @apply text-center bg-white p-10 rounded-2xl shadow-lg mb-10;
+    @apply text-center bg-white p-12 rounded-2xl shadow-lg mb-10;
   }
   
-  .home-intro h2 {
-    @apply text-gray-800 text-3xl mb-6;
+  .home-intro h1 {
+    @apply text-gray-800 text-5xl mb-6 font-bold;
   }
   
   .home-intro p {
@@ -508,12 +496,8 @@
     }
     
     /* 首页样式调整 */
-    .home-header h1 {
+    .home-intro h1 {
       @apply text-4xl;
-    }
-    
-    .home-subtitle {
-      @apply text-lg;
     }
     
     .home-sections {
