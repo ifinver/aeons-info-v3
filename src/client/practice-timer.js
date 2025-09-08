@@ -621,8 +621,14 @@ async function loadPracticeDataAsync() {
       throw new Error('获取数据失败');
     }
     
-    const records = await response.json();
-    console.log(`✅ 成功获取 ${records.length} 条练功记录`);
+    const aggregatedData = await response.json();
+    console.log(`✅ 成功获取聚合练功数据，包含 ${aggregatedData.summary?.totalRecords || 0} 条记录`);
+    
+    // 将聚合数据转换为记录数组（兼容现有的图表和统计函数）
+    const records = Object.entries(aggregatedData.records || {}).map(([date, record]) => ({
+      date,
+      ...record
+    })).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
     
     // 更新统计信息
     updateStats(records);
