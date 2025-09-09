@@ -448,7 +448,14 @@
   }
   
   .mobile-appbar .home-btn {
-    @apply text-primary text-lg font-semibold;
+    @apply w-8 h-8 flex items-center justify-center text-primary text-lg font-semibold;
+  }
+  
+  .mobile-appbar .home-btn i {
+    -webkit-text-stroke: 1px currentColor;
+    -webkit-text-fill-color: transparent;
+    text-stroke: 1px currentColor;
+    text-fill-color: transparent;
   }
   
   .mobile-appbar .title {
