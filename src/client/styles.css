@@ -370,29 +370,17 @@
     @apply max-w-none m-0 bg-transparent border-none rounded-none p-0 shadow-none;
   }
   
-  .home-header {
-    @apply text-center py-16 px-0 bg-gradient-to-br from-indigo-500 to-purple-600;
-    @apply text-white rounded-2xl mb-10;
-  }
-  
-  .home-header h1 {
-    @apply text-6xl m-0 mb-4 font-bold text-white;
-  }
-  
-  .home-subtitle {
-    @apply text-xl m-0 opacity-90 font-light;
-  }
   
   .home-content {
     @apply max-w-4xl mx-auto;
   }
   
   .home-intro {
-    @apply text-center bg-white p-10 rounded-2xl shadow-lg mb-10;
+    @apply text-center bg-white p-12 rounded-2xl shadow-lg mb-10;
   }
   
-  .home-intro h2 {
-    @apply text-gray-800 text-3xl mb-6;
+  .home-intro h1 {
+    @apply text-gray-800 text-5xl mb-6 font-bold;
   }
   
   .home-intro p {
@@ -460,7 +448,14 @@
   }
   
   .mobile-appbar .home-btn {
-    @apply text-primary text-lg font-semibold;
+    @apply w-8 h-8 flex items-center justify-center text-primary text-lg font-semibold;
+  }
+  
+  .mobile-appbar .home-btn i {
+    -webkit-text-stroke: 1px currentColor;
+    -webkit-text-fill-color: transparent;
+    text-stroke: 1px currentColor;
+    text-fill-color: transparent;
   }
   
   .mobile-appbar .title {
@@ -468,7 +463,7 @@
   }
   
   .mobile-appbar .drawer-toggle {
-    @apply w-8 h-8 flex items-center justify-center text-gray-600;
+    @apply w-14 h-14 flex items-center justify-center text-primary text-2xl font-black;
   }
   
   /* 移动端抽屉遮罩 */
@@ -508,12 +503,8 @@
     }
     
     /* 首页样式调整 */
-    .home-header h1 {
+    .home-intro h1 {
       @apply text-4xl;
-    }
-    
-    .home-subtitle {
-      @apply text-lg;
     }
     
     .home-sections {
