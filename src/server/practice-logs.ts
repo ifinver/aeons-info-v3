@@ -1,9 +1,9 @@
 /**
- * 练功日志处理模块
- * 专门处理用户练功日志的存储、检索和管理
+ * 炼功日志处理模块
+ * 专门处理用户炼功日志的存储、检索和管理
  */
 
-// 练功日志接口
+// 炼功日志接口
 export interface PracticeLog {
   id: string;
   date: string;
@@ -12,7 +12,7 @@ export interface PracticeLog {
   lastModified?: string;
 }
 
-// 用户练功日志集合接口
+// 用户炼功日志集合接口
 export interface UserPracticeLogs {
   userId: string;
   logs: Record<string, PracticeLog>;
@@ -23,8 +23,8 @@ export interface UserPracticeLogs {
 }
 
 /**
- * 练功日志缓存类
- * 管理用户练功日志的内存缓存
+ * 炼功日志缓存类
+ * 管理用户炼功日志的内存缓存
  */
 export class PracticeLogsCache {
   private cache = new Map<string, Map<string, PracticeLog>>(); // userId -> Map<logId, log>
@@ -40,13 +40,13 @@ export class PracticeLogsCache {
     return this.cache.has(cacheKey);
   }
 
-  // 获取用户的所有练功日志
+  // 获取用户的所有炼功日志
   async getUserLogs(userId: string, kv: any): Promise<PracticeLog[]> {
     const cacheKey = this.getUserCacheKey(userId);
     
     // 检查内存缓存
     if (this.isCacheExists(userId)) {
-      console.log(`📦 从内存缓存获取用户 ${userId} 的练功日志 (缓存命中)`);
+      console.log(`📦 从内存缓存获取用户 ${userId} 的炼功日志 (缓存命中)`);
       const userCache = this.cache.get(cacheKey)!;
       const logs = Array.from(userCache.values())
         .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()); // 最新的在前
@@ -56,7 +56,7 @@ export class PracticeLogsCache {
     }
 
     // 内存缓存不存在，从KV加载
-    console.log(`💾 内存缓存未命中，从KV加载用户 ${userId} 的练功日志...`);
+    console.log(`💾 内存缓存未命中，从KV加载用户 ${userId} 的炼功日志...`);
     return await this.loadFromKV(userId, kv);
   }
 
@@ -64,7 +64,7 @@ export class PracticeLogsCache {
   private async loadFromKV(userId: string, kv: any): Promise<PracticeLog[]> {
     try {
       const userLogsKey = `user_logs_${userId}`;
-      console.log(`🔍 从KV加载用户 ${userId} 的练功日志...`);
+      console.log(`🔍 从KV加载用户 ${userId} 的炼功日志...`);
       
       const startTime = performance.now();
       const userLogs = await kv.get(userLogsKey, { type: 'json' }) as UserPracticeLogs;
@@ -252,7 +252,7 @@ export class PracticeLogsCache {
   clearUserCache(userId: string): void {
     const cacheKey = this.getUserCacheKey(userId);
     this.cache.delete(cacheKey);
-    console.log(`🧹 已清除用户 ${userId} 的练功日志缓存`);
+    console.log(`🧹 已清除用户 ${userId} 的炼功日志缓存`);
   }
 
   // 获取缓存统计信息
@@ -273,8 +273,8 @@ export class PracticeLogsCache {
 export const practiceLogsCache = new PracticeLogsCache();
 
 /**
- * 练功日志KV处理函数
- * 处理所有与练功日志相关的API请求
+ * 炼功日志KV处理函数
+ * 处理所有与炼功日志相关的API请求
  */
 export async function handlePracticeLogsKv(
   request: Request, 
@@ -286,16 +286,16 @@ export async function handlePracticeLogsKv(
   const url = new URL(request.url);
   const method = request.method.toUpperCase();
 
-  // GET /api/kv/practice-logs -> 获取用户的所有练功日志
+  // GET /api/kv/practice-logs -> 获取用户的所有炼功日志
   if (segments.length === 0 && method === 'GET') {
     const requestStart = performance.now();
-    console.log(`🚀 开始处理练功日志请求 - 用户: ${user.id}`);
+    console.log(`🚀 开始处理炼功日志请求 - 用户: ${user.id}`);
     
     try {
       const logs = await practiceLogsCache.getUserLogs(user.id, kv);
       
       const requestTime = performance.now() - requestStart;
-      console.log(`✅ 练功日志请求完成 - 用户: ${user.id}, 记录数: ${logs.length}, 耗时: ${requestTime.toFixed(2)}ms`);
+      console.log(`✅ 炼功日志请求完成 - 用户: ${user.id}, 记录数: ${logs.length}, 耗时: ${requestTime.toFixed(2)}ms`);
       
       const response = json(logs);
       response.headers.set('Cache-Control', 'no-cache, no-store, must-revalidate');
@@ -305,12 +305,12 @@ export async function handlePracticeLogsKv(
       return response;
     } catch (error) {
       const requestTime = performance.now() - requestStart;
-      console.error(`❌ 获取练功日志失败 - 用户: ${user.id}, 耗时: ${requestTime.toFixed(2)}ms`, error);
+      console.error(`❌ 获取炼功日志失败 - 用户: ${user.id}, 耗时: ${requestTime.toFixed(2)}ms`, error);
       return json({ error: '获取日志失败' }, 500);
     }
   }
 
-  // POST /api/kv/practice-logs -> 添加新的练功日志
+  // POST /api/kv/practice-logs -> 添加新的炼功日志
   if (segments.length === 0 && method === 'POST') {
     let body: any;
     try {
@@ -342,12 +342,12 @@ export async function handlePracticeLogsKv(
       
       return json({ ok: true, log });
     } catch (error) {
-      console.error('保存练功日志失败:', error);
+      console.error('保存炼功日志失败:', error);
       return json({ error: '保存失败' }, 500);
     }
   }
 
-  // GET /api/kv/practice-logs/:logId -> 获取指定的练功日志
+  // GET /api/kv/practice-logs/:logId -> 获取指定的炼功日志
   if (segments.length === 1 && method === 'GET') {
     const logId = decodeURIComponent(segments[0]);
     
@@ -360,12 +360,12 @@ export async function handlePracticeLogsKv(
       
       return json(log);
     } catch (error) {
-      console.error('获取练功日志失败:', error);
+      console.error('获取炼功日志失败:', error);
       return json({ error: '获取日志失败' }, 500);
     }
   }
 
-  // PUT /api/kv/practice-logs/:logId -> 更新指定的练功日志
+  // PUT /api/kv/practice-logs/:logId -> 更新指定的炼功日志
   if (segments.length === 1 && method === 'PUT') {
     const logId = decodeURIComponent(segments[0]);
     
@@ -405,12 +405,12 @@ export async function handlePracticeLogsKv(
       
       return json({ ok: true, log: updatedLog });
     } catch (error) {
-      console.error('更新练功日志失败:', error);
+      console.error('更新炼功日志失败:', error);
       return json({ error: '更新失败' }, 500);
     }
   }
 
-  // DELETE /api/kv/practice-logs/:logId -> 删除指定的练功日志
+  // DELETE /api/kv/practice-logs/:logId -> 删除指定的炼功日志
   if (segments.length === 1 && method === 'DELETE') {
     const logId = decodeURIComponent(segments[0]);
     
@@ -423,7 +423,7 @@ export async function handlePracticeLogsKv(
       
       return json({ ok: true });
     } catch (error) {
-      console.error('删除练功日志失败:', error);
+      console.error('删除炼功日志失败:', error);
       return json({ error: '删除失败' }, 500);
     }
   }

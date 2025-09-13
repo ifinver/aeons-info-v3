@@ -37,10 +37,10 @@ import {
 // 从 mail.ts 导入邮件发送函数
 import { sendEmail } from './mail';
 
-// 从 practice-data.ts 导入练功数据处理函数
+// 从 practice-data.ts 导入炼功数据处理函数
 import { handlePracticeTimeKv } from './practice-data';
 
-// 从 practice-logs.ts 导入练功日志处理函数
+// 从 practice-logs.ts 导入炼功日志处理函数
 import { handlePracticeLogsKv } from './practice-logs';
 
 // 从 user-registration.ts 导入用户注册相关函数
@@ -92,7 +92,7 @@ async function handleKvApi(request: Request, env: any): Promise<Response> {
   const method = request.method.toUpperCase();
   const segments = url.pathname.split('/').filter(Boolean); // ['api','kv', ...]
 
-  // 检查是否是练功时间KV请求
+  // 检查是否是炼功时间KV请求
   if (segments.length >= 3 && segments[2] === 'practice-time') {
     const notBound = !env || !('aeons_info_practice_time' in env) || !env.aeons_info_practice_time;
     if (notBound) {
@@ -119,7 +119,7 @@ async function handleKvApi(request: Request, env: any): Promise<Response> {
     return handlePracticeTimeKv(request, env.aeons_info_practice_time, segments.slice(3), env, user);
   }
 
-  // 检查是否是练功日志KV请求
+  // 检查是否是炼功日志KV请求
   if (segments.length >= 3 && segments[2] === 'practice-logs') {
     const notBound = !env || !('aeons_info_practice_logs' in env) || !env.aeons_info_practice_logs;
     if (notBound) {

@@ -15,10 +15,10 @@ alwaysApply: true
 
 ### 功能模块
 
-#### 练功日志系统 (最新功能)
-- **前端**: [src/client/practice-timer.js](mdc:src/client/practice-timer.js) - 练功日志界面和功能
+#### 炼功日志系统 (最新功能)
+- **前端**: [src/client/practice-timer.js](mdc:src/client/practice-timer.js) - 炼功日志界面和功能
 - **后端**: [src/server/practice-logs.ts](mdc:src/server/practice-logs.ts) - 日志存储和管理
-- **数据模型**: [src/server/practice-data.ts](mdc:src/server/practice-data.ts) - 练功数据处理
+- **数据模型**: [src/server/practice-data.ts](mdc:src/server/practice-data.ts) - 炼功数据处理
 
 #### 用户认证系统
 - **认证核心**: [src/server/auth.ts](mdc:src/server/auth.ts) - 认证工具函数
@@ -28,8 +28,8 @@ alwaysApply: true
 
 ### KV 命名空间
 - `aeons_info_config` - 配置数据
-- `aeons_info_practice_time` - 练功时间数据
-- `aeons_info_practice_logs` - 练功日志数据 (新增)
+- `aeons_info_practice_time` - 炼功时间数据
+- `aeons_info_practice_logs` - 炼功日志数据 (新增)
 - `aeons_info_users` - 用户数据
 - `aeons_info_auth_tokens` - 认证令牌
 

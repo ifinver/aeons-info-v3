@@ -1,8 +1,8 @@
-# Aeons Info v3 - 练功计时器项目
+# Aeons Info v3 - 炼功计时器项目
 
 ## 项目概述
 
-这是一个基于Cloudflare Workers的全栈Web应用，提供用户认证和练功计时器功能。
+这是一个基于Cloudflare Workers的全栈Web应用，提供用户认证和炼功计时器功能。
 
 ## 重要安全事故总结：HttpOnly Cookie与前端状态管理冲突
 

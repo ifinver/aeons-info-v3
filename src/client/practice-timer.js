@@ -1,4 +1,4 @@
-// 练功日志页面
+// 炼功日志页面
 // Chart.js 将通过script标签加载，使用全局Chart对象
 
 // 用户认证状态
@@ -162,7 +162,7 @@ class ChartManager {
                       const originalMinutes = records[recordIndex].totalMinutes;
                       const h = Math.floor(originalMinutes / 60);
                       const m = originalMinutes % 60;
-                      return `练功时长: ${h}小时${m}分钟`;
+                      return `炼功时长: ${h}小时${m}分钟`;
                     } else {
                       // 对于平均值
                       const totalMinutes = records.reduce((sum, record) => sum + record.totalMinutes, 0);
@@ -251,7 +251,7 @@ class ChartManager {
       labels: labels,
       datasets: [
         {
-          label: '练功时长 (小时)',
+          label: '炼功时长 (小时)',
           data: data,
           borderColor: '#3b82f6',
           backgroundColor: 'rgba(59, 130, 246, 0.1)',
@@ -312,7 +312,7 @@ function waitForChart() {
   return chartManager.preloadChart();
 }
 
-// 清理练功计时器页面的样式影响
+// 清理炼功计时器页面的样式影响
 export function cleanupPracticeTimerPage(container) {
   // 移除可能添加的类名
   container.classList.remove('practice-timer-container');
@@ -321,7 +321,7 @@ export function cleanupPracticeTimerPage(container) {
 }
 
 export async function loadPracticeTimerPage(container) {
-  console.log('🚀 开始加载练功日志页面...');
+  console.log('🚀 开始加载炼功日志页面...');
   performanceMonitor.start('页面总加载时间');
   
   // 清理之前可能存在的类名
@@ -338,11 +338,11 @@ export async function loadPracticeTimerPage(container) {
     <div class="practice-timer-loading" style="${marginStyle}">
       <div class="loading-container">
         <div class="loading-spinner"></div>
-        <p class="loading-text">正在加载练功日志...</p>
+        <p class="loading-text">正在加载炼功日志...</p>
         <div class="loading-steps">
           <div class="step" id="step-auth">🔐 验证用户身份</div>
           <div class="step" id="step-chart">📊 准备图表组件</div>
-          <div class="step" id="step-data">📊 加载练功数据</div>
+          <div class="step" id="step-data">📊 加载炼功数据</div>
         </div>
       </div>
     </div>
@@ -392,12 +392,12 @@ export async function loadPracticeTimerPage(container) {
     console.log('✅ Chart.js 已就绪');
 
     // 第二步：立即显示UI结构
-    console.log('🎨 立即显示练功计时器界面结构...');
+    console.log('🎨 立即显示炼功计时器界面结构...');
     renderPracticeTimerInterface(container, marginStyle);
 
     // 第三步：异步加载数据
     updateLoadingStep('step-data', 'active');
-    console.log('📊 开始加载练功数据...');
+    console.log('📊 开始加载炼功数据...');
     
     // 不等待数据加载完成，立即初始化界面
     initPracticeTimerInterface();
@@ -405,7 +405,7 @@ export async function loadPracticeTimerPage(container) {
     // 异步加载数据
     loadPracticeDataAsync();
     
-    // 异步加载练功日志
+    // 异步加载炼功日志
     loadPracticeLogs();
 
     // 记录页面加载完成时间
@@ -413,7 +413,7 @@ export async function loadPracticeTimerPage(container) {
     performanceMonitor.logSummary();
 
   } catch (error) {
-    console.error('❌ 练功计时器加载失败:', error);
+    console.error('❌ 炼功计时器加载失败:', error);
     performanceMonitor.end('页面总加载时间');
     showErrorState(container, error.message, marginStyle);
   }
@@ -464,8 +464,8 @@ function showAuthInterface(container, marginStyle) {
     <div class="auth-page" style="${marginStyle}">
       <div class="auth-container">
         <div class="auth-header">
-          <h1>练功日志</h1>
-          <p>请登录或注册以使用练功日志功能</p>
+          <h1>炼功日志</h1>
+          <p>请登录或注册以使用炼功日志功能</p>
         </div>
         
         <!-- 登录表单 -->
@@ -522,13 +522,13 @@ function showAuthInterface(container, marginStyle) {
   initAuth();
 }
 
-// 渲染练功计时器界面结构
+// 渲染炼功计时器界面结构
 function renderPracticeTimerInterface(container, marginStyle) {
   container.innerHTML = `
     <div class="practice-timer-page" style="${marginStyle}">
       <!-- 标题和添加按钮 -->
       <div class="header-row mb-6">
-        <h1 class="page-title" style="margin-bottom: 0px;">练功日志</h1>
+        <h1 class="page-title" style="margin-bottom: 0px;">炼功计时器</h1>
         <button id="add-data-btn" class="add-btn">+</button>
       </div>
       
@@ -557,10 +557,10 @@ function renderPracticeTimerInterface(container, marginStyle) {
         </div>
       </div>
 
-      <!-- 练功日志板块 -->
+      <!-- 炼功日志板块 -->
       <div class="practice-log-section">
         <div class="log-header">
-          <h2 class="log-title">练功日志</h2>
+          <h2 class="log-title">炼功日志</h2>
           <button id="add-log-btn" class="add-log-btn">+</button>
         </div>
         
@@ -578,7 +578,7 @@ function renderPracticeTimerInterface(container, marginStyle) {
     <div id="add-data-modal" class="modal-overlay hidden">
       <div class="modal-content">
         <div class="modal-header">
-          <h3>添加练功记录</h3>
+          <h3>添加炼功记录</h3>
           <button id="close-modal" class="close-btn">×</button>
         </div>
         <div class="modal-body">
@@ -587,7 +587,7 @@ function renderPracticeTimerInterface(container, marginStyle) {
             <input type="date" id="practice-date" class="form-input" />
           </div>
           <div class="form-group">
-            <label for="practice-time">练功时长</label>
+            <label for="practice-time">炼功时长</label>
             <div class="time-input-group">
               <input type="number" id="practice-hours" class="time-input" placeholder="0" min="0" max="23" />
               <span class="time-separator">小时</span>
@@ -607,7 +607,7 @@ function renderPracticeTimerInterface(container, marginStyle) {
     <div id="add-log-modal" class="modal-overlay hidden">
       <div class="modal-content log-modal-content">
         <div class="modal-header">
-          <h3 id="log-modal-title">添加练功日志</h3>
+          <h3 id="log-modal-title">添加炼功日志</h3>
           <button id="close-log-modal" class="close-btn">×</button>
         </div>
         <div class="modal-body">
@@ -643,7 +643,7 @@ function renderPracticeTimerInterface(container, marginStyle) {
                 class="form-textarea" 
                 placeholder="支持Markdown格式，例如：
 
-## 今日练功心得
+## 今日炼功心得
 今天练习了**静坐冥想**，持续了30分钟。
 
 ### 体验：
@@ -654,11 +654,11 @@ function renderPracticeTimerInterface(container, marginStyle) {
 > 坚持练习，必有收获！
 
 下次要尝试更长时间的练习。"
-                rows="12"
+                rows="9"
               ></textarea>
             </div>
             <div class="markdown-help">
-            
+
               <small>
                 支持Markdown格式：**粗体** *斜体* ## 标题 - 列表 > 引用 \`代码\`
               </small>
@@ -683,7 +683,7 @@ function renderPracticeTimerInterface(container, marginStyle) {
   addPracticeTimerStyles();
 }
 
-// 初始化练功计时器界面（不等待数据）
+// 初始化炼功计时器界面（不等待数据）
 function initPracticeTimerInterface() {
   // 设置默认日期为今天
   const today = new Date().toISOString().split('T')[0];
@@ -695,10 +695,10 @@ function initPracticeTimerInterface() {
   // 绑定事件
   bindEvents();
   
-  console.log('✅ 练功计时器界面初始化完成');
+  console.log('✅ 炼功计时器界面初始化完成');
 }
 
-// 异步加载练功数据
+// 异步加载炼功数据
 async function loadPracticeDataAsync() {
   performanceMonitor.start('数据加载');
   try {
@@ -715,7 +715,7 @@ async function loadPracticeDataAsync() {
     }
     
     const aggregatedData = await response.json();
-    console.log(`✅ 成功获取聚合练功数据，包含 ${aggregatedData.summary?.totalRecords || 0} 条记录`);
+    console.log(`✅ 成功获取聚合炼功数据，包含 ${aggregatedData.summary?.totalRecords || 0} 条记录`);
     
     // 将聚合数据转换为记录数组（兼容现有的图表和统计函数）
     const records = Object.entries(aggregatedData.records || {}).map(([date, record]) => ({
@@ -746,11 +746,11 @@ async function loadPracticeDataAsync() {
       el.classList.remove('skeleton-text');
     });
     
-    console.log('✅ 练功数据加载完成');
+    console.log('✅ 炼功数据加载完成');
     performanceMonitor.end('数据加载');
     
   } catch (error) {
-    console.error('加载练功数据失败:', error);
+    console.error('加载炼功数据失败:', error);
     performanceMonitor.end('数据加载');
     
     // 显示错误状态
@@ -1219,7 +1219,7 @@ function addPracticeTimerStyles() {
       cursor: not-allowed;
     }
     
-    /* 练功日志板块样式 */
+    /* 炼功日志板块样式 */
     .practice-log-section {
       margin: 32px 20px 0 20px;
     }
@@ -1495,6 +1495,20 @@ function addPracticeTimerStyles() {
     .log-modal-content {
       max-width: 800px;
       width: 95%;
+      max-height: 90vh;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .log-modal-content .modal-body {
+      flex: 1;
+      overflow-y: auto;
+      min-height: 0;
+    }
+    
+    .log-modal-content .modal-header,
+    .log-modal-content .modal-footer {
+      flex-shrink: 0;
     }
     
     .markdown-editor {
@@ -1542,7 +1556,8 @@ function addPracticeTimerStyles() {
       font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', 'Consolas', monospace;
       line-height: 1.5;
       resize: vertical;
-      min-height: 300px;
+      min-height: 150px;
+      max-height: 300px;
       background: var(--card-bg, #ffffff);
       color: var(--text, #374151);
       box-sizing: border-box;
@@ -1575,8 +1590,8 @@ function addPracticeTimerStyles() {
       border-radius: 8px;
       padding: 16px;
       background: var(--card-bg, #ffffff);
-      min-height: 200px;
-      max-height: 300px;
+      min-height: 150px;
+      max-height: 250px;
       overflow-y: auto;
     }
     
@@ -1769,7 +1784,20 @@ function addPracticeTimerStyles() {
         max-width: none;
         margin: 10px;
         max-height: 90vh;
+        display: flex;
+        flex-direction: column;
+      }
+      
+      .log-modal-content .modal-body {
+        flex: 1;
         overflow-y: auto;
+        padding: 15px 20px;
+        min-height: 0; /* 允许 flex 子项收缩 */
+      }
+      
+      .log-modal-content .modal-header,
+      .log-modal-content .modal-footer {
+        flex-shrink: 0; /* 防止头部和底部被压缩 */
       }
       
       .editor-toolbar {
@@ -1786,15 +1814,56 @@ function addPracticeTimerStyles() {
       }
       
       .form-textarea {
-        min-height: 200px;
+        min-height: 135px;
+        max-height: 200px;
         font-size: 13px;
         padding: 12px;
+        resize: vertical;
       }
       
       .log-preview {
-        min-height: 150px;
-        max-height: 200px;
+        min-height: 100px;
+        max-height: 150px;
         padding: 12px;
+        font-size: 12px;
+      }
+      
+      .log-modal-content .form-group {
+        margin-bottom: 15px;
+      }
+      
+      .log-modal-content .form-group:last-child {
+        margin-bottom: 0;
+      }
+    }
+    
+    /* 超小屏幕优化 */
+    @media (max-height: 600px) {
+      .log-modal-content {
+        max-height: 95vh;
+        margin: 5px;
+      }
+      
+      .log-modal-content .modal-header {
+        padding: 15px;
+      }
+      
+      .log-modal-content .modal-footer {
+        padding: 15px;
+      }
+      
+      .log-modal-content .modal-body {
+        padding: 10px 15px;
+      }
+      
+      .form-textarea {
+        min-height: 120px;
+        max-height: 150px;
+      }
+      
+      .log-preview {
+        min-height: 80px;
+        max-height: 100px;
       }
     }
   `;
@@ -1808,7 +1877,7 @@ function closeLogModal() {
   if (logModal) {
     logModal.classList.add('hidden');
     // 重置表单
-    document.getElementById('log-modal-title').textContent = '添加练功日志';
+    document.getElementById('log-modal-title').textContent = '添加炼功日志';
     document.getElementById('log-date').value = '';
     document.getElementById('log-content').value = '';
     document.getElementById('log-preview').innerHTML = '<div class="preview-placeholder">在上方输入内容后，这里会显示预览</div>';
@@ -1834,7 +1903,7 @@ function bindEvents() {
   const logContentTextarea = document.getElementById('log-content');
   const logPreview = document.getElementById('log-preview');
   
-  // 打开练功数据对话框
+  // 打开炼功数据对话框
   addDataBtn.addEventListener('click', () => {
     modal.classList.remove('hidden');
     // 重置表单
@@ -1916,7 +1985,7 @@ async function addPracticeRecord() {
   }
   
   if (hours === 0 && minutes === 0) {
-    alert('请输入练功时长');
+    alert('请输入炼功时长');
     return;
   }
   
@@ -1952,10 +2021,10 @@ async function addPracticeRecord() {
     await loadPracticeDataAsync();
     
     // 显示成功消息
-    showMessage('练功记录添加成功！', 'success');
+    showMessage('炼功记录添加成功！', 'success');
     
   } catch (error) {
-    console.error('添加练功记录失败:', error);
+    console.error('添加炼功记录失败:', error);
     showMessage('添加失败: ' + error.message, 'error');
   }
 }
@@ -2294,11 +2363,11 @@ async function handleLogin() {
     document.getElementById('login-email').value = '';
     document.getElementById('login-password').value = '';
     
-    // 延迟一下让用户看到成功消息，然后重新加载练功计时器界面
+    // 延迟一下让用户看到成功消息，然后重新加载炼功计时器界面
     setTimeout(async () => {
       try {
         // 确保用户信息和CSRF token已经设置
-        console.log('🔄 登录成功，重新加载练功计时器界面');
+        console.log('🔄 登录成功，重新加载炼功计时器界面');
         console.log('👤 当前用户:', currentUser);
         console.log('🔐 CSRF Token:', csrfToken ? '存在' : '缺失');
         
@@ -2313,11 +2382,11 @@ async function handleLogin() {
           }
         }
         
-        // 重新加载练功计时器页面内容
+        // 重新加载炼功计时器页面内容
         const container = document.getElementById('article');
         if (container) {
           await loadPracticeTimerPage(container);
-          console.log('✅ 练功计时器界面已重新加载');
+          console.log('✅ 炼功计时器界面已重新加载');
           
           // 更新侧边栏的用户信息
           if (window.updateUserInfoInSidebar) {
@@ -2328,7 +2397,7 @@ async function handleLogin() {
           window.location.reload();
         }
       } catch (error) {
-        console.error('❌ 重新加载练功计时器失败:', error);
+        console.error('❌ 重新加载炼功计时器失败:', error);
         // 如果出错，使用页面刷新作为备用方案
         window.location.reload();
       }
@@ -2627,7 +2696,7 @@ const performanceMonitor = new PerformanceMonitor();
 // 导出性能监控到全局（调试用）
 window.performanceMonitor = performanceMonitor;
 
-// 练功日志相关函数
+// 炼功日志相关函数
 async function loadPracticeLogs() {
   const logTimeline = document.getElementById('log-timeline');
   if (!logTimeline) return;
@@ -2646,12 +2715,12 @@ async function loadPracticeLogs() {
     }
     
     const logs = await response.json();
-    console.log(`✅ 成功获取练功日志，包含 ${logs.length} 条记录`);
+    console.log(`✅ 成功获取炼功日志，包含 ${logs.length} 条记录`);
     
     renderPracticeLogs(logs);
     
   } catch (error) {
-    console.error('加载练功日志失败:', error);
+    console.error('加载炼功日志失败:', error);
     
     // 显示错误状态
     logTimeline.innerHTML = `
@@ -2672,7 +2741,7 @@ function renderPracticeLogs(logs) {
     logTimeline.innerHTML = `
       <div class="empty-logs">
         <div class="empty-logs-icon">📝</div>
-        <div class="empty-logs-text">还没有练功日志</div>
+        <div class="empty-logs-text">还没有炼功日志</div>
         <div class="empty-logs-hint">点击右上角的 + 按钮添加第一条日志</div>
       </div>
     `;
@@ -2777,7 +2846,7 @@ function parseMarkdownContent(content) {
   return html;
 }
 
-// 删除练功日志
+// 删除炼功日志
 async function deletePracticeLog(logId) {
   if (!confirm('确定要删除这条日志吗？')) {
     return;
@@ -2824,13 +2893,13 @@ function openLogModal(logData = null) {
   
   if (logData) {
     // 编辑模式
-    logModalTitle.textContent = '编辑练功日志';
+    logModalTitle.textContent = '编辑炼功日志';
     logDate.value = logData.date;
     logContent.value = logData.content || '';
     logModal.dataset.editingLogId = logData.id || logData.date;
   } else {
     // 新增模式
-    logModalTitle.textContent = '添加练功日志';
+    logModalTitle.textContent = '添加炼功日志';
     logDate.value = today;
     logContent.value = '';
     delete logModal.dataset.editingLogId;
@@ -2906,7 +2975,7 @@ function insertMarkdown(prefix, suffix = '') {
   updateLogPreview();
 }
 
-// 保存练功日志
+// 保存炼功日志
 async function savePracticeLog() {
   const logModal = document.getElementById('add-log-modal');
   const date = document.getElementById('log-date').value;
@@ -2962,7 +3031,7 @@ async function savePracticeLog() {
   }
 }
 
-// 编辑练功日志
+// 编辑炼功日志
 async function editPracticeLog(logId) {
   try {
     const response = await fetch(`/api/kv/practice-logs/${logId}`, {

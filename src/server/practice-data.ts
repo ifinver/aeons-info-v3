@@ -1,9 +1,9 @@
 /**
- * 练功数据处理模块
- * 专门处理用户练功时间数据的存储、检索和缓存
+ * 炼功数据处理模块
+ * 专门处理用户炼功时间数据的存储、检索和缓存
  */
 
-// 练功记录接口
+// 炼功记录接口
 export interface PracticeRecord {
   date: string;
   hours: number;
@@ -30,7 +30,7 @@ export interface AggregatedPracticeData {
 }
 
 /**
- * 练功数据内存缓存类
+ * 炼功数据内存缓存类
  * 使用聚合数据结构，提高性能
  */
 export class PracticeDataCache {
@@ -47,13 +47,13 @@ export class PracticeDataCache {
     return this.cache.has(cacheKey);
   }
 
-  // 获取用户的练功数据（从缓存或聚合数据）
+  // 获取用户的炼功数据（从缓存或聚合数据）
   async getUserPracticeData(userId: string, kv: any): Promise<PracticeRecord[]> {
     const cacheKey = this.getUserCacheKey(userId);
     
     // 检查内存缓存是否存在
     if (this.isCacheExists(userId)) {
-      console.log(`📦 从内存缓存获取用户 ${userId} 的练功数据 (缓存命中)`);
+      console.log(`📦 从内存缓存获取用户 ${userId} 的炼功数据 (缓存命中)`);
       const userCache = this.cache.get(cacheKey)!;
       const records = Array.from(userCache.entries()).map(([date, record]) => ({
         date,
@@ -69,7 +69,7 @@ export class PracticeDataCache {
     return await this.loadFromKV(userId, kv);
   }
 
-  // 获取用户的聚合练功数据（直接返回聚合格式）
+  // 获取用户的聚合炼功数据（直接返回聚合格式）
   async getUserAggregatedData(userId: string, kv: any): Promise<AggregatedPracticeData | null> {
     const cacheKey = this.getUserCacheKey(userId);
     
@@ -131,7 +131,7 @@ export class PracticeDataCache {
   private async loadFromKV(userId: string, kv: any): Promise<PracticeRecord[]> {
     try {
       const aggregatedKey = `user_${userId}_aggregated`;
-      console.log(`🔍 从聚合数据加载用户 ${userId} 的练功数据...`);
+      console.log(`🔍 从聚合数据加载用户 ${userId} 的炼功数据...`);
       
       const startTime = performance.now();
       const aggregatedData = await kv.get(aggregatedKey, { type: 'json' }) as AggregatedPracticeData;
@@ -167,7 +167,7 @@ export class PracticeDataCache {
     }
   }
 
-  // 添加或更新练功记录
+  // 添加或更新炼功记录
   async updatePracticeRecord(userId: string, date: string, record: Omit<PracticeRecord, 'date'>, kv: any): Promise<void> {
     const cacheKey = this.getUserCacheKey(userId);
     
@@ -180,7 +180,7 @@ export class PracticeDataCache {
         totalMinutes: record.totalMinutes,
         timestamp: record.timestamp
       });
-      console.log(`🔄 已更新用户 ${userId} 在 ${date} 的练功记录缓存`);
+      console.log(`🔄 已更新用户 ${userId} 在 ${date} 的炼功记录缓存`);
     } else {
       console.log(`📦 用户 ${userId} 的缓存不存在，跳过缓存更新`);
     }
@@ -234,7 +234,7 @@ export class PracticeDataCache {
     }
   }
 
-  // 删除练功记录
+  // 删除炼功记录
   async deletePracticeRecord(userId: string, date: string, kv: any): Promise<void> {
     const cacheKey = this.getUserCacheKey(userId);
     
@@ -242,7 +242,7 @@ export class PracticeDataCache {
     if (this.cache.has(cacheKey)) {
       const userCache = this.cache.get(cacheKey)!;
       userCache.delete(date);
-      console.log(`🗑️ 已删除用户 ${userId} 在 ${date} 的练功记录缓存`);
+      console.log(`🗑️ 已删除用户 ${userId} 在 ${date} 的炼功记录缓存`);
     }
     
     // 从聚合数据删除
@@ -285,7 +285,7 @@ export class PracticeDataCache {
   clearUserCache(userId: string): void {
     const cacheKey = this.getUserCacheKey(userId);
     this.cache.delete(cacheKey);
-    console.log(`🧹 已清除用户 ${userId} 的练功数据缓存`);
+    console.log(`🧹 已清除用户 ${userId} 的炼功数据缓存`);
   }
 
   // 获取缓存统计信息
@@ -306,8 +306,8 @@ export class PracticeDataCache {
 export const practiceDataCache = new PracticeDataCache();
 
 /**
- * 练功时间KV处理函数
- * 处理所有与练功数据相关的API请求
+ * 炼功时间KV处理函数
+ * 处理所有与炼功数据相关的API请求
  */
 export async function handlePracticeTimeKv(
   request: Request, 
@@ -319,11 +319,11 @@ export async function handlePracticeTimeKv(
   const url = new URL(request.url);
   const method = request.method.toUpperCase();
 
-  // GET /api/kv/practice-time -> 获取用户的所有练功记录
+  // GET /api/kv/practice-time -> 获取用户的所有炼功记录
   if (segments.length === 0 && method === 'GET') {
     const requestStart = performance.now();
     const workerInstanceId = Math.random().toString(36).substring(2, 8);
-    console.log(`🚀 开始处理练功数据请求 - 用户: ${user.id}, Worker实例: ${workerInstanceId}`);
+    console.log(`🚀 开始处理炼功数据请求 - 用户: ${user.id}, Worker实例: ${workerInstanceId}`);
     
     try {
       // 使用缓存系统获取聚合数据
@@ -332,7 +332,7 @@ export async function handlePracticeTimeKv(
       const requestTime = performance.now() - requestStart;
       
       if (!aggregatedData) {
-        console.log(`✅ 练功数据请求完成 - 用户: ${user.id}, 无数据, 耗时: ${requestTime.toFixed(2)}ms`);
+        console.log(`✅ 炼功数据请求完成 - 用户: ${user.id}, 无数据, 耗时: ${requestTime.toFixed(2)}ms`);
         // 返回空的聚合数据结构
         const emptyData: AggregatedPracticeData = {
           userId: user.id,
@@ -350,7 +350,7 @@ export async function handlePracticeTimeKv(
         return response;
       }
       
-      console.log(`✅ 练功数据请求完成 - 用户: ${user.id}, 记录数: ${aggregatedData.summary.totalRecords}, 耗时: ${requestTime.toFixed(2)}ms`);
+      console.log(`✅ 炼功数据请求完成 - 用户: ${user.id}, 记录数: ${aggregatedData.summary.totalRecords}, 耗时: ${requestTime.toFixed(2)}ms`);
       
       // 返回聚合数据结构，不设置客户端缓存（确保数据实时性）
       const response = json(aggregatedData);
@@ -361,12 +361,12 @@ export async function handlePracticeTimeKv(
       return response;
     } catch (error) {
       const requestTime = performance.now() - requestStart;
-      console.error(`❌ 获取练功数据失败 - 用户: ${user.id}, 耗时: ${requestTime.toFixed(2)}ms`, error);
+      console.error(`❌ 获取炼功数据失败 - 用户: ${user.id}, 耗时: ${requestTime.toFixed(2)}ms`, error);
       return json({ error: '获取数据失败' }, 500);
     }
   }
 
-  // POST /api/kv/practice-time -> 添加新的练功记录
+  // POST /api/kv/practice-time -> 添加新的炼功记录
   if (segments.length === 0 && method === 'POST') {
     let body: any;
     try {
@@ -406,7 +406,7 @@ export async function handlePracticeTimeKv(
       
       return json({ ok: true, record: { date: body.date, ...record } });
     } catch (error) {
-      console.error('保存练功记录失败:', error);
+      console.error('保存炼功记录失败:', error);
       return json({ error: '保存失败' }, 500);
     }
   }
@@ -421,7 +421,7 @@ export async function handlePracticeTimeKv(
       
       return json({ ok: true });
     } catch (error) {
-      console.error('删除练功记录失败:', error);
+      console.error('删除炼功记录失败:', error);
       return json({ error: '删除失败' }, 500);
     }
   }

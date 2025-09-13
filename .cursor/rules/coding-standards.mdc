@@ -62,7 +62,7 @@ function fetchData() {
 
 ```javascript
 /**
- * 保存练功日志到 KV 存储
+ * 保存炼功日志到 KV 存储
  * @param {string} userId - 用户ID
  * @param {Object} logData - 日志数据
  * @param {string} logData.date - 日期 (YYYY-MM-DD)
