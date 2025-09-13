@@ -1314,8 +1314,8 @@ function addPracticeTimerStyles() {
     
     .timeline-item {
       position: relative;
-      margin-bottom: 32px;
-      padding-bottom: 24px;
+      margin-bottom: 12px;
+      padding-bottom: 12px;
       border-bottom: 1px solid var(--border, #e2e8f0);
     }
     
@@ -1439,7 +1439,7 @@ function addPracticeTimerStyles() {
     }
     
     .log-actions {
-      margin-top: 12px;
+      margin-top: 8px;
       display: flex;
       gap: 8px;
       justify-content: flex-end;
@@ -1767,7 +1767,7 @@ function addPracticeTimerStyles() {
       }
       
       .timeline-content {
-        padding: 12px;
+        padding: 8px;
       }
       
       .timeline-date {
