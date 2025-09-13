@@ -230,14 +230,14 @@ async function loadContent(path) {
       
       // 添加文章元数据（可选）
       if (contentData.metadata && contentData.wordCount) {
-        const metaInfo = document.createElement('div');
-        metaInfo.className = 'article-meta';
-        metaInfo.innerHTML = `
-          <small style="color: var(--muted); font-size: 0.8em; margin-bottom: 1rem; display: block;">
-            ${contentData.wordCount} 字 | 生成于 ${new Date(contentData.generatedAt).toLocaleDateString('zh-CN', { timeZone: 'Asia/Shanghai' })}
-          </small>
-        `;
-        article.insertBefore(metaInfo, article.firstChild);
+        // const metaInfo = document.createElement('div');
+        // metaInfo.className = 'article-meta';
+        // metaInfo.innerHTML = `
+        //   <small style="color: var(--muted); font-size: 0.8em; margin-bottom: 1rem; display: block;">
+        //     ${contentData.wordCount} 字 | 生成于 ${new Date(contentData.generatedAt).toLocaleDateString('zh-CN', { timeZone: 'Asia/Shanghai' })}
+        //   </small>
+        // `;
+        // article.insertBefore(metaInfo, article.firstChild);
         
         // 更新移动端 AppBar 标题
         updateAppBar(contentData.metadata.title);
