@@ -658,6 +658,7 @@ function renderPracticeTimerInterface(container, marginStyle) {
               ></textarea>
             </div>
             <div class="markdown-help">
+            
               <small>
                 支持Markdown格式：**粗体** *斜体* ## 标题 - 列表 > 引用 \`代码\`
               </small>
@@ -1801,7 +1802,21 @@ function addPracticeTimerStyles() {
   document.head.appendChild(style);
 }
 
-
+// 关闭日志弹窗函数
+function closeLogModal() {
+  const logModal = document.getElementById('add-log-modal');
+  if (logModal) {
+    logModal.classList.add('hidden');
+    // 重置表单
+    document.getElementById('log-modal-title').textContent = '添加练功日志';
+    document.getElementById('log-date').value = '';
+    document.getElementById('log-content').value = '';
+    document.getElementById('log-preview').innerHTML = '<div class="preview-placeholder">在上方输入内容后，这里会显示预览</div>';
+    
+    // 清除编辑状态
+    delete logModal.dataset.editingLogId;
+  }
+}
 
 function bindEvents() {
   const addDataBtn = document.getElementById('add-data-btn');
@@ -1813,7 +1828,7 @@ function bindEvents() {
   // 日志相关元素
   const addLogBtn = document.getElementById('add-log-btn');
   const logModal = document.getElementById('add-log-modal');
-  const closeLogModal = document.getElementById('close-log-modal');
+  const closeLogModalBtn = document.getElementById('close-log-modal');
   const cancelLogBtn = document.getElementById('cancel-log-btn');
   const confirmLogBtn = document.getElementById('confirm-log-btn');
   const logContentTextarea = document.getElementById('log-content');
@@ -1860,8 +1875,8 @@ function bindEvents() {
   });
   
   // 日志弹窗事件绑定
-  if (closeLogModal) {
-    closeLogModal.addEventListener('click', closeLogModal);
+  if (closeLogModalBtn) {
+    closeLogModalBtn.addEventListener('click', closeLogModal);
   }
   
   if (cancelLogBtn) {
@@ -1888,20 +1903,6 @@ function bindEvents() {
     logContentTextarea.addEventListener('input', updateLogPreview);
   }
   
-  // 关闭日志弹窗函数
-  function closeLogModal() {
-    if (logModal) {
-      logModal.classList.add('hidden');
-      // 重置表单
-      document.getElementById('log-modal-title').textContent = '添加练功日志';
-      document.getElementById('log-date').value = '';
-      document.getElementById('log-content').value = '';
-      document.getElementById('log-preview').innerHTML = '<div class="preview-placeholder">在上方输入内容后，这里会显示预览</div>';
-      
-      // 清除编辑状态
-      delete logModal.dataset.editingLogId;
-    }
-  }
 }
 
 async function addPracticeRecord() {
@@ -2990,6 +2991,7 @@ window.loadPracticeLogs = loadPracticeLogs;
 window.deletePracticeLog = deletePracticeLog;
 window.editPracticeLog = editPracticeLog;
 window.openLogModal = openLogModal;
+window.closeLogModal = closeLogModal;
 window.insertMarkdown = insertMarkdown;
 window.updateLogPreview = updateLogPreview;
 window.savePracticeLog = savePracticeLog;
