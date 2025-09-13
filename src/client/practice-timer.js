@@ -1533,6 +1533,7 @@ function addPracticeTimerStyles() {
     
     .log-action-btn.edit {
       color: var(--primary, #3b82f6);
+      font-weight: normal;
       background: var(--bg-panel, #f9fafb);
       border-right: none;
       border-top-right-radius: 0;
@@ -1541,7 +1542,8 @@ function addPracticeTimerStyles() {
     }
     
     .log-action-btn.delete {
-      color: var(--error, #ef4444);
+      color: var(--error, #6b7280);
+      font-weight: normal;
       background: var(--bg-panel, #f9fafb);
       border-left: none;
       border-top-left-radius: 0;
