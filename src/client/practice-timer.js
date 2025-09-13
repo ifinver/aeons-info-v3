@@ -1446,7 +1446,6 @@ function addPracticeTimerStyles() {
     
     .log-actions {
       display: flex;
-      gap: 6px;
       flex-shrink: 0;
     }
     
@@ -1454,6 +1453,7 @@ function addPracticeTimerStyles() {
       padding: 4px 8px;
       font-size: 12px;
       border: 1px solid var(--border, #e2e8f0);
+      border-bottom: none;
       background: var(--card-bg, #ffffff);
       color: var(--muted, #6b7280);
       border-radius: 4px;
@@ -1468,10 +1468,16 @@ function addPracticeTimerStyles() {
     
     .log-action-btn.edit {
       color: var(--primary, #3b82f6);
+      border-right: none;
+      border-top-right-radius: 0;
+      border-bottom-right-radius: 0;
     }
     
     .log-action-btn.delete {
       color: var(--error, #ef4444);
+      border-left: none;
+      border-top-left-radius: 0;
+      border-bottom-left-radius: 0;
     }
     
     .empty-logs {
