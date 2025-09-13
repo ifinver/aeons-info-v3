@@ -1340,7 +1340,6 @@ function addPracticeTimerStyles() {
       font-size: 14px;
       font-weight: 600;
       color: var(--primary, #3b82f6);
-      margin-bottom: 8px;
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -1758,18 +1757,18 @@ function addPracticeTimerStyles() {
       }
       
       .timeline-container {
-        padding-left: 32px;
+        padding-left: 28px;
       }
       
       .timeline-dot {
-        left: -50px;
+        left: -22px;
         width: 12px;
         height: 12px;
         border-width: 2px;
       }
       
       .timeline-line {
-        left: -44px;
+        left: -16px;
       }
       
       .timeline-content {
