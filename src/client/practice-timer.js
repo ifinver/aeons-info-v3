@@ -1343,6 +1343,13 @@ function addPracticeTimerStyles() {
       margin-bottom: 8px;
       display: flex;
       align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    
+    .date-info {
+      display: flex;
+      align-items: center;
       gap: 8px;
     }
     
@@ -1439,10 +1446,9 @@ function addPracticeTimerStyles() {
     }
     
     .log-actions {
-      margin-top: 8px;
       display: flex;
-      gap: 8px;
-      justify-content: flex-end;
+      gap: 6px;
+      flex-shrink: 0;
     }
     
     .log-action-btn {
@@ -2758,13 +2764,12 @@ function renderPracticeLogs(logs) {
         <div class="timeline-item" data-log-id="${log.id || log.date}">
           <div class="timeline-dot"></div>
           <div class="timeline-date">
-            <span>${formatLogDate(log.date)}</span>
-            <span style="font-weight: normal; color: var(--muted, #6b7280);">
-              ${formatLogWeekday(log.date)}
-            </span>
-          </div>
-          <div class="timeline-content">
-            <div class="log-content">${parseMarkdownContent(log.content || '')}</div>
+            <div class="date-info">
+              <span>${formatLogDate(log.date)}</span>
+              <span style="font-weight: normal; color: var(--muted, #6b7280);">
+                ${formatLogWeekday(log.date)}
+              </span>
+            </div>
             <div class="log-actions">
               <button class="log-action-btn edit" onclick="editPracticeLog('${log.id || log.date}')">
                 编辑
@@ -2773,6 +2778,9 @@ function renderPracticeLogs(logs) {
                 删除
               </button>
             </div>
+          </div>
+          <div class="timeline-content">
+            <div class="log-content">${parseMarkdownContent(log.content || '')}</div>
           </div>
         </div>
       `).join('')}
