@@ -1,4 +1,4 @@
-// 练功计时器页面
+// 练功日志页面
 // Chart.js 将通过script标签加载，使用全局Chart对象
 
 // 用户认证状态
@@ -321,7 +321,7 @@ export function cleanupPracticeTimerPage(container) {
 }
 
 export async function loadPracticeTimerPage(container) {
-  console.log('🚀 开始加载练功计时器页面...');
+  console.log('🚀 开始加载练功日志页面...');
   performanceMonitor.start('页面总加载时间');
   
   // 清理之前可能存在的类名
@@ -338,7 +338,7 @@ export async function loadPracticeTimerPage(container) {
     <div class="practice-timer-loading" style="${marginStyle}">
       <div class="loading-container">
         <div class="loading-spinner"></div>
-        <p class="loading-text">正在加载练功计时器...</p>
+        <p class="loading-text">正在加载练功日志...</p>
         <div class="loading-steps">
           <div class="step" id="step-auth">🔐 验证用户身份</div>
           <div class="step" id="step-chart">📊 准备图表组件</div>
@@ -404,6 +404,9 @@ export async function loadPracticeTimerPage(container) {
     
     // 异步加载数据
     loadPracticeDataAsync();
+    
+    // 异步加载练功日志
+    loadPracticeLogs();
 
     // 记录页面加载完成时间
     performanceMonitor.end('页面总加载时间');
@@ -461,8 +464,8 @@ function showAuthInterface(container, marginStyle) {
     <div class="auth-page" style="${marginStyle}">
       <div class="auth-container">
         <div class="auth-header">
-          <h1>练功计时器</h1>
-          <p>请登录或注册以使用练功计时器功能</p>
+          <h1>练功日志</h1>
+          <p>请登录或注册以使用练功日志功能</p>
         </div>
         
         <!-- 登录表单 -->
@@ -525,7 +528,7 @@ function renderPracticeTimerInterface(container, marginStyle) {
     <div class="practice-timer-page" style="${marginStyle}">
       <!-- 标题和添加按钮 -->
       <div class="header-row mb-6">
-        <h1 class="page-title" style="margin-bottom: 0px;">练功计时器</h1>
+        <h1 class="page-title" style="margin-bottom: 0px;">练功日志</h1>
         <button id="add-data-btn" class="add-btn">+</button>
       </div>
       
@@ -551,6 +554,21 @@ function renderPracticeTimerInterface(container, marginStyle) {
         <div class="stat-card">
           <div class="stat-label">记录天数</div>
           <div class="stat-value skeleton-text" id="total-days">加载中...</div>
+        </div>
+      </div>
+
+      <!-- 练功日志板块 -->
+      <div class="practice-log-section">
+        <div class="log-header">
+          <h2 class="log-title">练功日志</h2>
+          <button id="add-log-btn" class="add-log-btn">+</button>
+        </div>
+        
+        <div class="log-timeline" id="log-timeline">
+          <div class="log-loading">
+            <div class="loading-spinner"></div>
+            <p>正在加载日志...</p>
+          </div>
         </div>
       </div>
 
@@ -581,6 +599,80 @@ function renderPracticeTimerInterface(container, marginStyle) {
         <div class="modal-footer">
           <button id="cancel-btn" class="cancel-btn">取消</button>
           <button id="confirm-btn" class="confirm-btn">确定</button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 添加/编辑日志对话框 -->
+    <div id="add-log-modal" class="modal-overlay hidden">
+      <div class="modal-content log-modal-content">
+        <div class="modal-header">
+          <h3 id="log-modal-title">添加练功日志</h3>
+          <button id="close-log-modal" class="close-btn">×</button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="log-date">日期</label>
+            <input type="date" id="log-date" class="form-input" />
+          </div>
+          <div class="form-group">
+            <label for="log-content">日志内容</label>
+            <div class="markdown-editor">
+              <div class="editor-toolbar">
+                <button type="button" class="toolbar-btn" onclick="insertMarkdown('**', '**')" title="粗体">
+                  <strong>B</strong>
+                </button>
+                <button type="button" class="toolbar-btn" onclick="insertMarkdown('*', '*')" title="斜体">
+                  <em>I</em>
+                </button>
+                <button type="button" class="toolbar-btn" onclick="insertMarkdown('## ', '')" title="标题">
+                  H
+                </button>
+                <button type="button" class="toolbar-btn" onclick="insertMarkdown('- ', '')" title="列表">
+                  •
+                </button>
+                <button type="button" class="toolbar-btn" onclick="insertMarkdown('> ', '')" title="引用">
+                  "
+                </button>
+                <button type="button" class="toolbar-btn" onclick="insertMarkdown('`', '`')" title="代码">
+                  &lt;/&gt;
+                </button>
+              </div>
+              <textarea 
+                id="log-content" 
+                class="form-textarea" 
+                placeholder="支持Markdown格式，例如：
+
+## 今日练功心得
+今天练习了**静坐冥想**，持续了30分钟。
+
+### 体验：
+- 心境比较平静
+- 注意力集中度有所提升
+- *身体感觉轻松*
+
+> 坚持练习，必有收获！
+
+下次要尝试更长时间的练习。"
+                rows="12"
+              ></textarea>
+            </div>
+            <div class="markdown-help">
+              <small>
+                支持Markdown格式：**粗体** *斜体* ## 标题 - 列表 > 引用 `代码`
+              </small>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>预览</label>
+            <div id="log-preview" class="log-preview">
+              <div class="preview-placeholder">在上方输入内容后，这里会显示预览</div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button id="cancel-log-btn" class="cancel-btn">取消</button>
+          <button id="confirm-log-btn" class="confirm-btn">保存</button>
         </div>
       </div>
     </div>
@@ -1126,6 +1218,462 @@ function addPracticeTimerStyles() {
       cursor: not-allowed;
     }
     
+    /* 练功日志板块样式 */
+    .practice-log-section {
+      margin: 32px 20px 0 20px;
+    }
+    
+    .log-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+    
+    .log-title {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: var(--text, #1f2937);
+      margin: 0;
+    }
+    
+    .add-log-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      color: white;
+      border: none;
+      font-size: 20px;
+      font-weight: 300;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+    }
+    
+    .add-log-btn:hover {
+      transform: translateY(-2px) scale(1.05);
+      box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+    }
+    
+    .add-log-btn:active {
+      transform: translateY(0) scale(0.95);
+    }
+    
+    .log-timeline {
+      background: var(--card-bg, #ffffff);
+      border: 1px solid var(--border, #e2e8f0);
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      min-height: 300px;
+    }
+    
+    .log-loading {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 260px;
+      text-align: center;
+    }
+    
+    .log-loading .loading-spinner {
+      width: 32px;
+      height: 32px;
+      border: 3px solid var(--border, #e2e8f0);
+      border-top: 3px solid var(--primary, #3b82f6);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-bottom: 16px;
+    }
+    
+    .log-loading p {
+      color: var(--muted, #6b7280);
+      font-size: 14px;
+      margin: 0;
+    }
+    
+    .timeline-container {
+      position: relative;
+      padding-left: 40px;
+    }
+    
+    .timeline-line {
+      position: absolute;
+      left: 18px;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: linear-gradient(to bottom, var(--primary, #3b82f6), transparent);
+    }
+    
+    .timeline-item {
+      position: relative;
+      margin-bottom: 32px;
+      padding-bottom: 24px;
+      border-bottom: 1px solid var(--border, #e2e8f0);
+    }
+    
+    .timeline-item:last-child {
+      border-bottom: none;
+      margin-bottom: 0;
+    }
+    
+    .timeline-dot {
+      position: absolute;
+      left: -58px;
+      top: 8px;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--primary, #3b82f6);
+      border: 3px solid var(--card-bg, #ffffff);
+      box-shadow: 0 0 0 2px var(--primary, #3b82f6);
+    }
+    
+    .timeline-date {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--primary, #3b82f6);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .timeline-content {
+      background: var(--bg-panel, #f9fafb);
+      border: 1px solid var(--border, #e2e8f0);
+      border-radius: 8px;
+      padding: 16px;
+      position: relative;
+    }
+    
+    .timeline-content::before {
+      content: '';
+      position: absolute;
+      left: -8px;
+      top: 16px;
+      width: 0;
+      height: 0;
+      border-top: 8px solid transparent;
+      border-bottom: 8px solid transparent;
+      border-right: 8px solid var(--border, #e2e8f0);
+    }
+    
+    .timeline-content::after {
+      content: '';
+      position: absolute;
+      left: -7px;
+      top: 16px;
+      width: 0;
+      height: 0;
+      border-top: 8px solid transparent;
+      border-bottom: 8px solid transparent;
+      border-right: 8px solid var(--bg-panel, #f9fafb);
+    }
+    
+    .log-content {
+      color: var(--text, #374151);
+      line-height: 1.6;
+      font-size: 14px;
+    }
+    
+    .log-content h1, .log-content h2, .log-content h3, 
+    .log-content h4, .log-content h5, .log-content h6 {
+      margin-top: 16px;
+      margin-bottom: 8px;
+      color: var(--text, #1f2937);
+    }
+    
+    .log-content h1 { font-size: 18px; }
+    .log-content h2 { font-size: 16px; }
+    .log-content h3 { font-size: 15px; }
+    .log-content h4, .log-content h5, .log-content h6 { font-size: 14px; }
+    
+    .log-content p {
+      margin-bottom: 12px;
+    }
+    
+    .log-content ul, .log-content ol {
+      margin-bottom: 12px;
+      padding-left: 20px;
+    }
+    
+    .log-content li {
+      margin-bottom: 4px;
+    }
+    
+    .log-content blockquote {
+      border-left: 3px solid var(--primary, #3b82f6);
+      padding-left: 12px;
+      margin: 12px 0;
+      color: var(--muted, #6b7280);
+      font-style: italic;
+    }
+    
+    .log-content code {
+      background: var(--border, #e2e8f0);
+      padding: 2px 4px;
+      border-radius: 3px;
+      font-size: 13px;
+      font-family: monospace;
+    }
+    
+    .log-content pre {
+      background: var(--border, #e2e8f0);
+      padding: 12px;
+      border-radius: 6px;
+      overflow-x: auto;
+      margin: 12px 0;
+    }
+    
+    .log-content pre code {
+      background: none;
+      padding: 0;
+    }
+    
+    .log-actions {
+      margin-top: 12px;
+      display: flex;
+      gap: 8px;
+      justify-content: flex-end;
+    }
+    
+    .log-action-btn {
+      padding: 4px 8px;
+      font-size: 12px;
+      border: 1px solid var(--border, #e2e8f0);
+      background: var(--card-bg, #ffffff);
+      color: var(--muted, #6b7280);
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    
+    .log-action-btn:hover {
+      background: var(--border, #f3f4f6);
+      color: var(--text, #374151);
+    }
+    
+    .log-action-btn.edit {
+      color: var(--primary, #3b82f6);
+    }
+    
+    .log-action-btn.delete {
+      color: var(--error, #ef4444);
+    }
+    
+    .empty-logs {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--muted, #6b7280);
+    }
+    
+    .empty-logs-icon {
+      font-size: 48px;
+      margin-bottom: 16px;
+      opacity: 0.5;
+    }
+    
+    .empty-logs-text {
+      font-size: 16px;
+      margin-bottom: 8px;
+    }
+    
+    .empty-logs-hint {
+      font-size: 14px;
+      opacity: 0.8;
+    }
+    
+    /* 日志弹窗样式 */
+    .log-modal-content {
+      max-width: 800px;
+      width: 95%;
+    }
+    
+    .markdown-editor {
+      border: 1px solid var(--border, #e2e8f0);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    
+    .editor-toolbar {
+      background: var(--bg-panel, #f9fafb);
+      border-bottom: 1px solid var(--border, #e2e8f0);
+      padding: 8px 12px;
+      display: flex;
+      gap: 8px;
+    }
+    
+    .toolbar-btn {
+      padding: 6px 10px;
+      background: var(--card-bg, #ffffff);
+      border: 1px solid var(--border, #e2e8f0);
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 12px;
+      color: var(--text, #374151);
+      transition: all 0.2s ease;
+      min-width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .toolbar-btn:hover {
+      background: var(--primary, #3b82f6);
+      color: white;
+      border-color: var(--primary, #3b82f6);
+    }
+    
+    .form-textarea {
+      width: 100%;
+      padding: 16px;
+      border: none;
+      border-radius: 0;
+      font-size: 14px;
+      font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', 'Consolas', monospace;
+      line-height: 1.5;
+      resize: vertical;
+      min-height: 300px;
+      background: var(--card-bg, #ffffff);
+      color: var(--text, #374151);
+      box-sizing: border-box;
+    }
+    
+    .form-textarea:focus {
+      outline: none;
+      background: var(--card-bg, #ffffff);
+    }
+    
+    .form-textarea::placeholder {
+      color: var(--muted, #9ca3af);
+      line-height: 1.5;
+    }
+    
+    .markdown-help {
+      margin-top: 8px;
+      padding: 8px 12px;
+      background: var(--bg-panel, #f9fafb);
+      border-radius: 4px;
+    }
+    
+    .markdown-help small {
+      color: var(--muted, #6b7280);
+      font-size: 12px;
+    }
+    
+    .log-preview {
+      border: 1px solid var(--border, #e2e8f0);
+      border-radius: 8px;
+      padding: 16px;
+      background: var(--card-bg, #ffffff);
+      min-height: 200px;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+    
+    .preview-placeholder {
+      color: var(--muted, #9ca3af);
+      font-style: italic;
+      text-align: center;
+      padding: 40px 20px;
+    }
+    
+    /* 预览内容样式 */
+    .log-preview h1, .log-preview h2, .log-preview h3,
+    .log-preview h4, .log-preview h5, .log-preview h6 {
+      margin-top: 16px;
+      margin-bottom: 8px;
+      color: var(--text, #1f2937);
+    }
+    
+    .log-preview h1 { font-size: 20px; font-weight: bold; }
+    .log-preview h2 { font-size: 18px; font-weight: bold; }
+    .log-preview h3 { font-size: 16px; font-weight: 600; }
+    .log-preview h4, .log-preview h5, .log-preview h6 { 
+      font-size: 14px; 
+      font-weight: 600; 
+    }
+    
+    .log-preview p {
+      margin-bottom: 12px;
+      line-height: 1.6;
+      color: var(--text, #374151);
+    }
+    
+    .log-preview ul, .log-preview ol {
+      margin-bottom: 12px;
+      padding-left: 24px;
+    }
+    
+    .log-preview li {
+      margin-bottom: 4px;
+      line-height: 1.6;
+    }
+    
+    .log-preview blockquote {
+      border-left: 3px solid var(--primary, #3b82f6);
+      padding-left: 16px;
+      margin: 16px 0;
+      color: var(--muted, #6b7280);
+      font-style: italic;
+      background: var(--bg-panel, #f9fafb);
+      padding: 12px 16px;
+      border-radius: 0 4px 4px 0;
+    }
+    
+    .log-preview code {
+      background: var(--border, #e2e8f0);
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-size: 13px;
+      font-family: monospace;
+      color: var(--text, #374151);
+    }
+    
+    .log-preview pre {
+      background: var(--border, #e2e8f0);
+      padding: 16px;
+      border-radius: 6px;
+      overflow-x: auto;
+      margin: 16px 0;
+      font-family: monospace;
+      font-size: 13px;
+      line-height: 1.4;
+    }
+    
+    .log-preview pre code {
+      background: none;
+      padding: 0;
+      font-size: inherit;
+    }
+    
+    .log-preview strong {
+      font-weight: 600;
+      color: var(--text, #1f2937);
+    }
+    
+    .log-preview em {
+      font-style: italic;
+      color: var(--muted, #6b7280);
+    }
+    
+    .log-preview a {
+      color: var(--primary, #3b82f6);
+      text-decoration: underline;
+    }
+    
+    .log-preview a:hover {
+      color: var(--primary-dark, #2563eb);
+    }
+
     @media (max-width: 768px) {
       .practice-timer-page {
         padding: 15px;
@@ -1167,6 +1715,86 @@ function addPracticeTimerStyles() {
         width: 95%;
         margin: 20px;
       }
+      
+      /* 移动端日志样式调整 */
+      .practice-log-section {
+        margin: 24px 0 0 0;
+      }
+      
+      .log-title {
+        font-size: 1.25rem;
+      }
+      
+      .add-log-btn {
+        width: 32px;
+        height: 32px;
+        font-size: 18px;
+      }
+      
+      .log-timeline {
+        padding: 16px;
+      }
+      
+      .timeline-container {
+        padding-left: 32px;
+      }
+      
+      .timeline-dot {
+        left: -50px;
+        width: 12px;
+        height: 12px;
+        border-width: 2px;
+      }
+      
+      .timeline-line {
+        left: -44px;
+      }
+      
+      .timeline-content {
+        padding: 12px;
+      }
+      
+      .timeline-date {
+        font-size: 13px;
+      }
+      
+      .log-content {
+        font-size: 13px;
+      }
+      
+      /* 移动端日志弹窗样式调整 */
+      .log-modal-content {
+        width: 98%;
+        max-width: none;
+        margin: 10px;
+        max-height: 90vh;
+        overflow-y: auto;
+      }
+      
+      .editor-toolbar {
+        padding: 6px 8px;
+        gap: 6px;
+        flex-wrap: wrap;
+      }
+      
+      .toolbar-btn {
+        min-width: 24px;
+        height: 24px;
+        font-size: 11px;
+        padding: 4px 6px;
+      }
+      
+      .form-textarea {
+        min-height: 200px;
+        font-size: 13px;
+        padding: 12px;
+      }
+      
+      .log-preview {
+        min-height: 150px;
+        max-height: 200px;
+        padding: 12px;
+      }
     }
   `;
   
@@ -1182,12 +1810,26 @@ function bindEvents() {
   const cancelBtn = document.getElementById('cancel-btn');
   const confirmBtn = document.getElementById('confirm-btn');
   
-  // 打开对话框
+  // 日志相关元素
+  const addLogBtn = document.getElementById('add-log-btn');
+  const logModal = document.getElementById('add-log-modal');
+  const closeLogModal = document.getElementById('close-log-modal');
+  const cancelLogBtn = document.getElementById('cancel-log-btn');
+  const confirmLogBtn = document.getElementById('confirm-log-btn');
+  const logContentTextarea = document.getElementById('log-content');
+  const logPreview = document.getElementById('log-preview');
+  
+  // 打开练功数据对话框
   addDataBtn.addEventListener('click', () => {
     modal.classList.remove('hidden');
     // 重置表单
     document.getElementById('practice-hours').value = '';
     document.getElementById('practice-minutes').value = '';
+  });
+  
+  // 打开日志对话框
+  addLogBtn.addEventListener('click', () => {
+    openLogModal();
   });
   
   // 关闭对话框
@@ -1216,6 +1858,50 @@ function bindEvents() {
       addPracticeRecord();
     }
   });
+  
+  // 日志弹窗事件绑定
+  if (closeLogModal) {
+    closeLogModal.addEventListener('click', closeLogModal);
+  }
+  
+  if (cancelLogBtn) {
+    cancelLogBtn.addEventListener('click', closeLogModal);
+  }
+  
+  if (confirmLogBtn) {
+    confirmLogBtn.addEventListener('click', async () => {
+      await savePracticeLog();
+    });
+  }
+  
+  // 点击遮罩关闭日志弹窗
+  if (logModal) {
+    logModal.addEventListener('click', (e) => {
+      if (e.target === logModal) {
+        closeLogModal();
+      }
+    });
+  }
+  
+  // 实时预览
+  if (logContentTextarea) {
+    logContentTextarea.addEventListener('input', updateLogPreview);
+  }
+  
+  // 关闭日志弹窗函数
+  function closeLogModal() {
+    if (logModal) {
+      logModal.classList.add('hidden');
+      // 重置表单
+      document.getElementById('log-modal-title').textContent = '添加练功日志';
+      document.getElementById('log-date').value = '';
+      document.getElementById('log-content').value = '';
+      document.getElementById('log-preview').innerHTML = '<div class="preview-placeholder">在上方输入内容后，这里会显示预览</div>';
+      
+      // 清除编辑状态
+      delete logModal.dataset.editingLogId;
+    }
+  }
 }
 
 async function addPracticeRecord() {
@@ -1939,3 +2625,371 @@ const performanceMonitor = new PerformanceMonitor();
 
 // 导出性能监控到全局（调试用）
 window.performanceMonitor = performanceMonitor;
+
+// 练功日志相关函数
+async function loadPracticeLogs() {
+  const logTimeline = document.getElementById('log-timeline');
+  if (!logTimeline) return;
+
+  try {
+    const response = await fetch('/api/kv/practice-logs', {
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(csrfToken ? { 'X-CSRF-Token': csrfToken } : {})
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error('获取日志失败');
+    }
+    
+    const logs = await response.json();
+    console.log(`✅ 成功获取练功日志，包含 ${logs.length} 条记录`);
+    
+    renderPracticeLogs(logs);
+    
+  } catch (error) {
+    console.error('加载练功日志失败:', error);
+    
+    // 显示错误状态
+    logTimeline.innerHTML = `
+      <div class="log-loading">
+        <div class="empty-logs-icon">❌</div>
+        <p class="empty-logs-text">日志加载失败</p>
+        <button onclick="loadPracticeLogs()" class="retry-btn">重试</button>
+      </div>
+    `;
+  }
+}
+
+function renderPracticeLogs(logs) {
+  const logTimeline = document.getElementById('log-timeline');
+  if (!logTimeline) return;
+
+  if (!logs || logs.length === 0) {
+    logTimeline.innerHTML = `
+      <div class="empty-logs">
+        <div class="empty-logs-icon">📝</div>
+        <div class="empty-logs-text">还没有练功日志</div>
+        <div class="empty-logs-hint">点击右上角的 + 按钮添加第一条日志</div>
+      </div>
+    `;
+    return;
+  }
+
+  // 按日期排序（最新的在上面）
+  const sortedLogs = logs.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+  const timelineHTML = `
+    <div class="timeline-container">
+      <div class="timeline-line"></div>
+      ${sortedLogs.map(log => `
+        <div class="timeline-item" data-log-id="${log.id || log.date}">
+          <div class="timeline-dot"></div>
+          <div class="timeline-date">
+            <span>${formatLogDate(log.date)}</span>
+            <span style="font-weight: normal; color: var(--muted, #6b7280);">
+              ${formatLogWeekday(log.date)}
+            </span>
+          </div>
+          <div class="timeline-content">
+            <div class="log-content">${parseMarkdownContent(log.content || '')}</div>
+            <div class="log-actions">
+              <button class="log-action-btn edit" onclick="editPracticeLog('${log.id || log.date}')">
+                编辑
+              </button>
+              <button class="log-action-btn delete" onclick="deletePracticeLog('${log.id || log.date}')">
+                删除
+              </button>
+            </div>
+          </div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+
+  logTimeline.innerHTML = timelineHTML;
+}
+
+function formatLogDate(dateString) {
+  const date = new Date(dateString);
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const yesterday = new Date(today.getTime() - 24 * 60 * 60 * 1000);
+  const logDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+
+  if (logDate.getTime() === today.getTime()) {
+    return '今天';
+  } else if (logDate.getTime() === yesterday.getTime()) {
+    return '昨天';
+  } else {
+    return date.toLocaleDateString('zh-CN', { 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric' 
+    });
+  }
+}
+
+function formatLogWeekday(dateString) {
+  const date = new Date(dateString);
+  const weekdays = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
+  return weekdays[date.getDay()];
+}
+
+function parseMarkdownContent(content) {
+  if (!content) return '<p class="empty-content">暂无内容</p>';
+  
+  // 简单的Markdown解析器
+  let html = content
+    // 标题
+    .replace(/^### (.*$)/gim, '<h3>$1</h3>')
+    .replace(/^## (.*$)/gim, '<h2>$1</h2>')
+    .replace(/^# (.*$)/gim, '<h1>$1</h1>')
+    // 粗体和斜体
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.*?)\*/g, '<em>$1</em>')
+    // 链接
+    .replace(/\[([^\]]*)\]\(([^)]*)\)/g, '<a href="$2" target="_blank">$1</a>')
+    // 代码块
+    .replace(/```([^`]*?)```/g, '<pre><code>$1</code></pre>')
+    .replace(/`([^`]*?)`/g, '<code>$1</code>')
+    // 引用
+    .replace(/^> (.*$)/gim, '<blockquote>$1</blockquote>')
+    // 列表
+    .replace(/^\* (.*$)/gim, '<li>$1</li>')
+    .replace(/^- (.*$)/gim, '<li>$1</li>')
+    // 段落
+    .replace(/\n\n/g, '</p><p>')
+    .replace(/\n/g, '<br>');
+
+  // 包装列表项
+  html = html.replace(/(<li>.*<\/li>)/g, '<ul>$1</ul>');
+  
+  // 包装段落
+  if (!html.includes('<h1>') && !html.includes('<h2>') && !html.includes('<h3>') && 
+      !html.includes('<ul>') && !html.includes('<blockquote>') && !html.includes('<pre>')) {
+    html = '<p>' + html + '</p>';
+  }
+
+  return html;
+}
+
+// 删除练功日志
+async function deletePracticeLog(logId) {
+  if (!confirm('确定要删除这条日志吗？')) {
+    return;
+  }
+
+  try {
+    const response = await fetch(`/api/kv/practice-logs/${logId}`, {
+      method: 'DELETE',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(csrfToken ? { 'X-CSRF-Token': csrfToken } : {})
+      }
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || '删除失败');
+    }
+
+    showMessage('日志删除成功！', 'success');
+    
+    // 重新加载日志
+    await loadPracticeLogs();
+    
+  } catch (error) {
+    console.error('删除日志失败:', error);
+    showMessage('删除失败: ' + error.message, 'error');
+  }
+}
+
+// 打开日志弹窗
+function openLogModal(logData = null) {
+  const logModal = document.getElementById('add-log-modal');
+  const logModalTitle = document.getElementById('log-modal-title');
+  const logDate = document.getElementById('log-date');
+  const logContent = document.getElementById('log-content');
+  const logPreview = document.getElementById('log-preview');
+  
+  if (!logModal) return;
+  
+  // 设置默认日期为今天
+  const today = new Date().toISOString().split('T')[0];
+  
+  if (logData) {
+    // 编辑模式
+    logModalTitle.textContent = '编辑练功日志';
+    logDate.value = logData.date;
+    logContent.value = logData.content || '';
+    logModal.dataset.editingLogId = logData.id || logData.date;
+  } else {
+    // 新增模式
+    logModalTitle.textContent = '添加练功日志';
+    logDate.value = today;
+    logContent.value = '';
+    delete logModal.dataset.editingLogId;
+  }
+  
+  // 更新预览
+  updateLogPreview();
+  
+  // 显示弹窗
+  logModal.classList.remove('hidden');
+  
+  // 聚焦到内容输入框
+  setTimeout(() => {
+    logContent.focus();
+  }, 100);
+}
+
+// 更新日志预览
+function updateLogPreview() {
+  const logContent = document.getElementById('log-content');
+  const logPreview = document.getElementById('log-preview');
+  
+  if (!logContent || !logPreview) return;
+  
+  const content = logContent.value.trim();
+  
+  if (!content) {
+    logPreview.innerHTML = '<div class="preview-placeholder">在上方输入内容后，这里会显示预览</div>';
+    return;
+  }
+  
+  const htmlContent = parseMarkdownContent(content);
+  logPreview.innerHTML = htmlContent;
+}
+
+// 插入Markdown格式
+function insertMarkdown(prefix, suffix = '') {
+  const textarea = document.getElementById('log-content');
+  if (!textarea) return;
+  
+  const start = textarea.selectionStart;
+  const end = textarea.selectionEnd;
+  const selectedText = textarea.value.substring(start, end);
+  const beforeText = textarea.value.substring(0, start);
+  const afterText = textarea.value.substring(end);
+  
+  let newText;
+  let newCursorPos;
+  
+  if (suffix) {
+    // 包围式标记（如粗体、斜体）
+    newText = beforeText + prefix + selectedText + suffix + afterText;
+    newCursorPos = selectedText ? end + prefix.length + suffix.length : start + prefix.length;
+  } else {
+    // 前缀式标记（如标题、列表）
+    const lines = selectedText.split('\n');
+    const processedLines = lines.map(line => {
+      if (line.trim()) {
+        return prefix + line;
+      }
+      return line;
+    });
+    
+    newText = beforeText + processedLines.join('\n') + afterText;
+    newCursorPos = end + (prefix.length * lines.filter(line => line.trim()).length);
+  }
+  
+  textarea.value = newText;
+  textarea.focus();
+  textarea.setSelectionRange(newCursorPos, newCursorPos);
+  
+  // 更新预览
+  updateLogPreview();
+}
+
+// 保存练功日志
+async function savePracticeLog() {
+  const logModal = document.getElementById('add-log-modal');
+  const date = document.getElementById('log-date').value;
+  const content = document.getElementById('log-content').value.trim();
+  
+  if (!date) {
+    showMessage('请选择日期', 'error');
+    return;
+  }
+  
+  if (!content) {
+    showMessage('请输入日志内容', 'error');
+    return;
+  }
+  
+  const isEditing = logModal && logModal.dataset.editingLogId;
+  const logId = isEditing ? logModal.dataset.editingLogId : null;
+  
+  try {
+    const url = isEditing ? `/api/kv/practice-logs/${logId}` : '/api/kv/practice-logs';
+    const method = isEditing ? 'PUT' : 'POST';
+    
+    const response = await fetch(url, {
+      method: method,
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(csrfToken ? { 'X-CSRF-Token': csrfToken } : {})
+      },
+      body: JSON.stringify({
+        date,
+        content
+      })
+    });
+    
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || '保存失败');
+    }
+    
+    // 关闭弹窗
+    logModal.classList.add('hidden');
+    
+    // 重新加载日志
+    await loadPracticeLogs();
+    
+    // 显示成功消息
+    showMessage(isEditing ? '日志更新成功！' : '日志添加成功！', 'success');
+    
+  } catch (error) {
+    console.error('保存日志失败:', error);
+    showMessage('保存失败: ' + error.message, 'error');
+  }
+}
+
+// 编辑练功日志
+async function editPracticeLog(logId) {
+  try {
+    const response = await fetch(`/api/kv/practice-logs/${logId}`, {
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(csrfToken ? { 'X-CSRF-Token': csrfToken } : {})
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error('获取日志失败');
+    }
+    
+    const logData = await response.json();
+    openLogModal(logData);
+    
+  } catch (error) {
+    console.error('获取日志失败:', error);
+    showMessage('获取日志失败: ' + error.message, 'error');
+  }
+}
+
+// 导出函数到全局
+window.loadPracticeLogs = loadPracticeLogs;
+window.deletePracticeLog = deletePracticeLog;
+window.editPracticeLog = editPracticeLog;
+window.openLogModal = openLogModal;
+window.insertMarkdown = insertMarkdown;
+window.updateLogPreview = updateLogPreview;
+window.savePracticeLog = savePracticeLog;

@@ -1,0 +1,123 @@
+---
+description: Cloudflare Workers 开发中的常见问题和解决方案
+---
+
+# Cloudflare Workers 开发问题解决指南
+
+## bcryptjs 模块解析错误
+
+### 问题描述
+```
+X [ERROR] Could not resolve "bcryptjs"
+```
+
+### 解决方案
+
+#### 方案1：使用 Web Crypto API（推荐）
+Cloudflare Workers 原生支持 Web Crypto API，性能更好：
+
+```javascript
+// 替换 bcryptjs 的哈希函数
+async function hashPassword(password) {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(password + 'salt'); // 添加盐值
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+  return Array.from(new Uint8Array(hashBuffer))
+    .map(b => b.toString(16).padStart(2, '0'))
+    .join('');
+}
+```
+
+#### 方案2：配置外部模块
+在 `wrangler.toml` 中配置：
+
+```toml
+[build]
+command = "npm run build"
+
+[[build.upload.rules]]
+type = "ESModule"
+globs = ["**/*.js", "**/*.mjs"]
+
+# 标记 bcryptjs 为外部模块
+[build.upload]
+format = "modules"
+```
+
+#### 方案3：使用兼容的替代库
+```bash
+npm uninstall bcryptjs
+npm install @noble/hashes
+```
+
+然后更新导入：
+```javascript
+import { sha256 } from '@noble/hashes/sha256';
+```
+
+## KV 命名空间配置
+
+### 确保所有 KV 绑定正确配置
+在 `wrangler.toml` 中：
+
+```toml
+[[kv_namespaces]]
+binding = "aeons_info_config"
+id = "your-config-namespace-id"
+
+[[kv_namespaces]]
+binding = "aeons_info_practice_time"
+id = "your-practice-time-namespace-id"
+
+[[kv_namespaces]]
+binding = "aeons_info_practice_logs"
+id = "your-practice-logs-namespace-id"
+
+[[kv_namespaces]]
+binding = "aeons_info_users"
+id = "your-users-namespace-id"
+
+[[kv_namespaces]]
+binding = "aeons_info_auth_tokens"
+id = "your-auth-tokens-namespace-id"
+```
+
+### 创建新的 KV 命名空间
+```bash
+powershell -Command "Write-Host 'Creating KV namespace...'; Start-Sleep -Milliseconds 300; wrangler kv:namespace create 'aeons_info_practice_logs'; Write-Host 'KV namespace created'; Start-Sleep -Milliseconds 300"
+```
+
+## 常见部署问题
+
+### 类型定义过期
+```bash
+powershell -Command "Write-Host 'Updating types...'; Start-Sleep -Milliseconds 300; wrangler types; Write-Host 'Types updated'; Start-Sleep -Milliseconds 300"
+```
+
+### 清理和重新构建
+```bash
+powershell -Command "Write-Host 'Cleaning and rebuilding...'; Start-Sleep -Milliseconds 300; npm run clean; npm run build; Write-Host 'Rebuild completed'; Start-Sleep -Milliseconds 300"
+```
+
+### 检查 Worker 绑定
+```bash
+powershell -Command "Write-Host 'Checking bindings...'; Start-Sleep -Milliseconds 300; wrangler dev --compatibility-date 2023-05-18; Write-Host 'Dev server started'; Start-Sleep -Milliseconds 300"
+```
+
+## 调试技巧
+
+### 本地开发日志
+在代码中添加详细日志：
+```javascript
+console.log('🔍 Debug info:', { userId, timestamp: new Date().toISOString() });
+```
+
+### 检查环境变量
+```javascript
+export default {
+  async fetch(request, env, ctx) {
+    console.log('📊 Available bindings:', Object.keys(env));
+    // ... 其他代码
+  }
+}
+```

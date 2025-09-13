@@ -33,6 +33,10 @@
 		{
 			"binding": "aeons_info_auth_tokens",
 			"id": "c0b348e4962b4c06a51b006280a5a53c"
+		},
+		{
+			"binding": "aeons_info_practice_logs",
+			"id": "38d2ff94fb6b47259df674274395f925"
 		}
 	]
 }

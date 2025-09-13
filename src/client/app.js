@@ -24,7 +24,7 @@ async function loadManifest() {
         hidden: item.hidden,
         contentPath: item.contentPath // 新增：预生成内容的路径
       })),
-      { title: '练功计时器', path: 'practice/timer', group: '练习', subgroup: null }
+      { title: '练功日志', path: 'practice/timer', group: '练习', subgroup: null }
     ];
     
     manifestLoaded = true;
@@ -42,7 +42,7 @@ async function loadManifest() {
       { title: 'Yoga Sutras · Bon Giovanni', path: 'posts/yoga-sutra/by-bon-giovanni.en.md', group: '博文', subgroup: '瑜伽经', hidden: true },
       { title: 'Yoga Sutras · Swami Jnaneshvara', path: 'posts/yoga-sutra/by-swami-jnaneshvara-bharati.en.md', group: '博文', subgroup: '瑜伽经', hidden: true },
       { title: '瑜伽经 · 元吾氏译', path: 'posts/yoga-sutra/by-yuanwushi.zh.md', group: '博文', subgroup: '瑜伽经', hidden: true },
-      { title: '练功计时器', path: 'practice/timer', group: '练习', subgroup: null },
+      { title: '练功日志', path: 'practice/timer', group: '练习', subgroup: null },
     ];
     manifestLoaded = true;
     return manifest;
@@ -189,18 +189,18 @@ async function loadContent(path) {
     </div>
   `;
   
-  // 清理练功计时器页面可能的样式影响
+  // 清理练功日志页面可能的样式影响
   if (path !== 'practice/timer') {
     cleanupPracticeTimerPage(article);
   }
   
   await loadManifest();
 
-  // 处理练功计时器特殊页面
+  // 处理练功日志特殊页面
   if (path === 'practice/timer') {
     await loadPracticeTimerPage(article);
     highlightActive(path);
-    updateAppBar('练功计时器');
+    updateAppBar('练功日志');
     return;
   }
 
@@ -403,7 +403,7 @@ async function initApp() {
   
   await buildSidebar();
   
-  // 预加载Chart.js（为练功计时器页面准备）
+  // 预加载Chart.js（为练功日志页面准备）
   if (typeof Chart !== 'undefined') {
     console.log('📊 Chart.js 已可用，无需预加载');
   } else {

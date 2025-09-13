@@ -1,0 +1,75 @@
+---
+globs: *.js,*.ts,*.tsx
+---
+
+# 代码风格和最佳实践
+
+## JavaScript/TypeScript 规范
+
+### 基本规则
+- 使用分号结束语句
+- 使用单引号包围字符串
+- 使用 2 空格缩进
+- 函数和变量使用 camelCase 命名
+- 常量使用 UPPER_SNAKE_CASE
+- 类名使用 PascalCase
+
+### 异步编程
+- 优先使用 `async/await` 而不是 `.then()`
+- 始终处理错误情况
+- 使用 `try/catch` 包围异步操作
+
+```javascript
+// ✅ 正确
+async function fetchData() {
+  try {
+    const response = await fetch('/api/data');
+    if (!response.ok) {
+      throw new Error('Request failed');
+    }
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching data:', error);
+    throw error;
+  }
+}
+
+// ❌ 避免
+function fetchData() {
+  return fetch('/api/data')
+    .then(response => response.json())
+    .catch(error => console.error(error));
+}
+```
+
+### 安全编码
+- 始终验证用户输入
+- 使用 CSRF 保护敏感操作
+- 清理和转义用户内容
+- 实施适当的认证检查
+
+### 性能优化
+- 使用缓存减少重复计算
+- 实施适当的错误处理
+- 避免不必要的 DOM 操作
+- 使用事件委托处理大量元素
+
+### 注释规范
+- 使用 JSDoc 格式注释函数
+- 解释复杂的业务逻辑
+- 记录 API 端点和参数
+- 标注 TODO 和 FIXME
+
+```javascript
+/**
+ * 保存练功日志到 KV 存储
+ * @param {string} userId - 用户ID
+ * @param {Object} logData - 日志数据
+ * @param {string} logData.date - 日期 (YYYY-MM-DD)
+ * @param {string} logData.content - 日志内容
+ * @returns {Promise<PracticeLog>} 保存的日志对象
+ */
+async function savePracticeLog(userId, logData) {
+  // 实现逻辑...
+}
+```

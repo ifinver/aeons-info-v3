@@ -1,0 +1,95 @@
+---
+alwaysApply: true
+---
+
+# 命令行操作规则
+
+## 重要：避免交互问题
+
+在 Windows 环境下使用终端命令时，存在两个主要问题：
+1. **PowerShell 交互等待**：直接使用 PowerShell 命令会导致工具等待用户输入
+2. **命令执行过快**：使用 `cmd /c` 执行太快，工具来不及监听输出
+
+### 🎯 最佳解决方案：使用延时和强制输出
+
+```bash
+powershell -Command "Write-Host 'Starting...'; Start-Sleep -Milliseconds 300; [实际命令]; Write-Host 'Completed'; Start-Sleep -Milliseconds 300"
+```
+
+**关键要素**：
+- `Write-Host` 强制输出到控制台
+- `Start-Sleep -Milliseconds 300` 给工具足够时间监听
+- 开始和结束都有输出提示
+- 300毫秒延时确保稳定监听
+
+### ❌ 避免的格式
+- 直接使用 PowerShell 命令（会导致交互等待）
+- 使用 `cmd /c` （执行太快，监听不到）
+- 不加延时的命令
+- 没有强制输出的命令
+
+### 常用命令模板
+
+#### 创建目录
+```bash
+powershell -Command "Write-Host 'Creating directory...'; Start-Sleep -Milliseconds 300; New-Item -ItemType Directory -Path 'path' -Force; Write-Host 'Directory created'; Start-Sleep -Milliseconds 300"
+```
+
+#### 检查文件
+```bash
+powershell -Command "Write-Host 'Checking file...'; Start-Sleep -Milliseconds 300; if (Test-Path 'file') { Write-Host 'File exists' } else { Write-Host 'File not found' }; Start-Sleep -Milliseconds 300"
+```
+
+#### 运行 npm 命令
+```bash
+powershell -Command "Write-Host 'Running npm...'; Start-Sleep -Milliseconds 300; npm run [command]; Start-Sleep -Milliseconds 300"
+```
+
+#### 检查进程状态
+```bash
+powershell -Command "Write-Host 'Checking process...'; Start-Sleep -Milliseconds 300; Get-Process -Name 'node' -ErrorAction SilentlyContinue; Write-Host 'Process check completed'; Start-Sleep -Milliseconds 300"
+```
+
+#### 安装依赖
+```bash
+powershell -Command "Write-Host 'Installing dependencies...'; Start-Sleep -Milliseconds 300; npm install; Write-Host 'Installation completed'; Start-Sleep -Milliseconds 300"
+```
+
+#### 复制文件
+```bash
+powershell -Command "Write-Host 'Copying files...'; Start-Sleep -Milliseconds 300; Copy-Item 'source' 'destination' -Force; Write-Host 'Copy completed'; Start-Sleep -Milliseconds 300"
+```
+
+## 故障排除
+
+### 如果命令仍然卡住
+1. **增加延时**：将 300 毫秒增加到 500 毫秒
+2. **添加更多输出**：在命令中间也添加 `Write-Host` 语句
+3. **使用后台执行**：对于长时间运行的命令，设置 `is_background: true`
+
+### 调试命令执行
+```bash
+powershell -Command "Write-Host 'Debug start'; Start-Sleep -Milliseconds 500; Write-Host 'Executing command...'; [你的命令]; Write-Host 'Command finished'; Start-Sleep -Milliseconds 500; Write-Host 'Debug end'"
+```
+
+## 开发命令
+
+### 启动开发服务器
+```bash
+npm run dev
+```
+
+### 构建项目
+```bash
+npm run build
+```
+
+### 部署项目
+```bash
+npm run deploy
+```
+
+### 清理构建产物
+```bash
+npm run clean
+```

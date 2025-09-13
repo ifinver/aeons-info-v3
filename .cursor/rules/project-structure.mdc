@@ -1,0 +1,39 @@
+---
+alwaysApply: true
+---
+
+# 永恒的信息 - 项目结构指南
+
+## 项目架构
+这是一个基于 Cloudflare Workers 的全栈应用，使用 KV 存储作为数据库。
+
+### 核心文件结构
+- **前端入口**: [src/client/app.js](mdc:src/client/app.js) - 主应用程序和路由
+- **服务端入口**: [src/server/index.ts](mdc:src/server/index.ts) - Cloudflare Worker 主处理函数
+- **主页面**: [src/client/index.html](mdc:src/client/index.html) - HTML 模板
+- **样式文件**: [src/client/styles.css](mdc:src/client/styles.css) - Tailwind CSS 样式
+
+### 功能模块
+
+#### 练功日志系统 (最新功能)
+- **前端**: [src/client/practice-timer.js](mdc:src/client/practice-timer.js) - 练功日志界面和功能
+- **后端**: [src/server/practice-logs.ts](mdc:src/server/practice-logs.ts) - 日志存储和管理
+- **数据模型**: [src/server/practice-data.ts](mdc:src/server/practice-data.ts) - 练功数据处理
+
+#### 用户认证系统
+- **认证核心**: [src/server/auth.ts](mdc:src/server/auth.ts) - 认证工具函数
+- **用户注册**: [src/server/user-registration.ts](mdc:src/server/user-registration.ts) - 注册流程
+- **用户登录**: [src/server/user-login.ts](mdc:src/server/user-login.ts) - 登录流程
+- **邮件服务**: [src/server/mail.ts](mdc:src/server/mail.ts) - 邮件发送
+
+### KV 命名空间
+- `aeons_info_config` - 配置数据
+- `aeons_info_practice_time` - 练功时间数据
+- `aeons_info_practice_logs` - 练功日志数据 (新增)
+- `aeons_info_users` - 用户数据
+- `aeons_info_auth_tokens` - 认证令牌
+
+### 构建系统
+- **构建脚本**: [src/build.js](mdc:src/build.js) - 主构建脚本
+- **内容构建**: [src/build-content.js](mdc:src/build-content.js) - Markdown 内容处理
+- **清理脚本**: [src/clean.js](mdc:src/clean.js) - 清理构建产物
