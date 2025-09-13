@@ -1017,7 +1017,7 @@ function addPracticeTimerStyles() {
       background: var(--card-bg, #ffffff);
       border: 1px solid var(--border, #e2e8f0);
       border-radius: 12px;
-      padding: 24px;
+      padding: 12px;
       text-align: center;
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
       transition: transform 0.2s ease, box-shadow 0.2s ease;
@@ -1447,6 +1447,7 @@ function addPracticeTimerStyles() {
     .log-actions {
       display: flex;
       flex-shrink: 0;
+      margin-right: 9px;
     }
     
     .log-action-btn {
@@ -1456,7 +1457,7 @@ function addPracticeTimerStyles() {
       border-bottom: none;
       background: var(--card-bg, #ffffff);
       color: var(--muted, #6b7280);
-      border-radius: 4px;
+      border-radius: 4px 4px 0 0;
       cursor: pointer;
       transition: all 0.2s ease;
     }
@@ -1471,6 +1472,7 @@ function addPracticeTimerStyles() {
       border-right: none;
       border-top-right-radius: 0;
       border-bottom-right-radius: 0;
+      border-bottom-left-radius: 0;
     }
     
     .log-action-btn.delete {
@@ -1478,6 +1480,7 @@ function addPracticeTimerStyles() {
       border-left: none;
       border-top-left-radius: 0;
       border-bottom-left-radius: 0;
+      border-bottom-right-radius: 0;
     }
     
     .empty-logs {
