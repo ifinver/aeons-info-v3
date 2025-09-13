@@ -1388,7 +1388,7 @@ function addPracticeTimerStyles() {
     .log-content {
       color: var(--text, #374151);
       line-height: 1.6;
-      font-size: 14px;
+      font-size: 15px;
     }
     
     .log-content h1, .log-content h2, .log-content h3, 
@@ -1793,7 +1793,7 @@ function addPracticeTimerStyles() {
       }
       
       .log-content {
-        font-size: 13px;
+        font-size: 15px;
       }
       
       /* 移动端日志弹窗样式调整 */
