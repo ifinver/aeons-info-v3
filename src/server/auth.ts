@@ -1,5 +1,6 @@
 import * as bcrypt from 'bcryptjs';
 import { generateToken as cryptoGenerateToken } from './crypto-utils';
+import { getChinaTimestamp } from './timezone';
 
 // 用户接口
 export interface User {
@@ -55,7 +56,7 @@ export async function verifyPassword(password: string, hash: string): Promise<bo
 
 // 生成用户ID
 export function generateUserId(): string {
-  return 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+  return 'user_' + getChinaTimestamp() + '_' + Math.random().toString(36).substr(2, 9);
 }
 
 // 生成验证令牌
@@ -70,12 +71,12 @@ export function generateSessionToken(): string {
 
 // 检查令牌是否过期
 export function isTokenExpired(token: AuthToken): boolean {
-  return Date.now() > token.expiresAt;
+  return getChinaTimestamp() > token.expiresAt;
 }
 
 // 生成过期时间（默认24小时）
 export function generateExpiryTime(hours: number = 24): number {
-  return Date.now() + (hours * 60 * 60 * 1000);
+  return getChinaTimestamp() + (hours * 60 * 60 * 1000);
 }
 
 // 改进的密码强度验证 - 更加合理和用户友好
@@ -214,7 +215,7 @@ export function getClientIP(request: Request): string {
 export function checkRateLimit(attempts: number, windowMs: number = 900000): boolean {
   // 15分钟内最多5次尝试
   const maxAttempts = 5;
-  const now = Date.now();
+  const now = getChinaTimestamp();
   
   if (attempts >= maxAttempts) {
     return false; // 超过限制

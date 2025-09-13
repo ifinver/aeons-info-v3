@@ -13,6 +13,7 @@
 
 // 导入必要模块
 import { generateToken as cryptoGenerateToken, generateUUID } from './crypto-utils';
+import { getChinaTimestamp } from './timezone';
 
 // 从 auth.ts 导入所有认证相关函数
 import {
@@ -285,7 +286,7 @@ console.log('🔧 Worker 启动 - 服务端已启动');
 // 速率限制实现
 async function checkAndUpdateRateLimit(ip: string, endpoint: string, env: any): Promise<{allowed: boolean, retryAfter: number}> {
   const key = `rate_limit:${ip}:${endpoint}`;
-  const now = Date.now();
+  const now = getChinaTimestamp();
   
   // 不同端点的限制策略
   const limits: Record<string, { maxAttempts: number; windowMs: number }> = {

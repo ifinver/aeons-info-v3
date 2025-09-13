@@ -1,6 +1,64 @@
 // 炼功日志页面
 // Chart.js 将通过script标签加载，使用全局Chart对象
 
+// 东八区时区工具函数
+const CHINA_TIMEZONE_OFFSET = 8 * 60; // 8小时 = 480分钟
+
+function getChinaTime() {
+  const now = new Date();
+  // 获取当前时区偏移量（分钟）
+  const localOffset = now.getTimezoneOffset();
+  // 东八区偏移量是 -480 分钟（UTC+8）
+  const chinaOffset = -480;
+  // 计算到东八区的实际偏移量
+  const offsetDiff = (chinaOffset - localOffset) * 60 * 1000;
+  return new Date(now.getTime() + offsetDiff);
+}
+
+function getChinaToday() {
+  const chinaTime = getChinaTime();
+  const year = chinaTime.getFullYear();
+  const month = String(chinaTime.getMonth() + 1).padStart(2, '0');
+  const day = String(chinaTime.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+function formatChinaDate(dateString, options = {}) {
+  const [year, month, day] = dateString.split('-').map(Number);
+  const date = new Date(year, month - 1, day);
+  
+  const defaultOptions = {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  };
+  
+  return date.toLocaleDateString('zh-CN', { ...defaultOptions, ...options });
+}
+
+function getRelativeDateDescription(dateString) {
+  const [year, month, day] = dateString.split('-').map(Number);
+  const targetDate = new Date(year, month - 1, day);
+  const today = getChinaTime();
+  const todayDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  const yesterday = new Date(todayDate.getTime() - 24 * 60 * 60 * 1000);
+  
+  if (targetDate.getTime() === todayDate.getTime()) {
+    return '今天';
+  } else if (targetDate.getTime() === yesterday.getTime()) {
+    return '昨天';
+  } else {
+    return formatChinaDate(dateString);
+  }
+}
+
+function getChinaWeekday(dateString) {
+  const [year, month, day] = dateString.split('-').map(Number);
+  const date = new Date(year, month - 1, day);
+  const weekdays = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
+  return weekdays[date.getDay()];
+}
+
 // 用户认证状态
 let currentUser = null;
 let csrfToken = null; // CSRF token从登录响应获取
@@ -235,8 +293,7 @@ class ChartManager {
     }
 
     const labels = records.map(record => {
-      const date = new Date(record.date);
-      return date.toLocaleDateString('zh-CN', { month: 'short', day: 'numeric' });
+      return formatChinaDate(record.date, { month: 'short', day: 'numeric' });
     });
     
     const data = records.map(record => (record.totalMinutes / 60).toFixed(1)); // 转换为小时
@@ -685,8 +742,8 @@ function renderPracticeTimerInterface(container, marginStyle) {
 
 // 初始化炼功计时器界面（不等待数据）
 function initPracticeTimerInterface() {
-  // 设置默认日期为今天
-  const today = new Date().toISOString().split('T')[0];
+  // 设置默认日期为今天（东八区）
+  const today = getChinaToday();
   const dateInput = document.getElementById('practice-date');
   if (dateInput) {
     dateInput.value = today;
@@ -721,7 +778,12 @@ async function loadPracticeDataAsync() {
     const records = Object.entries(aggregatedData.records || {}).map(([date, record]) => ({
       date,
       ...record
-    })).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    })).sort((a, b) => {
+      // 使用东八区时间进行比较
+      const dateA = new Date(a.date + 'T00:00:00+08:00');
+      const dateB = new Date(b.date + 'T00:00:00+08:00');
+      return dateA.getTime() - dateB.getTime();
+    });
     
     // 更新统计信息
     updateStats(records);
@@ -2579,7 +2641,7 @@ async function getCurrentUser() {
 // 全局调试函数 - 检查认证状态
 function debugAuthStatus() {
   console.log('🔍 === 认证状态调试信息 ===');
-  console.log('📅 时间:', new Date().toLocaleString());
+  console.log('📅 时间:', getChinaTime().toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai' }));
   console.log('🍪 所有cookies:', document.cookie);
   
   // 详细的Cookie解析调试
@@ -2767,7 +2829,12 @@ function renderPracticeLogs(logs) {
   }
 
   // 按日期排序（最新的在上面）
-  const sortedLogs = logs.sort((a, b) => new Date(b.date) - new Date(a.date));
+  const sortedLogs = logs.sort((a, b) => {
+    // 使用东八区时间进行比较
+    const dateA = new Date(a.date + 'T00:00:00+08:00');
+    const dateB = new Date(b.date + 'T00:00:00+08:00');
+    return dateB.getTime() - dateA.getTime(); // 最新的在前
+  });
 
   const timelineHTML = `
     <div class="timeline-container">
@@ -2803,29 +2870,11 @@ function renderPracticeLogs(logs) {
 }
 
 function formatLogDate(dateString) {
-  const date = new Date(dateString);
-  const now = new Date();
-  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const yesterday = new Date(today.getTime() - 24 * 60 * 60 * 1000);
-  const logDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-
-  if (logDate.getTime() === today.getTime()) {
-    return '今天';
-  } else if (logDate.getTime() === yesterday.getTime()) {
-    return '昨天';
-  } else {
-    return date.toLocaleDateString('zh-CN', { 
-      year: 'numeric', 
-      month: 'long', 
-      day: 'numeric' 
-    });
-  }
+  return getRelativeDateDescription(dateString);
 }
 
 function formatLogWeekday(dateString) {
-  const date = new Date(dateString);
-  const weekdays = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
-  return weekdays[date.getDay()];
+  return getChinaWeekday(dateString);
 }
 
 function parseMarkdownContent(content) {
@@ -2909,7 +2958,7 @@ function openLogModal(logData = null) {
   if (!logModal) return;
   
   // 设置默认日期为今天
-  const today = new Date().toISOString().split('T')[0];
+  const today = getChinaToday();
   
   if (logData) {
     // 编辑模式

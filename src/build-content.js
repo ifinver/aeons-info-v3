@@ -6,6 +6,19 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
+// 东八区时区工具函数（Node.js版本）
+function getChinaISOString() {
+  const now = new Date();
+  // 获取当前时区偏移量（分钟）
+  const localOffset = now.getTimezoneOffset();
+  // 东八区偏移量是 -480 分钟（UTC+8）
+  const chinaOffset = -480;
+  // 计算到东八区的实际偏移量
+  const offsetDiff = (chinaOffset - localOffset) * 60 * 1000;
+  const chinaTime = new Date(now.getTime() + offsetDiff);
+  return chinaTime.toISOString();
+}
+
 // 配置 marked 选项
 marked.setOptions({
   gfm: true,
@@ -107,7 +120,7 @@ function processMarkdownFile(sourcePath, outputPath, metadata) {
     const fullHtml = {
       metadata,
       content: htmlContent,
-      generatedAt: new Date().toISOString(),
+      generatedAt: getChinaISOString(),
       wordCount: cleanedContent.split(/\s+/).length
     };
     
@@ -187,7 +200,7 @@ function buildContent(outputDir = null) {
   
   // 生成更新的清单文件
   const updatedManifest = {
-    generated: new Date().toISOString(),
+    generated: getChinaISOString(),
     totalFiles: successfulFiles,
     totalWordCount,
     totalSize,

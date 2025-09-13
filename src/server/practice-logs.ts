@@ -3,6 +3,8 @@
  * 专门处理用户炼功日志的存储、检索和管理
  */
 
+import { getChinaISOString } from './timezone';
+
 // 炼功日志接口
 export interface PracticeLog {
   id: string;
@@ -131,7 +133,7 @@ export class PracticeLogsCache {
   // 添加或更新日志
   async saveLog(userId: string, logData: Omit<PracticeLog, 'id' | 'timestamp'>, kv: any, existingLogId?: string): Promise<PracticeLog> {
     const logId = existingLogId || this.generateLogId(logData.date);
-    const timestamp = new Date().toISOString();
+    const timestamp = getChinaISOString();
     
     const log: PracticeLog = {
       id: logId,
@@ -186,7 +188,7 @@ export class PracticeLogsCache {
           logs: {},
           summary: {
             totalLogs: 0,
-            lastUpdated: new Date().toISOString()
+            lastUpdated: getChinaISOString()
           }
         };
       }
@@ -198,7 +200,7 @@ export class PracticeLogsCache {
       const allLogs = Object.values(userLogs.logs);
       userLogs.summary = {
         totalLogs: allLogs.length,
-        lastUpdated: new Date().toISOString()
+        lastUpdated: getChinaISOString()
       };
       
       // 保存到KV
@@ -228,7 +230,7 @@ export class PracticeLogsCache {
       const allLogs = Object.values(userLogs.logs);
       userLogs.summary = {
         totalLogs: allLogs.length,
-        lastUpdated: new Date().toISOString()
+        lastUpdated: getChinaISOString()
       };
       
       // 保存更新后的数据

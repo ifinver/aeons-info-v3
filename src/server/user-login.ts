@@ -15,6 +15,7 @@ import {
   type User,
   type AuthToken
 } from './auth';
+import { getChinaISOString, getChinaTimestamp } from './timezone';
 
 /**
  * 用户登录处理函数
@@ -51,8 +52,8 @@ export async function handleUserLogin(request: Request, env: any): Promise<Respo
     }
 
     // 检查账户是否被锁定
-    if (user.lockedUntil && new Date(user.lockedUntil) > new Date()) {
-      const lockTime = Math.ceil((new Date(user.lockedUntil).getTime() - Date.now()) / 60000);
+    if (user.lockedUntil && new Date(user.lockedUntil).getTime() > getChinaTimestamp()) {
+      const lockTime = Math.ceil((new Date(user.lockedUntil).getTime() - getChinaTimestamp()) / 60000);
       return json({ 
         error: `账户已被锁定，请在${lockTime}分钟后重试`,
         lockedUntil: user.lockedUntil
@@ -69,7 +70,7 @@ export async function handleUserLogin(request: Request, env: any): Promise<Respo
 
       // 如果失败次数达到5次，锁定账户30分钟
       if (failedAttempts >= 5) {
-        user.lockedUntil = new Date(Date.now() + 30 * 60 * 1000).toISOString();
+        user.lockedUntil = new Date(getChinaTimestamp() + 30 * 60 * 1000).toISOString();
         user.failedLoginAttempts = 0; // 重置计数
       }
 
@@ -87,7 +88,7 @@ export async function handleUserLogin(request: Request, env: any): Promise<Respo
     // 登录成功，重置失败计数和锁定状态
     user.failedLoginAttempts = 0;
     user.lockedUntil = undefined;
-    user.lastLoginAt = new Date().toISOString();
+    user.lastLoginAt = getChinaISOString();
     await env.aeons_info_users.put(email, JSON.stringify(user));
 
     // 生成CSRF令牌
@@ -252,7 +253,7 @@ export async function validateAuthToken(request: Request, env: any): Promise<{us
     }
 
     // 检查令牌是否过期
-    if (Date.now() > tokenData.expiresAt) {
+    if (getChinaTimestamp() > tokenData.expiresAt) {
       // 删除过期令牌
       await env.aeons_info_auth_tokens.delete(token);
       return { user: null, tokenData: null };
@@ -311,7 +312,7 @@ export async function refreshSession(request: Request, env: any): Promise<{succe
     }
 
     // 检查是否需要刷新（距离过期时间少于30分钟时刷新）
-    const timeToExpiry = tokenData.expiresAt - Date.now();
+    const timeToExpiry = tokenData.expiresAt - getChinaTimestamp();
     const shouldRefresh = timeToExpiry < 30 * 60 * 1000; // 30分钟
 
     if (shouldRefresh) {

@@ -3,6 +3,8 @@
  * 专门处理用户炼功时间数据的存储、检索和缓存
  */
 
+import { getChinaISOString } from './timezone';
+
 // 炼功记录接口
 export interface PracticeRecord {
   date: string;
@@ -93,7 +95,7 @@ export class PracticeDataCache {
         summary: {
           totalRecords: userCache.size,
           totalMinutes: totalMinutes,
-          lastUpdated: new Date().toISOString()
+          lastUpdated: getChinaISOString()
         }
       };
       
@@ -203,7 +205,7 @@ export class PracticeDataCache {
           summary: {
             totalRecords: 0,
             totalMinutes: 0,
-            lastUpdated: new Date().toISOString()
+            lastUpdated: getChinaISOString()
           }
         };
       }
@@ -222,7 +224,7 @@ export class PracticeDataCache {
         ...aggregatedData.summary,
         totalRecords: allRecords.length,
         totalMinutes: allRecords.reduce((sum, r) => sum + r.totalMinutes, 0),
-        lastUpdated: new Date().toISOString()
+        lastUpdated: getChinaISOString()
       };
       
       // 保存更新后的聚合数据
@@ -269,7 +271,7 @@ export class PracticeDataCache {
         ...aggregatedData.summary,
         totalRecords: allRecords.length,
         totalMinutes: allRecords.reduce((sum, r) => sum + r.totalMinutes, 0),
-        lastUpdated: new Date().toISOString()
+        lastUpdated: getChinaISOString()
       };
       
       // 保存更新后的聚合数据
@@ -340,7 +342,7 @@ export async function handlePracticeTimeKv(
           summary: {
             totalRecords: 0,
             totalMinutes: 0,
-            lastUpdated: new Date().toISOString()
+            lastUpdated: getChinaISOString()
           }
         };
         const response = json(emptyData);
@@ -397,7 +399,7 @@ export async function handlePracticeTimeKv(
       hours,
       minutes,
       totalMinutes: hours * 60 + minutes,
-      timestamp: new Date().toISOString()
+      timestamp: getChinaISOString()
     };
     
     try {

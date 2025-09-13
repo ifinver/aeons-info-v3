@@ -234,7 +234,7 @@ async function loadContent(path) {
         metaInfo.className = 'article-meta';
         metaInfo.innerHTML = `
           <small style="color: var(--muted); font-size: 0.8em; margin-bottom: 1rem; display: block;">
-            ${contentData.wordCount} 字 | 生成于 ${new Date(contentData.generatedAt).toLocaleDateString('zh-CN')}
+            ${contentData.wordCount} 字 | 生成于 ${new Date(contentData.generatedAt).toLocaleDateString('zh-CN', { timeZone: 'Asia/Shanghai' })}
           </small>
         `;
         article.insertBefore(metaInfo, article.firstChild);
@@ -388,7 +388,7 @@ function checkMobileAndOpenDrawer() {
 // 初始化应用
 async function initApp() {
   console.log('🚀 === APP 初始化开始 ===');
-  console.log('⏰ APP启动时间:', new Date().toLocaleString());
+  console.log('⏰ APP启动时间:', new Date().toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai' }));
   console.log('🔗 当前URL:', window.location.href);
   console.log('🔗 当前Hash:', window.location.hash);
   

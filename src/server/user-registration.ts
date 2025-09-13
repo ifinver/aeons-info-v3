@@ -15,6 +15,7 @@ import {
   type User,
   type AuthToken
 } from './auth';
+import { getChinaISOString, getChinaTimestamp } from './timezone';
 
 import { sendEmail } from './mail';
 
@@ -97,7 +98,7 @@ export async function handleEmailVerification(request: Request, env: any): Promi
     }
 
     // 检查令牌是否过期
-    if (Date.now() > tokenData.expiresAt) {
+    if (getChinaTimestamp() > tokenData.expiresAt) {
       return json({ error: '验证令牌已过期' }, 400);
     }
 
@@ -131,7 +132,7 @@ export async function handleCompleteRegistration(request: Request, env: any): Pr
     }
 
     // 检查令牌是否过期
-    if (Date.now() > tokenData.expiresAt) {
+    if (getChinaTimestamp() > tokenData.expiresAt) {
       return json({ error: '验证令牌已过期' }, 400);
     }
 
@@ -148,7 +149,7 @@ export async function handleCompleteRegistration(request: Request, env: any): Pr
       id: userId,
       email: tokenData.email,
       passwordHash: passwordHash,
-      createdAt: new Date().toISOString(),
+      createdAt: getChinaISOString(),
       verified: true,
       failedLoginAttempts: 0
     };
@@ -247,7 +248,7 @@ export async function handleResetPassword(request: Request, env: any): Promise<R
     }
 
     // 检查令牌是否过期
-    if (Date.now() > tokenData.expiresAt) {
+    if (getChinaTimestamp() > tokenData.expiresAt) {
       return json({ error: '重置令牌已过期' }, 400);
     }
 
