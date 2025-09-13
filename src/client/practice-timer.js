@@ -634,7 +634,7 @@ function renderPracticeTimerInterface(container, marginStyle) {
                 <button type="button" class="toolbar-btn" onclick="insertMarkdown('> ', '')" title="引用">
                   "
                 </button>
-                <button type="button" class="toolbar-btn" onclick="insertMarkdown('`', '`')" title="代码">
+                <button type="button" class="toolbar-btn" onclick="insertMarkdown('\`', '\`')" title="代码">
                   &lt;/&gt;
                 </button>
               </div>
@@ -659,7 +659,7 @@ function renderPracticeTimerInterface(container, marginStyle) {
             </div>
             <div class="markdown-help">
               <small>
-                支持Markdown格式：**粗体** *斜体* ## 标题 - 列表 > 引用 `代码`
+                支持Markdown格式：**粗体** *斜体* ## 标题 - 列表 > 引用 \`代码\`
               </small>
             </div>
           </div>
