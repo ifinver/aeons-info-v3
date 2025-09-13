@@ -1358,6 +1358,7 @@ function addPracticeTimerStyles() {
       border-radius: 8px;
       padding: 16px;
       position: relative;
+      margin-top: -1px;
     }
     
     .timeline-content::before {
@@ -1445,6 +1446,7 @@ function addPracticeTimerStyles() {
     }
     
     .log-actions {
+      z-index: 1000;
       display: flex;
       flex-shrink: 0;
       margin-right: 9px;
@@ -1469,6 +1471,7 @@ function addPracticeTimerStyles() {
     
     .log-action-btn.edit {
       color: var(--primary, #3b82f6);
+      background: var(--bg-panel, #f9fafb);
       border-right: none;
       border-top-right-radius: 0;
       border-bottom-right-radius: 0;
@@ -1477,6 +1480,7 @@ function addPracticeTimerStyles() {
     
     .log-action-btn.delete {
       color: var(--error, #ef4444);
+      background: var(--bg-panel, #f9fafb);
       border-left: none;
       border-top-left-radius: 0;
       border-bottom-left-radius: 0;
@@ -1766,18 +1770,18 @@ function addPracticeTimerStyles() {
       }
       
       .timeline-container {
-        padding-left: 28px;
+        padding-left: 32px;
       }
       
       .timeline-dot {
-        left: -22px;
+        left: -24px;
         width: 12px;
         height: 12px;
         border-width: 2px;
       }
       
       .timeline-line {
-        left: -16px;
+        left: -18px;
       }
       
       .timeline-content {
