@@ -5,7 +5,7 @@ export function loadHomePage(manifest, article) {
 
       <div class="home-content">
         <section class="home-intro">
-          <h1>永恒的信息</h1>
+          <h1>仙界邀请函</h1>
           <p>探索东方智慧的精神宝库，专注于中华传统丹道修炼与意识探索</p>
           <p>这里收录了张三丰、老子等圣贤的丹道秘诀，以及现代灵魂出体与星体投射的实践指南，为追求内在觉醒的修行者提供珍贵的修炼资源。</p>
         </section>

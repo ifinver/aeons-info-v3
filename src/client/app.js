@@ -65,7 +65,7 @@ async function buildSidebar() {
   const wrapper = document.createElement('div');
   const brand = document.createElement('div');
   brand.className = 'brand';
-  brand.innerHTML = '永恒的信息';
+  brand.innerHTML = '仙界邀请函';
   wrapper.appendChild(brand);
 
   // 添加用户信息区域（如果已登录）
@@ -351,7 +351,7 @@ async function route() {
     loadHomePage(visibleManifest, article);
     
     // 重置 AppBar 标题为站点名称
-    updateAppBar('永恒的信息');
+    updateAppBar('仙界邀请函');
   }
 }
 
@@ -370,7 +370,7 @@ function closeDrawer() {
   drawerOverlay.classList.remove('active');
 }
 
-function updateAppBar(title = '永恒的信息') {
+function updateAppBar(title = '仙界邀请函') {
   if (appbarTitle) {
     appbarTitle.textContent = title;
   }

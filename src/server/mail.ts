@@ -26,7 +26,7 @@ export async function sendEmail(emailData: EmailData, env: any): Promise<boolean
         ],
         from: {
           email: fromEmail,
-          name: env.MAIL_FROM_NAME || 'Aeons.info',
+          name: env.MAIL_FROM_NAME || '仙界邀请函',
         },
         subject: emailData.subject,
         content: [
@@ -60,7 +60,7 @@ export function generateVerificationEmail(email: string, token: string, baseUrl:
   
   return {
     to: email,
-    subject: 'Aeons.info - 验证您的邮箱',
+    subject: '仙界邀请函 - 验证您的邮箱',
     html: `
       <!DOCTYPE html>
       <html>
@@ -80,39 +80,39 @@ export function generateVerificationEmail(email: string, token: string, baseUrl:
       <body>
         <div class="container">
           <div class="header">
-            <h1>Aeons.info</h1>
+            <h1>仙界邀请函</h1>
           </div>
           <div class="content">
             <h2>验证您的邮箱</h2>
             <p>您好！</p>
-            <p>感谢您注册Aeons.info。请点击下面的按钮验证您的邮箱地址：</p>
+            <p>感谢您注册仙界邀请函。请点击下面的按钮验证您的邮箱地址：</p>
             <a href="${verificationUrl}" class="button">验证邮箱</a>
             <p>如果按钮无法点击，请复制以下链接到浏览器地址栏：</p>
             <p style="word-break: break-all; color: #3b82f6;">${verificationUrl}</p>
             <p>此链接将在24小时后过期。</p>
-            <p>如果您没有注册Aeons.info，请忽略此邮件。</p>
+            <p>如果您没有注册仙界邀请函，请忽略此邮件。</p>
           </div>
           <div class="footer">
-            <p>此邮件由Aeons.info系统自动发送，请勿回复。</p>
+            <p>此邮件由仙界邀请函系统自动发送，请勿回复。</p>
           </div>
         </div>
       </body>
       </html>
     `,
     text: `
-Aeons.info - 验证您的邮箱
+仙界邀请函 - 验证您的邮箱
 
 您好！
 
-感谢您注册Aeons.info。请点击以下链接验证您的邮箱地址：
+感谢您注册仙界邀请函。请点击以下链接验证您的邮箱地址：
 
 ${verificationUrl}
 
 此链接将在24小时后过期。
 
-如果您没有注册Aeons.info，请忽略此邮件。
+如果您没有注册仙界邀请函，请忽略此邮件。
 
-此邮件由Aeons.info系统自动发送，请勿回复。
+此邮件由仙界邀请函系统自动发送，请勿回复。
     `
   };
 }
@@ -123,7 +123,7 @@ export function generatePasswordResetEmail(email: string, token: string, baseUrl
   
   return {
     to: email,
-    subject: 'Aeons.info - 重置密码',
+    subject: '仙界邀请函 - 重置密码',
     html: `
       <!DOCTYPE html>
       <html>
@@ -143,7 +143,7 @@ export function generatePasswordResetEmail(email: string, token: string, baseUrl
       <body>
         <div class="container">
           <div class="header">
-            <h1>Aeons.info</h1>
+            <h1>仙界邀请函</h1>
           </div>
           <div class="content">
             <h2>重置密码</h2>
@@ -156,14 +156,14 @@ export function generatePasswordResetEmail(email: string, token: string, baseUrl
             <p>如果您没有请求重置密码，请忽略此邮件。</p>
           </div>
           <div class="footer">
-            <p>此邮件由Aeons.info系统自动发送，请勿回复。</p>
+            <p>此邮件由仙界邀请函系统自动发送，请勿回复。</p>
           </div>
         </div>
       </body>
       </html>
     `,
     text: `
-Aeons.info - 重置密码
+仙界邀请函 - 重置密码
 
 您好！
 
@@ -175,7 +175,7 @@ ${resetUrl}
 
 如果您没有请求重置密码，请忽略此邮件。
 
-此邮件由Aeons.info系统自动发送，请勿回复。
+此邮件由仙界邀请函系统自动发送，请勿回复。
     `
   };
 }
