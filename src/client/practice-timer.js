@@ -1111,11 +1111,19 @@ function addPracticeTimerStyles() {
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
       margin: 0 -5px 20px -5px;
       min-height: 350px;
+      user-select: none;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
     }
     
     #practice-chart {
       width: 100% !important;
       height: 340px !important;
+      user-select: none;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
     }
     
     .modal-overlay {
@@ -1803,6 +1811,10 @@ function addPracticeTimerStyles() {
         margin: 0 -3px 20px -3px;
         padding: 8px;
         min-height: 280px;
+        user-select: none;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
       }
       
       #practice-chart {
