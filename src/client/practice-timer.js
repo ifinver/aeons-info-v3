@@ -2830,12 +2830,21 @@ function renderPracticeLogs(logs) {
     return;
   }
 
-  // 按日期排序（最新的在上面）
+  // 按日期排序（最新的在上面），如果日期相同则按创建时间排序
   const sortedLogs = logs.sort((a, b) => {
     // 使用东八区时间进行比较
     const dateA = new Date(a.date + 'T00:00:00+08:00');
     const dateB = new Date(b.date + 'T00:00:00+08:00');
-    return dateB.getTime() - dateA.getTime(); // 最新的在前
+    const dateDiff = dateB.getTime() - dateA.getTime();
+    
+    // 如果日期相同，再比较创建时间（timestamp）
+    if (dateDiff === 0) {
+      const timestampA = new Date(a.timestamp || a.date + 'T00:00:00+08:00');
+      const timestampB = new Date(b.timestamp || b.date + 'T00:00:00+08:00');
+      return timestampB.getTime() - timestampA.getTime(); // 创建时间越新的越靠上
+    }
+    
+    return dateDiff; // 日期越新的越靠上
   });
 
   const timelineHTML = `
