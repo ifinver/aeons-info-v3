@@ -644,11 +644,20 @@ function renderPracticeTimerInterface(container, marginStyle) {
             <input type="date" id="practice-date" class="form-input" />
           </div>
           <div class="form-group">
-            <label for="practice-time">炼功时长</label>
+            <label for="existing-time">已有炼功时长</label>
+            <div class="time-input-group">
+              <input type="number" id="existing-hours" class="time-input" placeholder="0" min="0" max="23" />
+              <span class="time-separator">小时</span>
+              <input type="number" id="existing-minutes" class="time-input" placeholder="0" min="0" />
+              <span class="time-separator">分钟</span>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="practice-time">新增炼功时长</label>
             <div class="time-input-group">
               <input type="number" id="practice-hours" class="time-input" placeholder="0" min="0" max="23" />
               <span class="time-separator">小时</span>
-              <input type="number" id="practice-minutes" class="time-input" placeholder="0" min="0" max="59" />
+              <input type="number" id="practice-minutes" class="time-input" placeholder="0" min="0" />
               <span class="time-separator">分钟</span>
             </div>
           </div>
@@ -2003,6 +2012,10 @@ function bindEvents() {
     // 重置表单
     document.getElementById('practice-hours').value = '';
     document.getElementById('practice-minutes').value = '';
+    document.getElementById('existing-hours').value = '';
+    document.getElementById('existing-minutes').value = '';
+    // 加载当前日期的已有时间
+    loadExistingTimeForDate();
   });
   
   // 打开日志对话框
@@ -2028,6 +2041,11 @@ function bindEvents() {
   // 确认添加数据
   confirmBtn.addEventListener('click', async () => {
     await addPracticeRecord();
+  });
+  
+  // 日期变化时加载已有时间
+  document.getElementById('practice-date').addEventListener('change', () => {
+    loadExistingTimeForDate();
   });
   
   // 回车键提交
@@ -2068,25 +2086,73 @@ function bindEvents() {
   
 }
 
+// 加载指定日期的已有炼功时间
+async function loadExistingTimeForDate() {
+  const date = document.getElementById('practice-date').value;
+  if (!date) return;
+  
+  try {
+    const response = await fetch('/api/kv/practice-time', {
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(csrfToken ? { 'X-CSRF-Token': csrfToken } : {})
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error('获取数据失败');
+    }
+    
+    const aggregatedData = await response.json();
+    const existingRecord = aggregatedData.records?.[date];
+    
+    if (existingRecord) {
+      // 将总分钟数转换为小时和分钟
+      const totalMinutes = existingRecord.totalMinutes;
+      const hours = Math.floor(totalMinutes / 60);
+      const minutes = totalMinutes % 60;
+      
+      document.getElementById('existing-hours').value = hours;
+      document.getElementById('existing-minutes').value = minutes;
+    } else {
+      // 没有已有记录，清空输入框
+      document.getElementById('existing-hours').value = '';
+      document.getElementById('existing-minutes').value = '';
+    }
+  } catch (error) {
+    console.error('加载已有时间失败:', error);
+    // 出错时清空输入框
+    document.getElementById('existing-hours').value = '';
+    document.getElementById('existing-minutes').value = '';
+  }
+}
+
 async function addPracticeRecord() {
   const date = document.getElementById('practice-date').value;
-  const hours = parseInt(document.getElementById('practice-hours').value) || 0;
-  const minutes = parseInt(document.getElementById('practice-minutes').value) || 0;
+  const existingHours = parseInt(document.getElementById('existing-hours').value) || 0;
+  const existingMinutes = parseInt(document.getElementById('existing-minutes').value) || 0;
+  const newHours = parseInt(document.getElementById('practice-hours').value) || 0;
+  const newMinutes = parseInt(document.getElementById('practice-minutes').value) || 0;
   
   if (!date) {
     alert('请选择日期');
     return;
   }
   
-  if (hours === 0 && minutes === 0) {
+  // 计算总时间（自动处理分钟数超过60的情况）
+  const totalExistingMinutes = existingHours * 60 + existingMinutes;
+  const totalNewMinutes = newHours * 60 + newMinutes;
+  const totalMinutes = totalExistingMinutes + totalNewMinutes;
+  
+  if (totalMinutes === 0) {
     alert('请输入炼功时长');
     return;
   }
   
-  if (minutes >= 60) {
-    alert('分钟数不能超过59');
-    return;
-  }
+  // 将总分钟数转换为小时和分钟
+  const finalHours = Math.floor(totalMinutes / 60);
+  const finalMinutes = totalMinutes % 60;
   
   try {
     const response = await fetch('/api/kv/practice-time', {
@@ -2098,8 +2164,8 @@ async function addPracticeRecord() {
       },
       body: JSON.stringify({
         date,
-        hours,
-        minutes
+        hours: finalHours,
+        minutes: finalMinutes
       })
     });
     
