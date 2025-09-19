@@ -15,6 +15,10 @@ async function loadManifest() {
     const data = await resp.json();
     
     // 转换为原来的格式，并添加特殊页面
+    const currentLang = window.I18n ? window.I18n.getCurrentLanguage() : 'zh';
+    const practiceLogTitle = window.I18nTexts ? window.I18nTexts.getText('practiceLog.title') : (currentLang === 'en' ? 'Practice Log' : '炼功日志');
+    const practiceGroupName = window.I18nTexts ? window.I18nTexts.getText('nav.practice') : (currentLang === 'en' ? 'Practice' : '练习');
+    
     manifest = [
       ...data.items.map(item => ({
         title: item.title,
@@ -24,7 +28,7 @@ async function loadManifest() {
         hidden: item.hidden,
         contentPath: item.contentPath // 新增：预生成内容的路径
       })),
-      { title: '炼功日志', path: 'practice/timer', group: '练习', subgroup: null }
+      { title: practiceLogTitle, path: 'practice/timer', group: practiceGroupName, subgroup: null }
     ];
     
     manifestLoaded = true;
@@ -32,6 +36,10 @@ async function loadManifest() {
   } catch (error) {
     console.error('加载清单文件失败:', error);
     // 回退到硬编码的清单
+    const currentLang = window.I18n ? window.I18n.getCurrentLanguage() : 'zh';
+    const practiceLogTitle = window.I18nTexts ? window.I18nTexts.getText('practiceLog.title') : (currentLang === 'en' ? 'Practice Log' : '炼功日志');
+    const practiceGroupName = window.I18nTexts ? window.I18nTexts.getText('nav.practice') : (currentLang === 'en' ? 'Practice' : '练习');
+    
     manifest = [
       { title: '30天学会灵魂出体', path: 'posts/30-days-master-obe.zh.md', group: '博文', subgroup: null },
       { title: 'Out-of-body adventures (30 days)', path: 'posts/30-days-master-obe.en.md', group: '博文', subgroup: null, hidden: true },
@@ -42,7 +50,7 @@ async function loadManifest() {
       { title: 'Yoga Sutras · Bon Giovanni', path: 'posts/yoga-sutra/by-bon-giovanni.en.md', group: '博文', subgroup: '瑜伽经', hidden: true },
       { title: 'Yoga Sutras · Swami Jnaneshvara', path: 'posts/yoga-sutra/by-swami-jnaneshvara-bharati.en.md', group: '博文', subgroup: '瑜伽经', hidden: true },
       { title: '瑜伽经 · 元吾氏译', path: 'posts/yoga-sutra/by-yuanwushi.zh.md', group: '博文', subgroup: '瑜伽经', hidden: true },
-      { title: '炼功日志', path: 'practice/timer', group: '练习', subgroup: null },
+      { title: practiceLogTitle, path: 'practice/timer', group: practiceGroupName, subgroup: null },
     ];
     manifestLoaded = true;
     return manifest;

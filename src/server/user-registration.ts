@@ -348,11 +348,11 @@ const EMAIL_TEXTS = {
       help: '如果您有任何问题，请访问我们的帮助中心。'
     },
     en: {
-      subject: 'Invitation to Immortal Realm - Verify Your Email',
-      title: 'Invitation to Immortal Realm',
+      subject: 'Aeons Invitation - Verify Your Email',
+      title: 'Aeons Invitation',
       heading: 'Verify Your Email',
       greeting: 'Hello!',
-      intro: 'Thank you for registering with Invitation to Immortal Realm. Please click the button below to verify your email address:',
+      intro: 'Thank you for registering with Aeons Invitation. Please click the button below to verify your email address:',
       button: 'Verify Email',
       linkText: 'If the button doesn\'t work, please copy and paste the following link into your browser:',
       expiry: 'This link will expire in 24 hours.',
@@ -362,8 +362,8 @@ const EMAIL_TEXTS = {
         'Do not forward this email to others',
         'Contact our customer service if you have any questions'
       ],
-      ignore: 'If you didn\'t register for Invitation to Immortal Realm, please ignore this email.',
-      footer: 'This email was sent automatically by the Invitation to Immortal Realm system. Please do not reply.',
+      ignore: 'If you didn\'t register for Aeons Invitation, please ignore this email.',
+      footer: 'This email was sent automatically by the Aeons Invitation system. Please do not reply.',
       help: 'If you have any questions, please visit our help center.'
     }
   }

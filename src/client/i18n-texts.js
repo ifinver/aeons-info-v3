@@ -62,7 +62,7 @@ const I18N_TEXTS = {
   site: {
     title: {
       zh: '仙界邀请函',
-      en: 'Invitation to Immortal Realm'
+      en: 'Aeons Invitation'
     },
     subtitle: {
       zh: '探索东方智慧的精神宝库',
@@ -112,6 +112,14 @@ const I18N_TEXTS = {
       },
       练习: {
         zh: '练习', 
+        en: 'Practice'
+      },
+      Articles: {
+        zh: '博文',
+        en: 'Articles'
+      },
+      Practice: {
+        zh: '练习',
         en: 'Practice'
       }
     }
