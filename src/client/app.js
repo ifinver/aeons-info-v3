@@ -91,7 +91,7 @@ async function buildSidebar() {
   const wrapper = document.createElement('div');
   const brand = document.createElement('div');
   brand.className = 'brand';
-  brand.innerHTML = '仙界邀请函';
+  brand.innerHTML = window.I18nTexts ? window.I18nTexts.getText('site.title') : '仙界邀请函';
   wrapper.appendChild(brand);
 
   // 添加语言切换区域
@@ -276,6 +276,12 @@ function updatePageTitle() {
     const brandElement = document.querySelector('.brand');
     if (brandElement) {
       brandElement.textContent = siteTitle;
+    }
+    
+    // 更新移动端AppBar标题
+    const appbarTitleElement = document.getElementById('appbar-title');
+    if (appbarTitleElement) {
+      appbarTitleElement.textContent = siteTitle;
     }
   }
 }
@@ -540,13 +546,8 @@ async function initApp() {
     });
   }
 
-  // 绑定语言切换事件
-  const languageToggle = document.getElementById('language-toggle');
+  // 绑定语言切换事件（仅侧边栏）
   const sidebarLanguageToggle = document.getElementById('sidebar-language-toggle');
-  
-  if (languageToggle) {
-    languageToggle.addEventListener('click', handleLanguageSwitch);
-  }
   
   if (sidebarLanguageToggle) {
     sidebarLanguageToggle.addEventListener('click', handleLanguageSwitch);

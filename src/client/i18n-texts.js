@@ -334,6 +334,71 @@ const I18N_TEXTS = {
     daysStreak: {
       zh: '天',
       en: 'days'
+    },
+    // 图表相关
+    chart: {
+      date: {
+        zh: '日期',
+        en: 'Date'
+      },
+      durationHours: {
+        zh: '时长 (小时)',
+        en: 'Duration (Hours)'
+      },
+      practiceTimeLabel: {
+        zh: '炼功时长 (小时)',
+        en: 'Practice Duration (Hours)'
+      },
+      averageTimeLabel: {
+        zh: '平均时长',
+        en: 'Average Duration'
+      },
+      tooltipPracticeTime: {
+        zh: '炼功时长',
+        en: 'Practice Duration'
+      },
+      tooltipAverageTime: {
+        zh: '平均时长',
+        en: 'Average Duration'
+      },
+      hoursUnit: {
+        zh: '小时',
+        en: 'hours'
+      },
+      minutesUnit: {
+        zh: '分钟',
+        en: 'minutes'
+      },
+      hoursSuffix: {
+        zh: '小时',
+        en: 'h'
+      }
+    },
+    // 表单验证消息
+    validation: {
+      selectDate: {
+        zh: '请选择日期',
+        en: 'Please select a date'
+      },
+      enterDuration: {
+        zh: '请输入炼功时长',
+        en: 'Please enter practice duration'
+      }
+    },
+    // 编辑器相关
+    editor: {
+      markdownHelp: {
+        zh: '支持Markdown格式：**粗体** *斜体* ## 标题 - 列表 > 引用 `代码`',
+        en: 'Markdown supported: **bold** *italic* ## heading - list > quote `code`'
+      },
+      preview: {
+        zh: '预览',
+        en: 'Preview'
+      },
+      previewPlaceholder: {
+        zh: '在上方输入内容后，这里会显示预览',
+        en: 'Preview will appear here after entering content above'
+      }
     }
   },
 

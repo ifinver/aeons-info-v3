@@ -489,14 +489,6 @@
     @apply flex items-center;
   }
 
-  .mobile-appbar .language-toggle {
-    @apply w-10 h-10 flex items-center justify-center text-primary text-lg;
-    @apply transition-all duration-200 ease-in-out mr-1;
-  }
-
-  .mobile-appbar .language-toggle:hover {
-    @apply bg-gray-100 rounded-lg;
-  }
 
   .mobile-appbar .drawer-toggle {
     @apply w-14 h-14 flex items-center justify-center text-primary text-2xl font-black;

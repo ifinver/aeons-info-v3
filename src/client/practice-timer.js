@@ -228,14 +228,14 @@ class ChartManager {
                       const originalMinutes = records[recordIndex].totalMinutes;
                       const h = Math.floor(originalMinutes / 60);
                       const m = originalMinutes % 60;
-                      return `炼功时长: ${h}小时${m}分钟`;
+                      return `${getText('practiceLog.chart.tooltipPracticeTime')}: ${h}${getText('practiceLog.chart.hoursUnit')}${m}${getText('practiceLog.chart.minutesUnit')}`;
                     } else {
                       // 对于平均值
                       const totalMinutes = records.reduce((sum, record) => sum + record.totalMinutes, 0);
                       const averageMinutes = records.length > 0 ? Math.round(totalMinutes / records.length) : 0;
                       const h = Math.floor(averageMinutes / 60);
                       const m = averageMinutes % 60;
-                      return `平均时长: ${h}小时${m}分钟`;
+                      return `${getText('practiceLog.chart.tooltipAverageTime')}: ${h}${getText('practiceLog.chart.hoursUnit')}${m}${getText('practiceLog.chart.minutesUnit')}`;
                     }
                   }
                 }
@@ -246,7 +246,7 @@ class ChartManager {
                 display: true,
                 title: {
                   display: true,
-                  text: '日期',
+                  text: getText('practiceLog.chart.date'),
                   font: {
                     size: 14,
                     weight: '600'
@@ -260,7 +260,7 @@ class ChartManager {
                 display: true,
                 title: {
                   display: true,
-                  text: '时长 (小时)',
+                  text: getText('practiceLog.chart.durationHours'),
                   font: {
                     size: 14,
                     weight: '600'
@@ -272,7 +272,7 @@ class ChartManager {
                 },
                 ticks: {
                   callback: function(value) {
-                    return value + 'h';
+                    return value + getText('practiceLog.chart.hoursSuffix');
                   }
                 }
               }
@@ -316,7 +316,7 @@ class ChartManager {
       labels: labels,
       datasets: [
         {
-          label: '炼功时长 (小时)',
+          label: getText('practiceLog.chart.practiceTimeLabel'),
           data: data,
           borderColor: '#3b82f6',
           backgroundColor: 'rgba(59, 130, 246, 0.1)',
@@ -330,7 +330,7 @@ class ChartManager {
           pointHoverRadius: 8,
         },
         {
-          label: '平均时长',
+          label: getText('practiceLog.chart.averageTimeLabel'),
           data: averageLine,
           borderColor: '#ef4444',
           backgroundColor: 'transparent',
@@ -722,14 +722,14 @@ function renderPracticeTimerInterface(container, marginStyle) {
             <div class="markdown-help">
 
               <small>
-                支持Markdown格式：**粗体** *斜体* ## 标题 - 列表 > 引用 \`代码\`
+                ${getText('practiceLog.editor.markdownHelp')}
               </small>
             </div>
           </div>
           <div class="form-group">
-            <label>预览</label>
+            <label>${getText('practiceLog.editor.preview')}</label>
             <div id="log-preview" class="log-preview">
-              <div class="preview-placeholder">在上方输入内容后，这里会显示预览</div>
+              <div class="preview-placeholder">${getText('practiceLog.editor.previewPlaceholder')}</div>
             </div>
           </div>
         </div>
@@ -1979,7 +1979,7 @@ function closeLogModal() {
     document.getElementById('log-modal-title').textContent = '添加炼功日志';
     document.getElementById('log-date').value = '';
     document.getElementById('log-content').value = '';
-    document.getElementById('log-preview').innerHTML = '<div class="preview-placeholder">在上方输入内容后，这里会显示预览</div>';
+    document.getElementById('log-preview').innerHTML = `<div class="preview-placeholder">${getText('practiceLog.editor.previewPlaceholder')}</div>`;
     
     // 清除编辑状态
     delete logModal.dataset.editingLogId;
@@ -2132,7 +2132,7 @@ async function addPracticeRecord() {
   const newMinutes = parseInt(document.getElementById('practice-minutes').value) || 0;
   
   if (!date) {
-    alert('请选择日期');
+    alert(getText('practiceLog.validation.selectDate'));
     return;
   }
   
@@ -2142,7 +2142,7 @@ async function addPracticeRecord() {
   const totalMinutes = totalExistingMinutes + totalNewMinutes;
   
   if (totalMinutes === 0) {
-    alert('请输入炼功时长');
+    alert(getText('practiceLog.validation.enterDuration'));
     return;
   }
   
@@ -3081,7 +3081,7 @@ function updateLogPreview() {
   const content = logContent.value.trim();
   
   if (!content) {
-    logPreview.innerHTML = '<div class="preview-placeholder">在上方输入内容后，这里会显示预览</div>';
+    logPreview.innerHTML = `<div class="preview-placeholder">${getText('practiceLog.editor.previewPlaceholder')}</div>`;
     return;
   }
   
@@ -3136,7 +3136,7 @@ async function savePracticeLog() {
   const content = document.getElementById('log-content').value.trim();
   
   if (!date) {
-    showMessage('请选择日期', 'error');
+    showMessage(getText('practiceLog.validation.selectDate'), 'error');
     return;
   }
   
