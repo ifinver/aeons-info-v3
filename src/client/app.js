@@ -73,6 +73,11 @@ async function buildSidebar() {
   // 根据当前语言过滤文章
   const currentLang = window.I18n ? window.I18n.getCurrentLanguage() : 'zh';
   visibleManifest = visibleManifest.filter(m => {
+    // 特殊页面（如 practice/timer）不受语言过滤影响，始终显示
+    if (m.path.startsWith('practice/') || m.path.startsWith('auth/')) {
+      return true;
+    }
+    
     if (currentLang === 'zh') {
       // 中文环境：显示中文文章和没有语言标识的文章
       return !m.path.includes('.en.') && !m.title.includes('(EN)');
@@ -242,12 +247,22 @@ function handleLanguageChange(event) {
   // 更新页面标题
   updatePageTitle();
   
+  // 重新构建侧边栏以更新导航项的语言
+  buildSidebar();
+  
   // 更新侧边栏语言按钮文本
   updateLanguageButtonText();
   
-  // 更新 AppBar 标题（如果在首页）
+  // 更新 AppBar 标题
   if (!location.hash.startsWith('#/')) {
     updateAppBar();
+  } else {
+    // 如果在特定页面，也需要更新 AppBar 标题
+    const path = decodeURIComponent(location.hash.slice(2));
+    if (path === 'practice/timer') {
+      const practiceLogTitle = window.I18nTexts ? window.I18nTexts.getText('practiceLog.title') : '炼功日志';
+      updateAppBar(practiceLogTitle);
+    }
   }
 }
 
@@ -293,7 +308,8 @@ async function loadContent(path) {
   if (path === 'practice/timer') {
     await loadPracticeTimerPage(article);
     highlightActive(path);
-    updateAppBar('炼功日志');
+    const practiceLogTitle = window.I18nTexts ? window.I18nTexts.getText('practiceLog.title') : '炼功日志';
+    updateAppBar(practiceLogTitle);
     return;
   }
 
@@ -443,8 +459,8 @@ async function route() {
     const visibleManifest = manifest.filter(m => !m.hidden);
     loadHomePage(visibleManifest, article);
     
-    // 重置 AppBar 标题为站点名称
-    updateAppBar('仙界邀请函');
+    // 重置 AppBar 标题为站点名称（使用本地化）
+    updateAppBar();
   }
 }
 
