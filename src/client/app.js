@@ -343,6 +343,9 @@ async function loadContent(path) {
       // 拦截文章内的锚点链接，防止与路由冲突
       interceptArticleLinks();
       
+      // 修复 Safari Reader 模式检测问题
+      await fixSafariReaderMode();
+      
       // 添加文章元数据（可选）
       if (contentData.metadata && contentData.wordCount) {
         // const metaInfo = document.createElement('div');
@@ -369,6 +372,9 @@ async function loadContent(path) {
       // 简单的 Markdown 解析（基础功能）
       const html = parseBasicMarkdown(cleaned);
       article.innerHTML = html;
+      
+      // 修复 Safari Reader 模式检测问题
+      await fixSafariReaderMode();
     }
     
     highlightActive(path);
@@ -577,6 +583,47 @@ addEventListener('hashchange', () => {
     closeDrawer();
   }
 });
+
+/**
+ * 修复 Safari Reader 模式检测问题
+ * Safari 需要时间来分析新加载的内容结构
+ */
+async function fixSafariReaderMode() {
+  // 检测是否为 Safari 浏览器
+  const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+  
+  if (!isSafari) {
+    return; // 非 Safari 浏览器无需处理
+  }
+  
+  // 方法1: 添加延迟让 Safari 有时间分析内容
+  await new Promise(resolve => setTimeout(resolve, 100));
+  
+  // 方法2: 触发 DOM 变更事件通知浏览器内容已更新
+  const article = document.getElementById('article');
+  if (article) {
+    // 创建并派发自定义事件
+    const contentChangeEvent = new Event('DOMContentLoaded', { bubbles: true });
+    article.dispatchEvent(contentChangeEvent);
+    
+    // 触发窗口 resize 事件，这有时能帮助 Safari 重新检测内容
+    window.dispatchEvent(new Event('resize'));
+    
+    // 方法3: 微调DOM结构来触发重新分析
+    // 临时添加一个不可见元素然后移除，这会触发 Safari 的内容分析
+    const tempElement = document.createElement('div');
+    tempElement.style.display = 'none';
+    tempElement.setAttribute('aria-hidden', 'true');
+    article.appendChild(tempElement);
+    
+    // 下一个事件循环中移除临时元素
+    setTimeout(() => {
+      if (tempElement.parentNode) {
+        tempElement.parentNode.removeChild(tempElement);
+      }
+    }, 10);
+  }
+}
 
 initApp();
 

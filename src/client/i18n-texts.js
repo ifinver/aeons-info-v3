@@ -218,6 +218,38 @@ const I18N_TEXTS = {
     loginRequired: {
       zh: '请先登录以使用此功能',
       en: 'Please login to use this feature'
+    },
+    forgotPassword: {
+      zh: '忘记密码？',
+      en: 'Forgot Password?'
+    },
+    forgotPasswordTitle: {
+      zh: '忘记密码',
+      en: 'Forgot Password'
+    },
+    sendRegistrationEmail: {
+      zh: '发送注册邮件',
+      en: 'Send Registration Email'
+    },
+    alreadyHaveAccount: {
+      zh: '已有账户？去登录',
+      en: 'Already have an account? Login'
+    },
+    backToLogin: {
+      zh: '返回登录',
+      en: 'Back to Login'
+    },
+    loggingIn: {
+      zh: '登录中...',
+      en: 'Logging in...'
+    },
+    sendResetEmail: {
+      zh: '发送重置邮件',
+      en: 'Send Reset Email'
+    },
+    resetEmailSent: {
+      zh: '重置邮件已发送，请检查您的邮箱',
+      en: 'Reset email sent, please check your inbox'
     }
   },
 
@@ -398,6 +430,94 @@ const I18N_TEXTS = {
       previewPlaceholder: {
         zh: '在上方输入内容后，这里会显示预览',
         en: 'Preview will appear here after entering content above'
+      },
+      toolbar: {
+        bold: {
+          zh: '粗体',
+          en: 'Bold'
+        },
+        italic: {
+          zh: '斜体',
+          en: 'Italic'
+        },
+        heading: {
+          zh: '标题',
+          en: 'Heading'
+        },
+        list: {
+          zh: '列表',
+          en: 'List'
+        },
+        quote: {
+          zh: '引用',
+          en: 'Quote'
+        },
+        code: {
+          zh: '代码',
+          en: 'Code'
+        }
+      }
+    },
+    // 日志操作
+    actions: {
+      edit: {
+        zh: '编辑',
+        en: 'Edit'
+      },
+      delete: {
+        zh: '删除',
+        en: 'Delete'
+      },
+      confirmDelete: {
+        zh: '确定要删除这条日志吗？',
+        en: 'Are you sure you want to delete this log?'
+      },
+      editLogTitle: {
+        zh: '编辑炼功日志',
+        en: 'Edit Practice Log'
+      }
+    },
+    // 消息提示
+    messages: {
+      loginRequired: {
+        zh: '请填写完整的登录信息',
+        en: 'Please fill in complete login information'
+      },
+      invalidEmail: {
+        zh: '请输入有效的邮箱地址',
+        en: 'Please enter a valid email address'
+      },
+      loginFailed: {
+        zh: '登录失败',
+        en: 'Login failed'
+      },
+      loginSuccess: {
+        zh: '登录成功！',
+        en: 'Login successful!'
+      },
+      registrationEmailSent: {
+        zh: '注册邮件已发送，请检查您的邮箱并点击验证链接',
+        en: 'Registration email sent, please check your inbox and click the verification link'
+      },
+      registerFailed: {
+        zh: '注册失败',
+        en: 'Registration failed'
+      },
+      enterEmail: {
+        zh: '请输入邮箱地址',
+        en: 'Please enter email address'
+      },
+      saveFailed: {
+        zh: '保存失败',
+        en: 'Save failed'
+      },
+      deleteSuccess: {
+        zh: '日志删除成功！',
+        en: 'Log deleted successfully!'
+      },
+      deleteFailed: {
+        zh: '删除失败',
+        en: 'Delete failed'
       }
     }
   },

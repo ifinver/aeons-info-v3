@@ -547,7 +547,7 @@ function showAuthInterface(container, marginStyle) {
           <button id="login-btn" class="auth-btn primary">${getText('auth.login')}</button>
           <div class="auth-links">
             <button id="show-register-btn" class="link-btn">${getText('auth.register')}</button>
-            <button id="forgot-password-btn" class="link-btn">忘记密码？</button>
+            <button id="forgot-password-btn" class="link-btn">${getText('auth.forgotPassword')}</button>
           </div>
         </div>
         
@@ -558,22 +558,22 @@ function showAuthInterface(container, marginStyle) {
             <label for="register-email">${getText('auth.email')}</label>
             <input type="email" id="register-email" class="form-input" placeholder="${getText('auth.emailPlaceholder')}" />
           </div>
-          <button id="register-btn" class="auth-btn primary">发送注册邮件</button>
+          <button id="register-btn" class="auth-btn primary">${getText('auth.sendRegistrationEmail')}</button>
           <div class="auth-links">
-            <button id="show-login-btn" class="link-btn">已有账户？去登录</button>
+            <button id="show-login-btn" class="link-btn">${getText('auth.alreadyHaveAccount')}</button>
           </div>
         </div>
         
         <!-- 忘记密码表单 -->
         <div class="auth-form hidden" id="forgot-password-form">
-          <h2>忘记密码</h2>
+          <h2>${getText('auth.forgotPasswordTitle')}</h2>
           <div class="form-group">
             <label for="forgot-email">${getText('auth.email')}</label>
             <input type="email" id="forgot-email" class="form-input" placeholder="${getText('auth.emailPlaceholder')}" />
           </div>
           <button id="send-reset-btn" class="auth-btn primary">发送重置邮件</button>
           <div class="auth-links">
-            <button id="back-to-login-btn" class="link-btn">返回登录</button>
+            <button id="back-to-login-btn" class="link-btn">${getText('auth.backToLogin')}</button>
           </div>
         </div>
       </div>
@@ -693,22 +693,22 @@ function renderPracticeTimerInterface(container, marginStyle) {
             <label for="log-content">${getText('practiceLog.practiceNote')}</label>
             <div class="markdown-editor">
               <div class="editor-toolbar">
-                <button type="button" class="toolbar-btn" onclick="insertMarkdown('**', '**')" title="粗体">
+                <button type="button" class="toolbar-btn" onclick="insertMarkdown('**', '**')" title="${getText('practiceLog.editor.toolbar.bold')}">
                   <strong>B</strong>
                 </button>
-                <button type="button" class="toolbar-btn" onclick="insertMarkdown('*', '*')" title="斜体">
+                <button type="button" class="toolbar-btn" onclick="insertMarkdown('*', '*')" title="${getText('practiceLog.editor.toolbar.italic')}">
                   <em>I</em>
                 </button>
-                <button type="button" class="toolbar-btn" onclick="insertMarkdown('## ', '')" title="标题">
+                <button type="button" class="toolbar-btn" onclick="insertMarkdown('## ', '')" title="${getText('practiceLog.editor.toolbar.heading')}">
                   H
                 </button>
-                <button type="button" class="toolbar-btn" onclick="insertMarkdown('- ', '')" title="列表">
+                <button type="button" class="toolbar-btn" onclick="insertMarkdown('- ', '')" title="${getText('practiceLog.editor.toolbar.list')}">
                   •
                 </button>
-                <button type="button" class="toolbar-btn" onclick="insertMarkdown('> ', '')" title="引用">
+                <button type="button" class="toolbar-btn" onclick="insertMarkdown('> ', '')" title="${getText('practiceLog.editor.toolbar.quote')}">
                   "
                 </button>
-                <button type="button" class="toolbar-btn" onclick="insertMarkdown('\`', '\`')" title="代码">
+                <button type="button" class="toolbar-btn" onclick="insertMarkdown('\`', '\`')" title="${getText('practiceLog.editor.toolbar.code')}">
                   &lt;/&gt;
                 </button>
               </div>
@@ -2478,18 +2478,18 @@ async function handleLogin() {
   email = sanitizeInput(email);
   
   if (!email || !password) {
-    showMessage('请填写完整的登录信息', 'error');
+    showMessage(getText('practiceLog.messages.loginRequired'), 'error');
     return;
   }
   
   if (!isValidEmail(email)) {
-    showMessage('请输入有效的邮箱地址', 'error');
+    showMessage(getText('practiceLog.messages.invalidEmail'), 'error');
     return;
   }
   
   const loginBtn = document.getElementById('login-btn');
   loginBtn.disabled = true;
-  loginBtn.textContent = '登录中...';
+  loginBtn.textContent = getText('auth.loggingIn');
   
   try {
     const response = await fetch('/api/auth/login', {
@@ -2513,7 +2513,7 @@ async function handleLogin() {
     window.currentUser = currentUser;
     window.csrfToken = csrfToken;
     
-    showMessage('登录成功！', 'success');
+    showMessage(getText('practiceLog.messages.loginSuccess'), 'success');
     
     // 清空表单
     document.getElementById('login-email').value = '';
@@ -2560,10 +2560,10 @@ async function handleLogin() {
     }, 1500);
     
   } catch (error) {
-    showMessage('登录失败: ' + error.message, 'error');
+    showMessage(getText('practiceLog.messages.loginFailed') + ': ' + error.message, 'error');
   } finally {
     loginBtn.disabled = false;
-    loginBtn.textContent = '登录';
+    loginBtn.textContent = getText('auth.login');
   }
 }
 
@@ -2575,12 +2575,12 @@ async function handleRegister() {
   email = sanitizeInput(email);
   
   if (!email) {
-    showMessage('请输入邮箱地址', 'error');
+    showMessage(getText('practiceLog.messages.enterEmail'), 'error');
     return;
   }
   
   if (!isValidEmail(email)) {
-    showMessage('请输入有效的邮箱地址', 'error');
+    showMessage(getText('practiceLog.messages.invalidEmail'), 'error');
     return;
   }
   
@@ -2603,17 +2603,17 @@ async function handleRegister() {
       throw new Error(data.error || '注册失败');
     }
     
-    showMessage('注册邮件已发送，请检查您的邮箱并点击验证链接', 'success');
+    showMessage(getText('practiceLog.messages.registrationEmailSent'), 'success');
     
     // 清空邮箱输入
     document.getElementById('register-email').value = '';
     
   } catch (error) {
     console.error('注册失败:', error);
-    showMessage('注册失败: ' + error.message, 'error');
+    showMessage(getText('practiceLog.messages.registerFailed') + ': ' + error.message, 'error');
   } finally {
     registerBtn.disabled = false;
-    registerBtn.textContent = '发送注册邮件';
+    registerBtn.textContent = getText('auth.sendRegistrationEmail');
   }
 }
 
@@ -2625,12 +2625,12 @@ async function handleForgotPassword() {
   email = sanitizeInput(email);
   
   if (!email) {
-    showMessage('请输入邮箱地址', 'error');
+    showMessage(getText('practiceLog.messages.enterEmail'), 'error');
     return;
   }
   
   if (!isValidEmail(email)) {
-    showMessage('请输入有效的邮箱地址', 'error');
+    showMessage(getText('practiceLog.messages.invalidEmail'), 'error');
     return;
   }
   
@@ -2653,7 +2653,7 @@ async function handleForgotPassword() {
       throw new Error(data.error || '发送失败');
     }
     
-    showMessage('重置邮件已发送，请检查您的邮箱', 'success');
+    showMessage(getText('auth.resetEmailSent'), 'success');
     
     // 清空邮箱输入
     document.getElementById('forgot-email').value = '';
@@ -2936,10 +2936,10 @@ function renderPracticeLogs(logs) {
             </div>
             <div class="log-actions">
               <button class="log-action-btn edit" onclick="editPracticeLog('${log.id || log.date}')">
-                编辑
+                ${getText('practiceLog.actions.edit')}
               </button>
               <button class="log-action-btn delete" onclick="deletePracticeLog('${log.id || log.date}')">
-                删除
+                ${getText('practiceLog.actions.delete')}
               </button>
             </div>
           </div>
@@ -3002,7 +3002,7 @@ function parseMarkdownContent(content) {
 
 // 删除炼功日志
 async function deletePracticeLog(logId) {
-  if (!confirm('确定要删除这条日志吗？')) {
+  if (!confirm(getText('practiceLog.actions.confirmDelete'))) {
     return;
   }
 
@@ -3021,14 +3021,14 @@ async function deletePracticeLog(logId) {
       throw new Error(error.error || '删除失败');
     }
 
-    showMessage('日志删除成功！', 'success');
+    showMessage(getText('practiceLog.messages.deleteSuccess'), 'success');
     
     // 重新加载日志
     await loadPracticeLogs();
     
   } catch (error) {
     console.error('删除日志失败:', error);
-    showMessage('删除失败: ' + error.message, 'error');
+    showMessage(getText('practiceLog.messages.deleteFailed') + ': ' + error.message, 'error');
   }
 }
 
@@ -3047,7 +3047,7 @@ function openLogModal(logData = null) {
   
   if (logData) {
     // 编辑模式
-    logModalTitle.textContent = '编辑炼功日志';
+    logModalTitle.textContent = getText('practiceLog.actions.editLogTitle');
     logDate.value = logData.date;
     logContent.value = logData.content || '';
     logModal.dataset.editingLogId = logData.id || logData.date;
@@ -3181,7 +3181,7 @@ async function savePracticeLog() {
     
   } catch (error) {
     console.error('保存日志失败:', error);
-    showMessage('保存失败: ' + error.message, 'error');
+    showMessage(getText('practiceLog.messages.saveFailed') + ': ' + error.message, 'error');
   }
 }
 
