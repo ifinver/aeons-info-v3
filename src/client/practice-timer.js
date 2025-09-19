@@ -1,6 +1,14 @@
 // 炼功日志页面
 // Chart.js 将通过script标签加载，使用全局Chart对象
 
+// 获取本地化文本的便捷函数
+function getText(key, params = {}) {
+  if (window.I18nTexts && typeof window.I18nTexts.getText === 'function') {
+    return window.I18nTexts.getText(key, null, params);
+  }
+  return key; // 后备方案，返回键名
+}
+
 // 东八区时区工具函数
 const CHINA_TIMEZONE_OFFSET = 8 * 60; // 8小时 = 480分钟
 
@@ -521,34 +529,34 @@ function showAuthInterface(container, marginStyle) {
     <div class="auth-page" style="${marginStyle}">
       <div class="auth-container">
         <div class="auth-header">
-          <h1>炼功日志</h1>
-          <p>请登录或注册以使用炼功日志功能</p>
+          <h1>${getText('practiceLog.title')}</h1>
+          <p>${getText('auth.loginRequired')}</p>
         </div>
         
         <!-- 登录表单 -->
         <div class="auth-form" id="login-form">
-          <h2>登录</h2>
+          <h2>${getText('auth.login')}</h2>
           <div class="form-group">
-            <label for="login-email">邮箱</label>
-            <input type="email" id="login-email" class="form-input" placeholder="请输入邮箱" />
+            <label for="login-email">${getText('auth.email')}</label>
+            <input type="email" id="login-email" class="form-input" placeholder="${getText('auth.emailPlaceholder')}" />
           </div>
           <div class="form-group">
-            <label for="login-password">密码</label>
-            <input type="password" id="login-password" class="form-input" placeholder="请输入密码" />
+            <label for="login-password">${getText('auth.password')}</label>
+            <input type="password" id="login-password" class="form-input" placeholder="••••••••" />
           </div>
-          <button id="login-btn" class="auth-btn primary">登录</button>
+          <button id="login-btn" class="auth-btn primary">${getText('auth.login')}</button>
           <div class="auth-links">
-            <button id="show-register-btn" class="link-btn">没有账户？去注册</button>
+            <button id="show-register-btn" class="link-btn">${getText('auth.register')}</button>
             <button id="forgot-password-btn" class="link-btn">忘记密码？</button>
           </div>
         </div>
         
         <!-- 注册表单 -->
         <div class="auth-form hidden" id="register-form">
-          <h2>注册</h2>
+          <h2>${getText('auth.register')}</h2>
           <div class="form-group">
-            <label for="register-email">邮箱</label>
-            <input type="email" id="register-email" class="form-input" placeholder="请输入邮箱" />
+            <label for="register-email">${getText('auth.email')}</label>
+            <input type="email" id="register-email" class="form-input" placeholder="${getText('auth.emailPlaceholder')}" />
           </div>
           <button id="register-btn" class="auth-btn primary">发送注册邮件</button>
           <div class="auth-links">
@@ -560,8 +568,8 @@ function showAuthInterface(container, marginStyle) {
         <div class="auth-form hidden" id="forgot-password-form">
           <h2>忘记密码</h2>
           <div class="form-group">
-            <label for="forgot-email">邮箱</label>
-            <input type="email" id="forgot-email" class="form-input" placeholder="请输入邮箱" />
+            <label for="forgot-email">${getText('auth.email')}</label>
+            <input type="email" id="forgot-email" class="form-input" placeholder="${getText('auth.emailPlaceholder')}" />
           </div>
           <button id="send-reset-btn" class="auth-btn primary">发送重置邮件</button>
           <div class="auth-links">
@@ -585,7 +593,7 @@ function renderPracticeTimerInterface(container, marginStyle) {
     <div class="practice-timer-page" style="${marginStyle}">
       <!-- 标题和添加按钮 -->
       <div class="header-row mb-6">
-        <h1 class="page-title" style="margin-bottom: 0px;">炼功计时器</h1>
+        <h1 class="page-title" style="margin-bottom: 0px;">${getText('practiceLog.title')}</h1>
         <button id="add-data-btn" class="add-btn">+</button>
       </div>
       
@@ -593,7 +601,7 @@ function renderPracticeTimerInterface(container, marginStyle) {
       <div class="chart-container mb-8">
         <div class="chart-loading">
           <div class="chart-skeleton"></div>
-          <p>正在加载图表...</p>
+          <p>${getText('common.loading')}</p>
         </div>
         <canvas id="practice-chart" width="400" height="200" style="display: none;"></canvas>
       </div>
@@ -601,30 +609,30 @@ function renderPracticeTimerInterface(container, marginStyle) {
       <!-- 统计信息 -->
       <div class="stats-grid mb-8">
         <div class="stat-card">
-          <div class="stat-label">总时长</div>
-          <div class="stat-value skeleton-text" id="total-time">加载中...</div>
+          <div class="stat-label">${getText('practiceLog.totalTime')}</div>
+          <div class="stat-value skeleton-text" id="total-time">${getText('common.loading')}</div>
         </div>
         <div class="stat-card">
-          <div class="stat-label">平均每天</div>
-          <div class="stat-value skeleton-text" id="average-time">加载中...</div>
+          <div class="stat-label">${getText('practiceLog.averageTime')}</div>
+          <div class="stat-value skeleton-text" id="average-time">${getText('common.loading')}</div>
         </div>
         <div class="stat-card">
-          <div class="stat-label">记录天数</div>
-          <div class="stat-value skeleton-text" id="total-days">加载中...</div>
+          <div class="stat-label">${getText('practiceLog.sessionCount')}</div>
+          <div class="stat-value skeleton-text" id="total-days">${getText('common.loading')}</div>
         </div>
       </div>
 
       <!-- 炼功日志板块 -->
       <div class="practice-log-section">
         <div class="log-header">
-          <h2 class="log-title">炼功日志</h2>
+          <h2 class="log-title">${getText('practiceLog.practiceHistory')}</h2>
           <button id="add-log-btn" class="add-log-btn">+</button>
         </div>
         
         <div class="log-timeline" id="log-timeline">
           <div class="log-loading">
             <div class="loading-spinner"></div>
-            <p>正在加载日志...</p>
+            <p>${getText('common.loading')}</p>
           </div>
         </div>
       </div>
@@ -635,36 +643,36 @@ function renderPracticeTimerInterface(container, marginStyle) {
     <div id="add-data-modal" class="modal-overlay hidden">
       <div class="modal-content">
         <div class="modal-header">
-          <h3>添加炼功记录</h3>
+          <h3>${getText('practiceLog.startPractice')}</h3>
           <button id="close-modal" class="close-btn">×</button>
         </div>
         <div class="modal-body">
           <div class="form-group">
-            <label for="practice-date">日期</label>
+            <label for="practice-date">${getText('practiceLog.today')}</label>
             <input type="date" id="practice-date" class="form-input" />
           </div>
           <div class="form-group">
-            <label for="existing-time">已有炼功时长</label>
+            <label for="existing-time">${getText('practiceLog.practiceTime')}</label>
             <div class="time-input-group">
               <input type="number" id="existing-hours" class="time-input" placeholder="0" min="0" max="23" />
-              <span class="time-separator">小时</span>
+              <span class="time-separator">${getText('practiceLog.hours')}</span>
               <input type="number" id="existing-minutes" class="time-input" placeholder="0" min="0" />
-              <span class="time-separator">分钟</span>
+              <span class="time-separator">${getText('practiceLog.minutes')}</span>
             </div>
           </div>
           <div class="form-group">
-            <label for="practice-time">新增炼功时长</label>
+            <label for="practice-time">${getText('practiceLog.practiceTime')}</label>
             <div class="time-input-group">
               <input type="number" id="practice-hours" class="time-input" placeholder="0" min="0" max="23" />
-              <span class="time-separator">小时</span>
+              <span class="time-separator">${getText('practiceLog.hours')}</span>
               <input type="number" id="practice-minutes" class="time-input" placeholder="0" min="0" />
-              <span class="time-separator">分钟</span>
+              <span class="time-separator">${getText('practiceLog.minutes')}</span>
             </div>
           </div>
         </div>
         <div class="modal-footer">
-          <button id="cancel-btn" class="cancel-btn">取消</button>
-          <button id="confirm-btn" class="confirm-btn">确定</button>
+          <button id="cancel-btn" class="cancel-btn">${getText('common.cancel')}</button>
+          <button id="confirm-btn" class="confirm-btn">${getText('common.confirm')}</button>
         </div>
       </div>
     </div>
@@ -673,16 +681,16 @@ function renderPracticeTimerInterface(container, marginStyle) {
     <div id="add-log-modal" class="modal-overlay hidden">
       <div class="modal-content log-modal-content">
         <div class="modal-header">
-          <h3 id="log-modal-title">添加炼功日志</h3>
+          <h3 id="log-modal-title">${getText('practiceLog.practiceNote')}</h3>
           <button id="close-log-modal" class="close-btn">×</button>
         </div>
         <div class="modal-body">
           <div class="form-group">
-            <label for="log-date">日期</label>
+            <label for="log-date">${getText('practiceLog.today')}</label>
             <input type="date" id="log-date" class="form-input" />
           </div>
           <div class="form-group">
-            <label for="log-content">日志内容</label>
+            <label for="log-content">${getText('practiceLog.practiceNote')}</label>
             <div class="markdown-editor">
               <div class="editor-toolbar">
                 <button type="button" class="toolbar-btn" onclick="insertMarkdown('**', '**')" title="粗体">
@@ -707,19 +715,7 @@ function renderPracticeTimerInterface(container, marginStyle) {
               <textarea 
                 id="log-content" 
                 class="form-textarea" 
-                placeholder="支持Markdown格式，例如：
-
-## 今日炼功心得
-今天练习了**静坐冥想**，持续了30分钟。
-
-### 体验：
-- 心境比较平静
-- 注意力集中度有所提升
-- *身体感觉轻松*
-
-> 坚持练习，必有收获！
-
-下次要尝试更长时间的练习。"
+                placeholder="${getText('practiceLog.notePlaceholder')}"
                 rows="9"
               ></textarea>
             </div>
@@ -738,8 +734,8 @@ function renderPracticeTimerInterface(container, marginStyle) {
           </div>
         </div>
         <div class="modal-footer">
-          <button id="cancel-log-btn" class="cancel-btn">取消</button>
-          <button id="confirm-log-btn" class="confirm-btn">保存</button>
+          <button id="cancel-log-btn" class="cancel-btn">${getText('common.cancel')}</button>
+          <button id="confirm-log-btn" class="confirm-btn">${getText('practiceLog.saveNote')}</button>
         </div>
       </div>
     </div>

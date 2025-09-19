@@ -33,6 +33,29 @@
     @apply font-bold text-lg mb-3.5;
   }
 
+  /* 语言切换区域 */
+  .language-section {
+    @apply mb-4;
+  }
+
+  .language-switcher {
+    @apply flex justify-center;
+  }
+
+  .sidebar-language-btn {
+    @apply flex items-center gap-2 px-3 py-2 text-sm bg-gray-100 hover:bg-gray-200;
+    @apply border border-gray-200 rounded-lg transition-all duration-200 ease-in-out;
+    @apply text-gray-700 hover:text-gray-900;
+  }
+
+  .sidebar-language-btn i {
+    @apply text-base;
+  }
+
+  .sidebar-language-btn span {
+    @apply font-medium;
+  }
+
   /* 用户信息区域 */
   .user-info-section {
     @apply mt-3 mb-3 p-3 rounded-xl border border-border/50 hidden;
@@ -462,6 +485,19 @@
     @apply text-lg font-medium text-gray-800 truncate mx-4;
   }
   
+  .mobile-appbar .appbar-actions {
+    @apply flex items-center;
+  }
+
+  .mobile-appbar .language-toggle {
+    @apply w-10 h-10 flex items-center justify-center text-primary text-lg;
+    @apply transition-all duration-200 ease-in-out mr-1;
+  }
+
+  .mobile-appbar .language-toggle:hover {
+    @apply bg-gray-100 rounded-lg;
+  }
+
   .mobile-appbar .drawer-toggle {
     @apply w-14 h-14 flex items-center justify-center text-primary text-2xl font-black;
   }

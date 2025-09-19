@@ -7,13 +7,21 @@
 		<link rel="stylesheet" href="/styles.css?v=2024010202" />
 		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
 		<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+		<!-- 国际化模块 - 需要最先加载 -->
+		<script src="/i18n.js" type="module"></script>
+		<script src="/i18n-texts.js" type="module"></script>
 	</head>
 	<body>
 		<!-- 移动端 AppBar -->
 		<header class="mobile-appbar" id="mobile-appbar">
 			<button class="home-btn" id="home-btn"><i class="fa-solid fa-house"></i></button>
 			<div class="title" id="appbar-title">仙界邀请函</div>
-			<button class="drawer-toggle" id="drawer-toggle">☰</button>
+			<div class="appbar-actions">
+				<button class="language-toggle" id="language-toggle" title="切换语言 / Switch Language">
+					<i class="fas fa-language"></i>
+				</button>
+				<button class="drawer-toggle" id="drawer-toggle">☰</button>
+			</div>
 		</header>
 		
 		<!-- 移动端抽屉遮罩 -->

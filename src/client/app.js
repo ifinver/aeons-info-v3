@@ -59,14 +59,40 @@ const drawerOverlay = document.getElementById('drawer-overlay');
 async function buildSidebar() {
   await loadManifest();
   
-  // 过滤掉隐藏的文章
-  const visibleManifest = manifest.filter(m => !m.hidden);
+  // 过滤掉隐藏的文章，并根据语言过滤
+  let visibleManifest = manifest.filter(m => !m.hidden);
+  
+  // 根据当前语言过滤文章
+  const currentLang = window.I18n ? window.I18n.getCurrentLanguage() : 'zh';
+  visibleManifest = visibleManifest.filter(m => {
+    if (currentLang === 'zh') {
+      // 中文环境：显示中文文章和没有语言标识的文章
+      return !m.path.includes('.en.') && !m.title.includes('(EN)');
+    } else {
+      // 英文环境：显示英文文章
+      return m.path.includes('.en.') || m.title.includes('(EN)') || m.title.includes('English');
+    }
+  });
+  
   const groups = Array.from(new Set(visibleManifest.map(m => m.group)));
   const wrapper = document.createElement('div');
   const brand = document.createElement('div');
   brand.className = 'brand';
   brand.innerHTML = '仙界邀请函';
   wrapper.appendChild(brand);
+
+  // 添加语言切换区域
+  const languageSection = document.createElement('div');
+  languageSection.className = 'language-section';
+  languageSection.innerHTML = `
+    <div class="language-switcher">
+      <button id="sidebar-language-toggle" class="sidebar-language-btn" title="切换语言 / Switch Language">
+        <i class="fas fa-language"></i>
+        <span id="current-language-text">中文</span>
+      </button>
+    </div>
+  `;
+  wrapper.appendChild(languageSection);
 
   // 添加用户信息区域（如果已登录）
   const userInfoSection = document.createElement('div');
@@ -79,7 +105,12 @@ async function buildSidebar() {
     sec.className = 'nav-section';
     const title = document.createElement('div');
     title.className = (g === '博文' || g === '练习') ? 'nav-title nav-title-section' : 'nav-title';
-    title.textContent = g;
+    
+    // 获取本地化的组名
+    const localizedGroupName = window.I18nTexts ? 
+      (window.I18nTexts.getText(`nav.groups.${g}`) || g) : g;
+    title.textContent = localizedGroupName;
+    
     sec.appendChild(title);
 
     const ul = document.createElement('ul');
@@ -181,6 +212,60 @@ function updateUserInfoInSidebar() {
 
 // 导出函数到全局
 window.updateUserInfoInSidebar = updateUserInfoInSidebar;
+
+// 语言切换处理函数
+function handleLanguageSwitch() {
+  if (!window.I18n) {
+    console.error('I18n 模块未加载');
+    return;
+  }
+
+  const currentLang = window.I18n.getCurrentLanguage();
+  const newLang = currentLang === 'zh' ? 'en' : 'zh';
+  
+  console.log(`切换语言: ${currentLang} -> ${newLang}`);
+  window.I18n.switchLanguage(newLang);
+}
+
+// 语言变更处理函数
+function handleLanguageChange(event) {
+  console.log('语言变更事件:', event.detail);
+  
+  // 更新页面标题
+  updatePageTitle();
+  
+  // 更新侧边栏语言按钮文本
+  updateLanguageButtonText();
+  
+  // 更新 AppBar 标题（如果在首页）
+  if (!location.hash.startsWith('#/')) {
+    updateAppBar();
+  }
+}
+
+// 更新页面标题
+function updatePageTitle() {
+  if (window.I18nTexts) {
+    const siteTitle = window.I18nTexts.getText('site.title');
+    document.title = siteTitle;
+    
+    // 更新品牌显示
+    const brandElement = document.querySelector('.brand');
+    if (brandElement) {
+      brandElement.textContent = siteTitle;
+    }
+  }
+}
+
+// 更新语言按钮文本
+function updateLanguageButtonText() {
+  const currentLanguageText = document.getElementById('current-language-text');
+  if (currentLanguageText && window.I18n) {
+    const currentLang = window.I18n.getCurrentLanguage();
+    const langInfo = window.I18n.getLanguageInfo(currentLang);
+    currentLanguageText.textContent = langInfo.nativeName;
+  }
+}
 
 async function loadContent(path) {
   article.innerHTML = `
@@ -370,8 +455,12 @@ function closeDrawer() {
   drawerOverlay.classList.remove('active');
 }
 
-function updateAppBar(title = '仙界邀请函') {
+function updateAppBar(title = null) {
   if (appbarTitle) {
+    // 如果没有提供标题，使用站点标题
+    if (!title) {
+      title = window.I18nTexts ? window.I18nTexts.getText('site.title') : '仙界邀请函';
+    }
     appbarTitle.textContent = title;
   }
 }
@@ -426,6 +515,22 @@ async function initApp() {
       closeDrawer();
     });
   }
+
+  // 绑定语言切换事件
+  const languageToggle = document.getElementById('language-toggle');
+  const sidebarLanguageToggle = document.getElementById('sidebar-language-toggle');
+  
+  if (languageToggle) {
+    languageToggle.addEventListener('click', handleLanguageSwitch);
+  }
+  
+  if (sidebarLanguageToggle) {
+    sidebarLanguageToggle.addEventListener('click', handleLanguageSwitch);
+  }
+
+  // 监听语言变更事件，更新界面
+  window.addEventListener('languagechange', handleLanguageChange);
+  window.addEventListener('i18ninit', handleLanguageChange);
   
   // 监听窗口大小变化
   window.addEventListener('resize', () => {

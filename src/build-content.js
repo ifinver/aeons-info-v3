@@ -66,19 +66,22 @@ function addHeaderIds(html) {
   return result;
 }
 
-// 文件清单配置
+// 文件清单配置 - 更新为新的目录结构
 const manifest = [
-  { title: '张三丰丹道——《张三丰内丹36诀》', path: 'posts/zhang-sanfeng-36-instructions-on-internal-alchemy.md', group: '博文', subgroup: null },
-  { title: '合一之道——《老子丹道21诀》', path: 'posts/laozi-internal-alchemy-21-instructions.md', group: '博文', subgroup: null },
-  { title: '30天学会灵魂出体', path: 'posts/30-days-master-obe.zh.md', group: '博文', subgroup: null },
-  { title: 'Out-of-body adventures (30 days)', path: 'posts/30-days-master-obe.en.md', group: '博文', subgroup: null, hidden: true },
-  { title: 'Treatise on Astral Projection (EN)', path: 'posts/treatise-on-astral-projection.en.md', group: '博文', subgroup: null, hidden: true },
-  { title: '论星体投射', path: 'posts/treatise-on-astral-projection.zh.md', group: '博文', subgroup: null },
-  { title: 'Out of Body Techniques Manual', path: 'posts/out-of-body-techniques-manual.en.md', group: '博文', subgroup: null, hidden: true },
-  { title: '瑜伽经 · 站点版', path: 'posts/yoga-sutra/by-site.zh.md', group: '博文', subgroup: '瑜伽经', hidden: true },
-  { title: 'Yoga Sutras · Bon Giovanni', path: 'posts/yoga-sutra/by-bon-giovanni.en.md', group: '博文', subgroup: '瑜伽经', hidden: true },
-  { title: 'Yoga Sutras · Swami Jnaneshvara', path: 'posts/yoga-sutra/by-swami-jnaneshvara-bharati.en.md', group: '博文', subgroup: '瑜伽经', hidden: true },
-  { title: '瑜伽经 · 元吾氏译', path: 'posts/yoga-sutra/by-yuanwushi.zh.md', group: '博文', subgroup: '瑜伽经', hidden: true },
+  // 中文内容
+  { title: '张三丰丹道——《张三丰内丹36诀》', path: 'posts/zh/zhang-sanfeng-36-instructions-on-internal-alchemy.md', group: '博文', subgroup: null, language: 'zh' },
+  { title: '合一之道——《老子丹道21诀》', path: 'posts/zh/laozi-internal-alchemy-21-instructions.md', group: '博文', subgroup: null, language: 'zh' },
+  { title: '30天学会灵魂出体', path: 'posts/zh/30-days-master-obe.zh.md', group: '博文', subgroup: null, language: 'zh' },
+  { title: '论星体投射', path: 'posts/zh/treatise-on-astral-projection.zh.md', group: '博文', subgroup: null, language: 'zh' },
+  { title: '瑜伽经 · 站点版', path: 'posts/zh/yoga-sutra/by-site.zh.md', group: '博文', subgroup: '瑜伽经', hidden: true, language: 'zh' },
+  { title: '瑜伽经 · 元吾氏译', path: 'posts/zh/yoga-sutra/by-yuanwushi.zh.md', group: '博文', subgroup: '瑜伽经', hidden: true, language: 'zh' },
+  
+  // 英文内容
+  { title: 'Out-of-body Adventures (30 Days)', path: 'posts/en/30-days-master-obe.en.md', group: 'Articles', subgroup: null, language: 'en' },
+  { title: 'Treatise on Astral Projection', path: 'posts/en/treatise-on-astral-projection.en.md', group: 'Articles', subgroup: null, language: 'en' },
+  { title: 'Out of Body Techniques Manual', path: 'posts/en/out-of-body-techniques-manual.en.md', group: 'Articles', subgroup: null, language: 'en' },
+  { title: 'Yoga Sutras · Bon Giovanni', path: 'posts/en/yoga-sutra/by-bon-giovanni.en.md', group: 'Articles', subgroup: 'Yoga Sutras', hidden: true, language: 'en' },
+  { title: 'Yoga Sutras · Swami Jnaneshvara', path: 'posts/en/yoga-sutra/by-swami-jnaneshvara-bharati.en.md', group: 'Articles', subgroup: 'Yoga Sutras', hidden: true, language: 'en' },
 ];
 
 function stripFrontmatter(text) {
@@ -178,7 +181,8 @@ function buildContent(outputDir = null) {
         path: item.path,
         group: item.group,
         subgroup: item.subgroup,
-        hidden: item.hidden || false
+        hidden: item.hidden || false,
+        language: item.language || 'zh'
       });
       
       if (result.success) {

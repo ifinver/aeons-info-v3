@@ -26,6 +26,9 @@ export async function handleUserRegistration(request: Request, env: any): Promis
   try {
     const body = await request.json();
     let { email } = body as { email: string };
+    
+    // 从请求中获取语言偏好 (Cookie 或 Accept-Language)
+    const language = getLanguageFromRequest(request);
 
     // 输入清理和验证
     email = sanitizeInput(email);
@@ -61,7 +64,7 @@ export async function handleUserRegistration(request: Request, env: any): Promis
 
     // 发送验证邮件
     const baseUrl = new URL(request.url).origin;
-    const emailData = generateVerificationEmail(email, verificationToken, baseUrl);
+    const emailData = generateVerificationEmail(email, verificationToken, baseUrl, language);
     const emailSent = await sendEmail(emailData, env);
 
     if (!emailSent) {
@@ -287,21 +290,102 @@ export async function handleResetPassword(request: Request, env: any): Promise<R
 }
 
 /**
+ * 从请求中获取语言偏好
+ */
+function getLanguageFromRequest(request: Request): string {
+  // 1. 检查 Cookie 中的语言偏好
+  const cookieHeader = request.headers.get('Cookie');
+  if (cookieHeader) {
+    const cookies = cookieHeader.split(';').reduce((acc, cookie) => {
+      const [key, value] = cookie.trim().split('=');
+      if (key && value) {
+        acc[key] = decodeURIComponent(value);
+      }
+      return acc;
+    }, {} as Record<string, string>);
+    
+    if (cookies['aeons_lang'] && (cookies['aeons_lang'] === 'zh' || cookies['aeons_lang'] === 'en')) {
+      return cookies['aeons_lang'];
+    }
+  }
+  
+  // 2. 检查 Accept-Language 头
+  const acceptLanguage = request.headers.get('Accept-Language');
+  if (acceptLanguage) {
+    const languages = acceptLanguage.split(',').map(lang => lang.split(';')[0].trim().toLowerCase());
+    for (const lang of languages) {
+      if (lang.startsWith('en')) return 'en';
+      if (lang.startsWith('zh')) return 'zh';
+    }
+  }
+  
+  // 3. 默认返回中文
+  return 'zh';
+}
+
+/**
+ * 邮件模板文本
+ */
+const EMAIL_TEXTS = {
+  verification: {
+    zh: {
+      subject: '仙界邀请函 - 验证您的邮箱',
+      title: '仙界邀请函',
+      heading: '验证您的邮箱',
+      greeting: '您好！',
+      intro: '感谢您注册仙界邀请函。请点击下面的按钮验证您的邮箱地址：',
+      button: '验证邮箱',
+      linkText: '如果按钮无法点击，请复制以下链接到浏览器地址栏：',
+      expiry: '此链接将在24小时后过期。',
+      securityTitle: '安全提醒：',
+      securityItems: [
+        '验证链接将在24小时后过期',
+        '请勿将此邮件转发给他人',
+        '如有疑问，请联系我们的客服'
+      ],
+      ignore: '如果您没有注册仙界邀请函，请忽略此邮件。',
+      footer: '此邮件由仙界邀请函系统自动发送，请勿回复。',
+      help: '如果您有任何问题，请访问我们的帮助中心。'
+    },
+    en: {
+      subject: 'Invitation to Immortal Realm - Verify Your Email',
+      title: 'Invitation to Immortal Realm',
+      heading: 'Verify Your Email',
+      greeting: 'Hello!',
+      intro: 'Thank you for registering with Invitation to Immortal Realm. Please click the button below to verify your email address:',
+      button: 'Verify Email',
+      linkText: 'If the button doesn\'t work, please copy and paste the following link into your browser:',
+      expiry: 'This link will expire in 24 hours.',
+      securityTitle: 'Security Reminder:',
+      securityItems: [
+        'Verification link will expire in 24 hours',
+        'Do not forward this email to others',
+        'Contact our customer service if you have any questions'
+      ],
+      ignore: 'If you didn\'t register for Invitation to Immortal Realm, please ignore this email.',
+      footer: 'This email was sent automatically by the Invitation to Immortal Realm system. Please do not reply.',
+      help: 'If you have any questions, please visit our help center.'
+    }
+  }
+};
+
+/**
  * 生成验证邮件内容
  */
-function generateVerificationEmail(email: string, token: string, baseUrl: string): any {
+function generateVerificationEmail(email: string, token: string, baseUrl: string, language: string = 'zh'): any {
   const verificationUrl = `${baseUrl}/#/auth/verify/${token}`;
+  const texts = EMAIL_TEXTS.verification[language as 'zh' | 'en'] || EMAIL_TEXTS.verification.zh;
 
   return {
     to: email,
-    subject: '仙界邀请函 - 验证您的邮箱',
+    subject: texts.subject,
     html: `
       <!DOCTYPE html>
       <html>
       <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>验证您的邮箱</title>
+        <title>${texts.heading}</title>
         <style>
           body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
           .container { max-width: 600px; margin: 0 auto; padding: 20px; }
@@ -314,48 +398,46 @@ function generateVerificationEmail(email: string, token: string, baseUrl: string
       <body>
         <div class="container">
           <div class="header">
-            <h1>仙界邀请函</h1>
+            <h1>${texts.title}</h1>
           </div>
           <div class="content">
-            <h2>验证您的邮箱</h2>
-            <p>您好！</p>
-            <p>感谢您注册仙界邀请函。请点击下面的按钮验证您的邮箱地址：</p>
-            <a href="${verificationUrl}" class="button">验证邮箱</a>
-            <p>如果按钮无法点击，请复制以下链接到浏览器地址栏：</p>
+            <h2>${texts.heading}</h2>
+            <p>${texts.greeting}</p>
+            <p>${texts.intro}</p>
+            <a href="${verificationUrl}" class="button">${texts.button}</a>
+            <p>${texts.linkText}</p>
             <p style="word-break: break-all; color: #3b82f6;">${verificationUrl}</p>
-            <p>此链接将在24小时后过期。</p>
+            <p>${texts.expiry}</p>
             <div style="background: #fef3c7; border: 1px solid #fbbf24; padding: 15px; margin: 20px 0; border-radius: 6px; color: #92400e;">
-              <strong>安全提醒：</strong>
+              <strong>${texts.securityTitle}</strong>
               <ul style="margin: 10px 0; padding-left: 20px;">
-                <li>验证链接将在24小时后过期</li>
-                <li>请勿将此邮件转发给他人</li>
-                <li>如有疑问，请联系我们的客服</li>
+                ${texts.securityItems.map(item => `<li>${item}</li>`).join('')}
               </ul>
             </div>
-            <p>如果您没有注册仙界邀请函，请忽略此邮件。</p>
+            <p>${texts.ignore}</p>
           </div>
           <div class="footer">
-            <p>此邮件由仙界邀请函系统自动发送，请勿回复。</p>
-            <p>如果您有任何问题，请访问我们的帮助中心。</p>
+            <p>${texts.footer}</p>
+            <p>${texts.help}</p>
           </div>
         </div>
       </body>
       </html>
     `,
     text: `
-仙界邀请函 - 验证您的邮箱
+${texts.subject}
 
-您好！
+${texts.greeting}
 
-感谢您注册仙界邀请函。请点击以下链接验证您的邮箱地址：
+${texts.intro}
 
 ${verificationUrl}
 
-此链接将在24小时后过期。
+${texts.expiry}
 
-如果您没有注册仙界邀请函，请忽略此邮件。
+${texts.ignore}
 
-此邮件由仙界邀请函系统自动发送，请勿回复。
+${texts.footer}
     `
   };
 }
