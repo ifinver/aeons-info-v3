@@ -79,24 +79,37 @@ At this stage, qi is yang‑qi, blood is yang‑fluid, and within the bones ther
 
 ### (B) Instructions for Changing the Body
 
-When replenishing is complete, a mass of yang‑qi fills the lower field, warm like spring day and night. The classics call this the Great Medicine—also “external elixir.” Even so, continue sitting as before; do not allow the slightest self‑congratulation.
+When replenishing is complete, a mass of yang‑qi fills the lower field, warm like spring day and night. The classics call this the Great Medicine—also "external elixir." Even so, continue sitting as before; do not allow the slightest self‑congratulation.
+
 11. When yang‑qi is full and the dantian cannot contain it, it moves like a fire‑pearl, seeking apertures elsewhere. If it rises upward it oppresses the heart and cannot expand, so it rushes downward to the Yang Pass and charges straight to the external genitals, which feel a response. At this time tightly close the Yang Pass and do not allow external leakage. That is eleven.
+
 12. When the Yang Pass is closed, the qi passes the Lower Magpie Bridge and turns toward the Valley Path (anus). Tightly close the Valley Path to prevent leakage. That is twelve.
+
 13. With the Valley Path closed, the qi reaches outside the Tail Gate (coccyx). Now guide it with intention so that it passes the Tail Gate. That is thirteen. (The Tail Gate is the old route of yang‑qi. Because once the Yang Pass opened, essence leaked outward, it has long not passed by the Tail Gate; thus this gate has long been blocked.)
-14. Sometimes the fire‑timing (work) is insufficient (sincere intention is like fire—wherever intention reaches, there is fire; the “firing times” of the classics refer to the action of sincerity). If yang‑qi is not sufficient, it may reach the Tail Gate but lack strength to pass through. Do not force it. Return intention to the lower dantian, sit as before, and generate it anew. That is fourteen.
+
+14. Sometimes the fire‑timing (work) is insufficient (sincere intention is like fire—wherever intention reaches, there is fire; the "firing times" of the classics refer to the action of sincerity). If yang‑qi is not sufficient, it may reach the Tail Gate but lack strength to pass through. Do not force it. Return intention to the lower dantian, sit as before, and generate it anew. That is fourteen.
+
 15. When the mechanism rises again like a fire‑pearl to the Tail Gate, again guide it with intention to pass. That is fifteen.
+
 16. After one or several attempts, there will surely come a time of passage. Once through the Tail Gate, the heat reaches the Spinal Pass; again seek to pass through—this is the second pass. That is sixteen.
+
 17. If it can pass, let it pass; if not, return intention to the lower field and sit as before, awaiting sufficient qi. That is seventeen.
+
 18. Then guide it with intention again. That is eighteen.
+
 19. Once through the Spinal Pass, the mass of heat reaches the Jade Pillow—this is the third pass. Guide it with intention through the Jade Pillow to enter the upper field. That is nineteen.
+
 20. If it can pass, let it pass; if not, return intention to the lower field and await the moment, as with the two passes above. That is twenty.
+
 21. With the three passes open, guide the heat through the Bright Hall, over the Upper Magpie Bridge, down through the left and right valleys of the mouth, straight past the Many‑Storied Tower, arriving at the Yellow Court. That is twenty‑one. (When yang‑qi passes an orifice it may rush to the nostrils as a way of venting. At the Upper Magpie Bridge and before the Lower Magpie Bridge are dangerous zones—caution, caution!)
-22. From the lower dantian, Yang Pass, Lower Magpie Bridge, Valley Path, Tail Gate, Spinal Pass, Jade Pillow, upper dantian, Bright Hall, to the Yellow Court—the Conception and Governing vessels become fully open, and the work of “passing the passes and taking nourishment” is complete. (What the classics call yang‑qi descending through the Many‑Storied Tower to the Yellow Court is “taking nourishment.”) At this point, change the method of sitting; it can no longer be the same as before. (From here begins the time of firing for the Great Circulation.) In sitting, “passing the passes and taking nourishment” is the pivotal key. To this point, half the Great Way is attained. Now only keep the intention soft and unbroken, ever‑present and never scattered. That is twenty‑two.
-23. Not only during sitting, but also while walking, eating, and sleeping, do not let sincere intention slip for even a moment. If intention scatters, yang‑qi will not arise—like a pot on the stove: when the fire is strong the steam is strong; when the fire goes out there is no steam. Intention is the fire; this is no arbitrary metaphor. The classics say: “Water fears dryness (water means essence‑qi); fire fears cold (fire means sincerity).” That is twenty‑three.
+
+22. From the lower dantian, Yang Pass, Lower Magpie Bridge, Valley Path, Tail Gate, Spinal Pass, Jade Pillow, upper dantian, Bright Hall, to the Yellow Court—the Conception and Governing vessels become fully open, and the work of "passing the passes and taking nourishment" is complete. (What the classics call yang‑qi descending through the Many‑Storied Tower to the Yellow Court is "taking nourishment.") At this point, change the method of sitting; it can no longer be the same as before. (From here begins the time of firing for the Great Circulation.) In sitting, "passing the passes and taking nourishment" is the pivotal key. To this point, half the Great Way is attained. Now only keep the intention soft and unbroken, ever‑present and never scattered. That is twenty‑two.
+
+23. Not only during sitting, but also while walking, eating, and sleeping, do not let sincere intention slip for even a moment. If intention scatters, yang‑qi will not arise—like a pot on the stove: when the fire is strong the steam is strong; when the fire goes out there is no steam. Intention is the fire; this is no arbitrary metaphor. The classics say: "Water fears dryness (water means essence‑qi); fire fears cold (fire means sincerity)." That is twenty‑three.
 
 Passing the passes and taking nourishment marks the transition between replenishing the body and changing the body. After the passes have been opened and nourishment taken, keep intention ever‑present so that the ancestral yang, the original qi, arises continually, flowing from the main channel into the branches and from the branches throughout the whole body. Day by day it irrigates and supplements. Then the body’s yin diminishes and yang gradually fills. When yang fills the whole body, the skin, muscles, and bones will have transformed. Naturally you will be free of hunger and thirst, grow weary of worldly flavors, the body emanates a subtle fragrance, you are neither cold nor hot, sleep drops away, and in stillness the qi comes to rest—great stability is achieved. Thus the work of changing the body is complete.
 
-## Step Three: Practising Spirit Egress — Attaining the Fruit of Casting Off the Sheath
+## Step Three: Practising Spirit Egress — Attaining the Fruit of Shedding The Mortal Shell
 
 ### (A) Rationale for Spirit Egress
 
@@ -107,14 +120,23 @@ When the yang spirit emerges, the third step is reached, the true fruit attained
 ### (B) Instructions for Spirit Egress
 
 With the work of changing the body accomplished, essence‑qi fills the whole body and great stability is present.
-24. “Great stability” is when vast emptiness prevails and even breathing comes to rest. Now regulate and allow the spirit to exit the shell; do not keep it long constrained within. Nourishment is complete; it must emerge. This is natural; therefore do not worry it will not come out, nor strive to force it out. If the yang spirit is not yet pure, no method can draw it outside. Thus at the time of spirit egress, return the single point of sincere intention to reflect upon the middle and lower fields so that yang‑qi arises and supplements the fetal spirit. That is twenty‑four.
+
+24. "Great stability" is when vast emptiness prevails and even breathing comes to rest. Now regulate and allow the spirit to exit the shell; do not keep it long constrained within. Nourishment is complete; it must emerge. This is natural; therefore do not worry it will not come out, nor strive to force it out. If the yang spirit is not yet pure, no method can draw it outside. Thus at the time of spirit egress, return the single point of sincere intention to reflect upon the middle and lower fields so that yang‑qi arises and supplements the fetal spirit. That is twenty‑four.
+
 25. When the fetal spirit is full—clear and bright like the moon at mid‑heaven (if there is even the slightest turbidity, the fetal spirit is not complete)—in sitting there will suddenly appear flake‑like shapes like falling snow before the eyes. This is the time of spirit egress. That is twenty‑five.
+
 26. Now move the spirit to the upper field and imagine yourself ascending from the Mud‑Ball Palace up into the heavens. That is twenty‑six.
+
 27. After repeated imagining and intentional guidance, if it can exit, let it exit; if it cannot, return to reflect upon the middle and lower fields and await the occasion. That is twenty‑seven.
+
 28. When the moment arrives, guide it as above; after a time, spirit egress will occur. When the yang spirit has emerged, there is a body outside the body—the so‑called Dharma‑body—indestructible over kalpas. At this stage, success is achieved; there is no more wheel of rebirth and one becomes a supreme Perfected. Yet do not at once fly off after egress; continue the work of nurturing. Therefore, once the yang spirit emerges, immediately draw it back. That is twenty‑eight.
+
 29. After withdrawing it, again regulate and allow spirit egress. That is twenty‑nine.
+
 30. Train in this way daily. In time, it becomes at your command. During this period of sitting, keep the spirit only in the upper field. That is thirty.
+
 31. After the yang spirit leaves the body, many powers appear. Do not delight in them or display radiance outward. Embrace the Way serenely and cultivate with care. That is thirty‑one.
+
 32. When the yang spirit exits, do not go far at first. Exit a step or two, then immediately retract. Next time go twenty steps, then retract. From near to far, proceed day by day, and there will be no danger of loss or confusion. That is thirty‑two.
 
 After three years of such training, the yang spirit becomes skilled and free—able to travel millions of miles with no concern. Thereafter, one may either retire to famed mountains, undertaking nine years of wall‑gazing, or dwell among the world to aid beings and accumulate merit, greatly brightening one’s future.
@@ -130,9 +152,13 @@ After spirit egress, in addition to “nursing for three years,” one must stil
 ### (B) Instructions for Returning to Emptiness
 
 Though the yang spirit has left the body, the work is not finished. From sitting to spirit egress is wrought by method and may proceed too swiftly; former habits are hard to erase. One may have an indestructible body yet not an unchanging nature—life is completed but nature not exhausted. Therefore, after spirit egress, continue sitting.
-33. The posture remains as before, but keep the single point of the yang spirit’s numinosity in the upper field—upright, centered, neither leaning nor deviating. That is thirty‑three.
-34. Gradually, do not even hold to “the Center,” and let “methods” fall away—keep only a single expanse of pure clarity merging with the Great Void. That is thirty‑four.
+
+33. The posture remains as before, but keep the single point of the yang spirit's numinosity in the upper field—upright, centered, neither leaning nor deviating. That is thirty‑three.
+
+34. Gradually, do not even hold to "the Center," and let "methods" fall away—keep only a single expanse of pure clarity merging with the Great Void. That is thirty‑four.
+
 35. Gradually, even the Great Void is not held; the true and the void merge as one. That is thirty‑five.
+
 36. Void upon void, nothing upon nothing; emptiness to the point where there is no more that can be emptied—only then is the utmost reached. That is thirty‑six.
 
 At this time, Emptiness is your original nature; your original nature is united with Emptiness. The numinous body is utterly refined—now beyond even “ancestral qi.” To walk the Way to this point is called “above the utmost”; to establish one’s person to this point is “before the before.” At the very end, the work is truly round and the fruit complete.
@@ -149,7 +175,28 @@ At this time, Emptiness is your original nature; your original nature is united 
 
 The Three Fields (dantian), Three Passes, Three Vessels, Two Bridges, Bright Hall, Many‑Storied Tower, Yang Pass, Valley Path, and Bubbling Spring are all apertures and pathways through which blood and essence‑qi circulate.
 
-Although sitting appears to be non‑action, in Zhuangzi’s sense of “non‑action yet nothing left undone,” within stillness there is great functioning—it is not like dead wood and cold ashes.
+Although sitting appears to be non‑action, in Zhuangzi's sense of "non‑action yet nothing left undone," within stillness there is great functioning—it is not like dead wood and cold ashes.
+
+### Names of Points and Regions
+
+1. **Upper Field (upper dantian)**: the Mud‑Ball Palace, the palace of the brain.
+2. **Middle Field (middle dantian)**: the area beneath the lungs, in the chest.
+3. **Lower Field (lower dantian)**: below the navel.
+4. **Tail Gate (weilü)**: the tail end of the spinal column.
+5. **Spinal Pass (jiajǐ)**: the mid‑spine region.
+6. **Jade Pillow (yùzhěn)**: the occiput, back of the head.
+7. **Conception Vessel (rèn mài)**: the anterior median vessel, from lower teeth to the dantian.
+8. **Governing Vessel (dū mài)**: the posterior median vessel, from lower dantian to upper teeth.
+9. **Thoroughfare Vessel (chōng mài)**: the central vessel, from the tongue tip to the lower field.
+10. **Upper (Magpie) Bridge**: the bridge between the two nostrils (nasal bridge).
+11. **Lower (Magpie) Bridge**: the region between the Yang Pass and the Valley Path.
+12. **Bright Hall (míngtáng)**: between the eyebrows (glabella).
+13. **Many‑Storied Tower (zhònglóu)**: the throat region.
+14. **Yang Pass (yángguān)**: the seminal passage of the external genitals.
+15. **Valley Path (gǔdào)**: the anal orifice.
+16. **Bubbling Spring (yǒngquán, K‑1)**: the soles of the feet.
+17. **Jade Pool (huáchí)**: beneath the tongue (saliva).
+18. **Yellow Court (huángtíng)**: the abdomen (central field).
 
 ---
 

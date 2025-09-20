@@ -62,7 +62,7 @@ const I18N_TEXTS = {
   site: {
     title: {
       zh: '仙界邀请函',
-      en: 'Aeons Invitation'
+      en: 'Celestial Invitation'
     },
     subtitle: {
       zh: '探索东方智慧的精神宝库',
