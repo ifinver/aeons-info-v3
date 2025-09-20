@@ -26,9 +26,10 @@ async function loadManifest() {
         group: item.group,
         subgroup: item.subgroup,
         hidden: item.hidden,
+        weight: item.weight || 999, // 添加权重支持，默认值999
         contentPath: item.contentPath // 新增：预生成内容的路径
       })),
-      { title: practiceLogTitle, path: 'practice/timer', group: practiceGroupName, subgroup: null }
+      { title: practiceLogTitle, path: 'practice/timer', group: practiceGroupName, subgroup: null, weight: 1000 }
     ];
     
     manifestLoaded = true;
@@ -135,8 +136,9 @@ async function buildSidebar() {
     const subgroups = Array.from(new Set(groupItems.map(m => m.subgroup).filter(s => s !== null)));
 
     if (subgroups.length === 0) {
-      // 如果没有子分组，直接渲染所有项目
-      groupItems.forEach(m => {
+      // 如果没有子分组，按权重排序后渲染所有项目
+      const sortedItems = groupItems.sort((a, b) => (a.weight || 999) - (b.weight || 999));
+      sortedItems.forEach(m => {
         const li = document.createElement('li');
         const a = document.createElement('a');
         a.href = `#/${encodeURIComponent(m.path)}`;
@@ -145,9 +147,10 @@ async function buildSidebar() {
         ul.appendChild(li);
       });
     } else {
-      // 如果有子分组，先渲染没有子分组的项目
+      // 如果有子分组，先渲染没有子分组的项目（按权重排序）
       const mainItems = groupItems.filter(m => m.subgroup === null);
-      mainItems.forEach(m => {
+      const sortedMainItems = mainItems.sort((a, b) => (a.weight || 999) - (b.weight || 999));
+      sortedMainItems.forEach(m => {
         const li = document.createElement('li');
         const a = document.createElement('a');
         a.href = `#/${encodeURIComponent(m.path)}`;
@@ -167,7 +170,9 @@ async function buildSidebar() {
 
         const subUl = document.createElement('ul');
         subUl.className = 'nav-sublist';
-        groupItems.filter(m => m.subgroup === subgroup).forEach(m => {
+        const subgroupItems = groupItems.filter(m => m.subgroup === subgroup);
+        const sortedSubgroupItems = subgroupItems.sort((a, b) => (a.weight || 999) - (b.weight || 999));
+        sortedSubgroupItems.forEach(m => {
           const subItemLi = document.createElement('li');
           const a = document.createElement('a');
           a.href = `#/${encodeURIComponent(m.path)}`;
