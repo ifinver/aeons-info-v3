@@ -41,7 +41,11 @@ function formatChinaDate(dateString, options = {}) {
     day: 'numeric'
   };
   
-  return date.toLocaleDateString('zh-CN', { ...defaultOptions, ...options });
+  // 根据当前语言选择locale
+  const currentLang = window.I18n ? window.I18n.getCurrentLanguage() : 'zh';
+  const locale = currentLang === 'en' ? 'en-US' : 'zh-CN';
+  
+  return date.toLocaleDateString(locale, { ...defaultOptions, ...options });
 }
 
 function getRelativeDateDescription(dateString) {
@@ -52,9 +56,9 @@ function getRelativeDateDescription(dateString) {
   const yesterday = new Date(todayDate.getTime() - 24 * 60 * 60 * 1000);
   
   if (targetDate.getTime() === todayDate.getTime()) {
-    return '今天';
+    return getText('practiceLog.today');
   } else if (targetDate.getTime() === yesterday.getTime()) {
-    return '昨天';
+    return getText('practiceLog.yesterday');
   } else {
     return formatChinaDate(dateString);
   }
@@ -63,7 +67,7 @@ function getRelativeDateDescription(dateString) {
 function getChinaWeekday(dateString) {
   const [year, month, day] = dateString.split('-').map(Number);
   const date = new Date(year, month - 1, day);
-  const weekdays = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
+  const weekdays = getText('practiceLog.weekdays');
   return weekdays[date.getDay()];
 }
 
@@ -2196,14 +2200,14 @@ function updateStats(records) {
     const hours = Math.floor(minutes / 60);
     const mins = minutes % 60;
     if (hours > 0) {
-      return `${hours}小时${mins > 0 ? mins + '分钟' : ''}`;
+      return `${hours}${getText('practiceLog.hours')}${mins > 0 ? mins + getText('practiceLog.minutes') : ''}`;
     }
-    return `${mins}分钟`;
+    return `${mins}${getText('practiceLog.minutes')}`;
   };
   
   document.getElementById('total-time').textContent = formatTime(totalMinutes);
   document.getElementById('average-time').textContent = formatTime(averageMinutes);
-  document.getElementById('total-days').textContent = `${totalDays}天`;
+  document.getElementById('total-days').textContent = `${totalDays}${getText('practiceLog.days')}`;
 }
 
 
