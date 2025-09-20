@@ -189,6 +189,9 @@ function initI18n() {
   // 设置 HTML lang 属性
   document.documentElement.lang = langInfo.htmlLang;
   
+  // 立即更新页面标题，避免闪烁
+  updatePageTitleImmediate(currentLang);
+  
   console.log(`🌐 语言初始化完成: ${langInfo.name} (${currentLang})`);
   
   // 触发初始化完成事件
@@ -200,6 +203,25 @@ function initI18n() {
   });
   
   window.dispatchEvent(initEvent);
+}
+
+/**
+ * 立即更新页面标题（在i18n-texts.js加载前）
+ */
+function updatePageTitleImmediate(currentLang) {
+  const titles = {
+    zh: '仙界邀请函',
+    en: 'Celestial Invitation'
+  };
+  
+  const title = titles[currentLang] || titles.zh;
+  document.title = title;
+  
+  // 同时更新AppBar标题
+  const appbarTitleElement = document.getElementById('appbar-title');
+  if (appbarTitleElement) {
+    appbarTitleElement.textContent = title;
+  }
 }
 
 // 导出到全局作用域

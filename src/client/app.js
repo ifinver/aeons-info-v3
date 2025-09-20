@@ -275,17 +275,21 @@ function handleLanguageChange(event) {
 function updatePageTitle() {
   if (window.I18nTexts) {
     const siteTitle = window.I18nTexts.getText('site.title');
-    document.title = siteTitle;
+    
+    // 只有当标题确实需要更新时才更新
+    if (document.title !== siteTitle) {
+      document.title = siteTitle;
+    }
     
     // 更新品牌显示
     const brandElement = document.querySelector('.brand');
-    if (brandElement) {
+    if (brandElement && brandElement.textContent !== siteTitle) {
       brandElement.textContent = siteTitle;
     }
     
     // 更新移动端AppBar标题
     const appbarTitleElement = document.getElementById('appbar-title');
-    if (appbarTitleElement) {
+    if (appbarTitleElement && appbarTitleElement.textContent !== siteTitle) {
       appbarTitleElement.textContent = siteTitle;
     }
   }
