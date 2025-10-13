@@ -1,5 +1,6 @@
 import { loadHomePage } from './home.js';
 import { loadPracticeTimerPage, cleanupPracticeTimerPage } from './practice-timer.js';
+import { loadAstralRecordsPage } from './astral-records.js';
 import { loadEmailVerificationPage } from './email-verification.js';
 
 // 动态加载清单文件
@@ -18,6 +19,7 @@ async function loadManifest() {
     const currentLang = window.I18n ? window.I18n.getCurrentLanguage() : 'zh';
     const practiceLogTitle = window.I18nTexts ? window.I18nTexts.getText('practiceLog.title') : (currentLang === 'en' ? 'Practice Log' : '炼功日志');
     const practiceGroupName = window.I18nTexts ? window.I18nTexts.getText('nav.practice') : (currentLang === 'en' ? 'Practice' : '练习');
+    const astralTitle = currentLang === 'en' ? 'Astral Records' : '出神记录';
     
     manifest = [
       ...data.items.map(item => ({
@@ -29,7 +31,8 @@ async function loadManifest() {
         weight: item.weight || 999, // 添加权重支持，默认值999
         contentPath: item.contentPath // 新增：预生成内容的路径
       })),
-      { title: practiceLogTitle, path: 'practice/timer', group: practiceGroupName, subgroup: null, weight: 1000 }
+      { title: practiceLogTitle, path: 'practice/timer', group: practiceGroupName, subgroup: null, weight: 1000 },
+      { title: astralTitle, path: 'astral/records', group: practiceGroupName, subgroup: null, weight: 1001 }
     ];
     
     manifestLoaded = true;
@@ -40,6 +43,7 @@ async function loadManifest() {
     const currentLang = window.I18n ? window.I18n.getCurrentLanguage() : 'zh';
     const practiceLogTitle = window.I18nTexts ? window.I18nTexts.getText('practiceLog.title') : (currentLang === 'en' ? 'Practice Log' : '炼功日志');
     const practiceGroupName = window.I18nTexts ? window.I18nTexts.getText('nav.practice') : (currentLang === 'en' ? 'Practice' : '练习');
+    const astralTitle = currentLang === 'en' ? 'Astral Records' : '出神记录';
     
     manifest = [
       { title: '30天学会灵魂出体', path: 'posts/30-days-master-obe.zh.md', group: '博文', subgroup: null },
@@ -52,6 +56,7 @@ async function loadManifest() {
       { title: 'Yoga Sutras · Swami Jnaneshvara', path: 'posts/yoga-sutra/by-swami-jnaneshvara-bharati.en.md', group: '博文', subgroup: '瑜伽经', hidden: true },
       { title: '瑜伽经 · 元吾氏译', path: 'posts/yoga-sutra/by-yuanwushi.zh.md', group: '博文', subgroup: '瑜伽经', hidden: true },
       { title: practiceLogTitle, path: 'practice/timer', group: practiceGroupName, subgroup: null },
+      { title: astralTitle, path: 'astral/records', group: practiceGroupName, subgroup: null },
     ];
     manifestLoaded = true;
     return manifest;
@@ -325,6 +330,14 @@ async function loadContent(path) {
     highlightActive(path);
     const practiceLogTitle = window.I18nTexts ? window.I18nTexts.getText('practiceLog.title') : '炼功日志';
     updateAppBar(practiceLogTitle);
+    return;
+  }
+
+  // 处理出神记录页面
+  if (path === 'astral/records') {
+    await loadAstralRecordsPage(article);
+    highlightActive(path);
+    updateAppBar('出神记录');
     return;
   }
 

@@ -2523,7 +2523,7 @@ async function handleLogin() {
     document.getElementById('login-email').value = '';
     document.getElementById('login-password').value = '';
     
-    // 延迟一下让用户看到成功消息，然后重新加载炼功计时器界面
+    // 延迟一下让用户看到成功消息，然后执行回跳或重载界面
     setTimeout(async () => {
       try {
         // 确保用户信息和CSRF token已经设置
@@ -2542,16 +2542,20 @@ async function handleLogin() {
           }
         }
         
-        // 重新加载炼功计时器页面内容
+        // 登录后回跳：优先使用 postLoginRedirect
+        if (window.postLoginRedirect) {
+          const target = window.postLoginRedirect;
+          window.postLoginRedirect = null;
+          location.hash = target;
+          return;
+        }
+
+        // 默认：重新加载炼功计时器页面内容
         const container = document.getElementById('article');
         if (container) {
           await loadPracticeTimerPage(container);
           console.log('✅ 炼功计时器界面已重新加载');
-          
-          // 更新侧边栏的用户信息
-          if (window.updateUserInfoInSidebar) {
-            window.updateUserInfoInSidebar();
-          }
+          if (window.updateUserInfoInSidebar) window.updateUserInfoInSidebar();
         } else {
           console.error('❌ 找不到容器元素 #article');
           window.location.reload();

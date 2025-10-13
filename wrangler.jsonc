@@ -37,6 +37,10 @@
 		{
 			"binding": "aeons_info_practice_logs",
 			"id": "38d2ff94fb6b47259df674274395f925"
+		},
+		{
+			"binding": "aeons_info_astral_records",
+			"id": "5aef835dc44f4e60a000b5ad33b18f01"
 		}
 	]
 }

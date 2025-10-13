@@ -43,6 +43,7 @@ import { handlePracticeTimeKv } from './practice-data';
 
 // 从 practice-logs.ts 导入炼功日志处理函数
 import { handlePracticeLogsKv } from './practice-logs';
+import { handleAstralRecordsKv } from './astral-records';
 
 // 从 user-registration.ts 导入用户注册相关函数
 import {
@@ -145,6 +146,34 @@ async function handleKvApi(request: Request, env: any): Promise<Response> {
     }
 
     return handlePracticeLogsKv(request, env.aeons_info_practice_logs, segments.slice(3), env, user);
+  }
+
+  // 检查是否是出神记录KV请求
+  if (segments.length >= 3 && segments[2] === 'astral-records') {
+    const notBound = !env || !('aeons_info_astral_records' in env) || !env.aeons_info_astral_records;
+    if (notBound) {
+      return json(
+        { error: 'aeons_info_astral_records namespace not bound. Add a KV binding named "aeons_info_astral_records" in wrangler config.' },
+        501
+      );
+    }
+
+    // 验证用户认证
+    const { user } = await validateAuthToken(request, env);
+    if (!user) {
+      return json({ error: '请先登录' }, 401);
+    }
+
+    // 对于需要CSRF验证的操作进行检查
+    if (request.method === 'POST' || request.method === 'PUT' || request.method === 'DELETE') {
+      const csrfCheck = await validateCSRFForAuthenticatedRequest(request, env);
+      if (!csrfCheck.valid) {
+        return json({ error: 'CSRF验证失败' }, 403);
+      }
+    }
+
+    // segments: ['api','kv','astral-records', ...]
+    return handleAstralRecordsKv(request, env.aeons_info_astral_records, segments.slice(3), user);
   }
 
   // 默认KV处理
