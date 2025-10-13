@@ -87,12 +87,12 @@ export default {
 			}
 
     // 静态资源优先：如果是可能的静态资源请求（含扩展名或以 /content/ 开头），尝试直接读取
-			const isLikelyStatic = /\.[a-zA-Z0-9]+$/.test(url.pathname) || url.pathname.startsWith('/content/');
+    const isLikelyStatic = /\.[a-zA-Z0-9]+$/.test(url.pathname) || url.pathname.startsWith('/content/');
 			const assets = (env as any).ASSETS;
 			try {
 				const resp = assets && typeof assets.fetch === 'function' ? await assets.fetch(request) : null;
       if (resp && resp.status !== 404) return resp;
-				if (isLikelyStatic) return resp || new Response('Not Found', { status: 404 }); // 对于明确是静态的，404原样返回
+      // 注意：对返回404的“看起来像静态资源”的路径，不立即返回，允许下面的 HTML 回退
     } catch (e) {
       console.warn('ASSETS.fetch 失败或未配置，进入 SPA 回退流程:', e);
     }
