@@ -7,22 +7,19 @@ import { loadPracticeTimerPage } from './practice-timer.js';
 const t = (k, p) => (window.I18nTexts ? window.I18nTexts.getText(k, null, p) : k);
 
 export async function loadAstralRecordsPage(container) {
-  const marginStyle = 'max-width: 1200px; margin: 0 auto; padding: 1rem;';
-
-  // 未登录则显示登录界面（复用练功日志的登录UI）
+  // 未登录则显示登录界面
   const auth = await checkAuth();
   if (!auth.authenticated) {
     // 设置登录后回跳
     window.postLoginRedirect = '#/astral/records';
-    // 复用炼功日志登录界面
-    container.innerHTML = '';
-    await loadPracticeTimerPage(container); // 该页面内会显示登录表单
+    // 展示 Astral 独立登录表单
+    renderAstralAuth(container);
     return;
   }
 
   // 已登录，渲染三栏布局
   container.innerHTML = `
-    <div class="astral-records" style="${marginStyle}">
+    <div class="astral-records">
       <div class="astral-layout relative">
         <button id="drawer-notebooks" class="drawer-btn hidden" title="${t('astral.notebooks.header')}">▶</button>
         <button id="drawer-posts" class="drawer-btn hidden" title="${t('astral.posts.header')}">▶</button>
@@ -461,6 +458,74 @@ async function openEditModal(options = {}) {
 
 function escapeHtml(str) {
   return String(str).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', '\'': '&#39;' }[c]));
+}
+
+// Astral 独立登录界面
+function renderAstralAuth(container) {
+  const tt = (k) => (window.I18nTexts ? window.I18nTexts.getText(k) : k);
+  container.innerHTML = `
+    <div class="p-6 max-w-md mx-auto">
+      <div class="card">
+        <div class="card-header"><h3 class="text-lg font-semibold">${tt('astral.title')}</h3></div>
+        <div class="card-body space-y-3">
+          <div>
+            <label class="text-sm text-gray-600">${tt('auth.email')}</label>
+            <input id="astral-login-email" class="input mt-1" placeholder="${tt('auth.emailPlaceholder')}" />
+          </div>
+          <div>
+            <label class="text-sm text-gray-600">${tt('auth.password')}</label>
+            <input id="astral-login-password" type="password" class="input mt-1" placeholder="${tt('auth.password')}" />
+          </div>
+          <div class="flex justify-end gap-2">
+            <button id="astral-login-btn" class="btn-primary">${tt('auth.login')}</button>
+          </div>
+          <div id="astral-login-msg" class="text-sm text-red-600 hidden"></div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  const emailEl = document.getElementById('astral-login-email');
+  const pwdEl = document.getElementById('astral-login-password');
+  const btnEl = document.getElementById('astral-login-btn');
+  const msgEl = document.getElementById('astral-login-msg');
+  const showMsg = (m) => { if (msgEl) { msgEl.textContent = m; msgEl.classList.remove('hidden'); } };
+  const clearMsg = () => { if (msgEl) { msgEl.textContent = ''; msgEl.classList.add('hidden'); } };
+
+  btnEl.addEventListener('click', async () => {
+    clearMsg();
+    const email = (emailEl.value || '').trim();
+    const password = (pwdEl.value || '').trim();
+    if (!email || !password) { showMsg(tt('practiceLog.messages.loginRequired')); return; }
+    btnEl.disabled = true;
+    btnEl.textContent = tt('auth.loggingIn');
+    try {
+      const resp = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ email, password })
+      });
+      const data = await resp.json();
+      if (!resp.ok) throw new Error(data.error || 'Login failed');
+      // 保存用户信息与 CSRF
+      window.currentUser = data.user;
+      window.csrfToken = data.csrfToken;
+      // 回跳或重载 Astral 页面
+      const container = document.getElementById('article');
+      if (container) {
+        loadAstralRecordsPage(container);
+      } else {
+        location.hash = '#/astral/records';
+        location.reload();
+      }
+    } catch (e) {
+      showMsg((tt('practiceLog.messages.loginFailed') + ': ' + e.message));
+    } finally {
+      btnEl.disabled = false;
+      btnEl.textContent = tt('auth.login');
+    }
+  });
 }
 
 
