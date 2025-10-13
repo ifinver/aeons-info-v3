@@ -86,31 +86,33 @@ export default {
 					return new Response(generateUUID());
 			}
 
-    // 静态资源优先：如果是可能的静态资源请求（含扩展名或以 /content/ 开头），尝试直接读取
-    const isLikelyStatic = /\.[a-zA-Z0-9]+$/.test(url.pathname) || url.pathname.startsWith('/content/');
+			// 静态资源优先 + SPA 回退（无条件按 GET 兜底）
 			const assets = (env as any).ASSETS;
-			try {
-				const resp = assets && typeof assets.fetch === 'function' ? await assets.fetch(request) : null;
-      if (resp && resp.status !== 404) return resp;
-      // 注意：对返回404的“看起来像静态资源”的路径，不立即返回，允许下面的 HTML 回退
-    } catch (e) {
-      console.warn('ASSETS.fetch 失败或未配置，进入 SPA 回退流程:', e);
-    }
-
-    // SPA 回退：非 API 的 HTML GET 请求统一回到 index.html
-    const accept = request.headers.get('accept') || '';
-    const wantsHtml = request.method === 'GET' && (accept.includes('text/html') || accept === '*/*');
-			if (wantsHtml) {
-				const indexUrl = new URL('/index.html', url.origin);
-				const indexRequest = new Request(indexUrl.toString(), request);
+			if (request.method === 'GET') {
 				try {
-					if (assets && typeof assets.fetch === 'function') {
-						return await assets.fetch(indexRequest);
+					const assetResp = assets && typeof assets.fetch === 'function' ? await assets.fetch(request) : null;
+					if (assetResp && assetResp.status !== 404) {
+						return assetResp;
 					}
 				} catch (e) {
-					console.error('加载 index.html 失败:', e);
+					console.warn('ASSETS.fetch 静态资源读取失败:', e);
 				}
-				return new Response('Not Found', { status: 404 });
+
+				// 对所有非 API GET 统一回退到根或 index.html
+				try {
+					if (assets && typeof assets.fetch === 'function') {
+						// 优先尝试 '/index.html'
+						const indexReq = new Request(new URL('/index.html', url.origin).toString(), request);
+						let htmlResp = await assets.fetch(indexReq);
+						if (htmlResp && htmlResp.status !== 404) return htmlResp;
+						// 退回到 '/'
+						const rootReq = new Request(new URL('/', url.origin).toString(), request);
+						htmlResp = await assets.fetch(rootReq);
+						if (htmlResp) return htmlResp;
+					}
+				} catch (e) {
+					console.error('SPA 回退失败:', e);
+				}
 			}
 
 			return new Response('Not Found', { status: 404 });
