@@ -327,11 +327,11 @@ function renderPosts() {
   state.posts.forEach(p => {
     const li = document.createElement('li');
     li.className = 'list-item ' + (state.selectedPostId === p.id ? 'active' : '');
-    const metaLine = formatCreatedUpdatedLine(p.createdAt, p.updatedAt);
+    const createdText = formatDateTime(p.createdAt);
     li.innerHTML = `
       <div class="flex flex-col min-w-0">
         <span class="truncate font-medium">${escapeHtml(p.title)}</span>
-        <span class="text-xs text-gray-500">${metaLine}</span>
+        <span class="text-xs text-gray-500">${createdText}</span>
       </div>
     `;
     li.addEventListener('click', async () => {

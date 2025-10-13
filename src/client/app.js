@@ -79,8 +79,8 @@ async function buildSidebar() {
   // 根据当前语言过滤文章
   const currentLang = window.I18n ? window.I18n.getCurrentLanguage() : 'zh';
   visibleManifest = visibleManifest.filter(m => {
-    // 特殊页面（如 practice/timer）不受语言过滤影响，始终显示
-    if (m.path.startsWith('practice/') || m.path.startsWith('auth/')) {
+    // 特殊页面（如 practice/timer、astral/records）不受语言过滤影响，始终显示
+    if (m.path.startsWith('practice/') || m.path.startsWith('auth/') || m.path.startsWith('astral/')) {
       return true;
     }
     
