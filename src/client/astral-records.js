@@ -23,7 +23,9 @@ export async function loadAstralRecordsPage(container) {
   // 已登录，渲染三栏布局
   container.innerHTML = `
     <div class="astral-records" style="${marginStyle}">
-      <div class="astral-layout">
+      <div class="astral-layout relative">
+        <button id="drawer-notebooks" class="drawer-btn hidden" title="${t('astral.notebooks.header')}">▶</button>
+        <button id="drawer-posts" class="drawer-btn hidden" title="${t('astral.posts.header')}">▶</button>
         <div id="col-notebooks" class="astral-col-notebooks">
           <div class="card rounded-none border-0">
             <div class="card-header flex justify-between items-center border-b">
@@ -78,6 +80,7 @@ function bindUI(container) {
   // 记事本列左右折叠
   const colNotebooks = container.querySelector('#col-notebooks');
   const btnToggle = container.querySelector('#btn-toggle-notebook');
+  const drawerNotebooks = container.querySelector('#drawer-notebooks');
   if (btnToggle && colNotebooks) {
     btnToggle.addEventListener('click', () => {
       const collapsed = !colNotebooks.classList.contains('astral-col-collapsed');
@@ -85,18 +88,37 @@ function bindUI(container) {
       // 切换按钮指向
       btnToggle.textContent = collapsed ? '▶' : '◀';
       try { localStorage.setItem('astral_nb_collapsed', collapsed ? '1' : '0'); } catch {}
+      if (drawerNotebooks) drawerNotebooks.classList.toggle('hidden', !collapsed);
+    });
+  }
+  if (drawerNotebooks && colNotebooks) {
+    drawerNotebooks.addEventListener('click', () => {
+      colNotebooks.classList.remove('astral-col-collapsed');
+      if (btnToggle) btnToggle.textContent = '◀';
+      drawerNotebooks.classList.add('hidden');
+      try { localStorage.setItem('astral_nb_collapsed', '0'); } catch {}
     });
   }
 
   // 文章列左右折叠
   const colPosts = container.querySelector('#col-posts');
   const btnTogglePosts = container.querySelector('#btn-toggle-posts');
+  const drawerPosts = container.querySelector('#drawer-posts');
   if (btnTogglePosts && colPosts) {
     btnTogglePosts.addEventListener('click', () => {
       const collapsed = !colPosts.classList.contains('astral-col-collapsed');
       colPosts.classList.toggle('astral-col-collapsed', collapsed);
       btnTogglePosts.textContent = collapsed ? '▶' : '◀';
       try { localStorage.setItem('astral_posts_collapsed', collapsed ? '1' : '0'); } catch {}
+      if (drawerPosts) drawerPosts.classList.toggle('hidden', !collapsed);
+    });
+  }
+  if (drawerPosts && colPosts) {
+    drawerPosts.addEventListener('click', () => {
+      colPosts.classList.remove('astral-col-collapsed');
+      if (btnTogglePosts) btnTogglePosts.textContent = '◀';
+      drawerPosts.classList.add('hidden');
+      try { localStorage.setItem('astral_posts_collapsed', '0'); } catch {}
     });
   }
   const btnCreateNotebook = container.querySelector('#btn-create-notebook');
@@ -234,13 +256,17 @@ function renderNotebooks() {
     const colPosts = document.getElementById('col-posts');
     const btnToggle = document.getElementById('btn-toggle-notebook');
     const btnTogglePosts = document.getElementById('btn-toggle-posts');
+    const drawerNotebooks = document.getElementById('drawer-notebooks');
+    const drawerPosts = document.getElementById('drawer-posts');
     if (nbCollapsed && colNotebooks) {
       colNotebooks.classList.add('astral-col-collapsed');
       if (btnToggle) btnToggle.textContent = '▶';
+      if (drawerNotebooks) drawerNotebooks.classList.remove('hidden');
     }
     if (postsCollapsed && colPosts) {
       colPosts.classList.add('astral-col-collapsed');
       if (btnTogglePosts) btnTogglePosts.textContent = '▶';
+      if (drawerPosts) drawerPosts.classList.remove('hidden');
     }
   } catch {}
 }
@@ -255,8 +281,8 @@ async function refreshPosts(nbId) {
   if (state.selectedPostId) {
     await loadPost(nbId, state.selectedPostId);
   } else {
-    document.getElementById('post-title').textContent = '文章内容';
-    document.getElementById('post-content').innerHTML = '';
+    const contentEl = document.getElementById('post-content');
+    if (contentEl) contentEl.innerHTML = '';
   }
   const count = document.getElementById('post-count');
   if (count) count.textContent = (window.I18nTexts ? window.I18nTexts.getText('astral.posts.count', null, { count: state.posts.length }) : `${state.posts.length}`);
@@ -281,11 +307,11 @@ function renderPosts() {
 
 async function loadPost(nbId, postId) {
   const data = await apiGetPost(nbId, postId);
-  document.getElementById('post-title').textContent = data.meta.title;
   const md = data.content || '';
   // 简单渲染：优先使用页面内已有的 marked，如没有则用最简单替代
   const html = window.marked ? window.marked.parse(md) : basicMarkdown(md);
-  document.getElementById('post-content').innerHTML = html;
+  const contentEl = document.getElementById('post-content');
+  if (contentEl) contentEl.innerHTML = html;
 }
 
 function basicMarkdown(md) {

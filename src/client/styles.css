@@ -250,6 +250,13 @@
   .astral-col-collapsed {
     @apply w-0 overflow-hidden;
   }
+
+  /* 抽屉悬浮按钮（父布局左上） */
+  .drawer-btn {
+    @apply absolute z-10 w-9 h-9 rounded-lg border border-border bg-white text-gray-700 shadow-sm flex items-center justify-center;
+  }
+  #drawer-notebooks { top: 12px; left: 12px; }
+  #drawer-posts { top: 56px; left: 12px; }
   
   /* 文章元数据 */
   #article .article-meta {
