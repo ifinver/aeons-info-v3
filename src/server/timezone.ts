@@ -11,14 +11,10 @@ const CHINA_TIMEZONE_OFFSET = 8 * 60;
  * @returns {Date} 东八区时间的Date对象
  */
 export function getChinaTime(): Date {
-  const now = new Date();
-  // 获取当前时区偏移量（分钟）
-  const localOffset = now.getTimezoneOffset();
-  // 东八区偏移量是 -480 分钟（UTC+8）
-  const chinaOffset = -480;
-  // 计算到东八区的实际偏移量
-  const offsetDiff = (chinaOffset - localOffset) * 60 * 1000;
-  return new Date(now.getTime() + offsetDiff);
+  // 返回“当前瞬时”的中国本地时间表示。
+  // 注意：Date 内部以 UTC 毫秒存储，这里不应人为平移绝对时间；
+  // 仅在格式化时使用 'Asia/Shanghai' 时区。
+  return new Date();
 }
 
 /**
@@ -26,8 +22,19 @@ export function getChinaTime(): Date {
  * @returns {string} 格式化的日期字符串
  */
 export function getChinaToday(): string {
-  const chinaTime = getChinaTime();
-  return formatDateString(chinaTime);
+  // 使用 Intl 直接按东八区计算“今天”的日期字符串
+  const fmt = new Intl.DateTimeFormat('zh-CN', {
+    timeZone: 'Asia/Shanghai',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit'
+  });
+  // zh-CN 通常输出形如 2025/10/13，这里统一转为 2025-10-13
+  const parts = fmt.formatToParts(new Date());
+  const y = parts.find(p => p.type === 'year')?.value || '1970';
+  const m = parts.find(p => p.type === 'month')?.value || '01';
+  const d = parts.find(p => p.type === 'day')?.value || '01';
+  return `${y}-${m}-${d}`;
 }
 
 /**
@@ -47,7 +54,8 @@ export function formatDateString(date: Date): string {
  * @returns {string} ISO格式的时间字符串
  */
 export function getChinaISOString(): string {
-  return getChinaTime().toISOString();
+  // 存储统一使用标准 UTC ISO；展示时再按东八区格式化
+  return new Date().toISOString();
 }
 
 /**
@@ -56,9 +64,8 @@ export function getChinaISOString(): string {
  * @returns {Date} 东八区时间的Date对象
  */
 export function utcToChinaTime(utcString: string): Date {
-  const utcDate = new Date(utcString);
-  const utc = utcDate.getTime();
-  return new Date(utc + (CHINA_TIMEZONE_OFFSET * 60000));
+  // 返回相同“绝对时间”的 Date；格式化时指定 Asia/Shanghai 即可
+  return new Date(utcString);
 }
 
 /**
@@ -67,10 +74,11 @@ export function utcToChinaTime(utcString: string): Date {
  * @returns {Date} 东八区时间的Date对象
  */
 export function createChinaDate(dateString: string): Date {
+  // 构造对应东八区 00:00:00 的绝对时间点（用于日期边界场景）
   const [year, month, day] = dateString.split('-').map(Number);
-  const utcDate = new Date(Date.UTC(year, month - 1, day));
-  const utc = utcDate.getTime();
-  return new Date(utc + (CHINA_TIMEZONE_OFFSET * 60000));
+  // 该日期在东八区的 00:00:00 对应的 UTC 毫秒为：UTC = China - 8h
+  const utcMs = Date.UTC(year, (month || 1) - 1, day || 1) - (CHINA_TIMEZONE_OFFSET * 60000);
+  return new Date(utcMs);
 }
 
 /**
@@ -78,7 +86,8 @@ export function createChinaDate(dateString: string): Date {
  * @returns {number} 毫秒时间戳
  */
 export function getChinaTimestamp(): number {
-  return getChinaTime().getTime();
+  // 统一以当前绝对时间的毫秒时间戳；日期边界请配合 Asia/Shanghai 计算
+  return Date.now();
 }
 
 /**

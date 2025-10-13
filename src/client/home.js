@@ -55,7 +55,7 @@ export function loadHomePage(manifest, article) {
             <p>${getText('home.sections.traditionalAlchemy.description')}</p>
             <div class="section-articles">
               ${getFilteredArticles(manifest, 'traditional').map(m => `
-                <a href="/${encodeURIComponent(m.path)}" class="article-link">
+                <a href="/${m.path}" class="article-link">
                   <span class="article-title">${m.title}</span>
                   <span class="article-arrow">→</span>
                 </a>
@@ -68,7 +68,7 @@ export function loadHomePage(manifest, article) {
             <p>${getText('home.sections.consciousnessExploration.description')}</p>
             <div class="section-articles">
               ${getFilteredArticles(manifest, 'consciousness').map(m => `
-                <a href="/${encodeURIComponent(m.path)}" class="article-link">
+                <a href="/${m.path}" class="article-link">
                   <span class="article-title">${m.title}</span>
                   <span class="article-arrow">→</span>
                 </a>
@@ -81,7 +81,7 @@ export function loadHomePage(manifest, article) {
             <p>${getText('home.sections.practiceTools.description')}</p>
             <div class="section-articles">
               ${getFilteredArticles(manifest, 'practice').map(m => `
-                <a href="/${encodeURIComponent(m.path)}" class="article-link">
+                <a href="/${m.path}" class="article-link">
                   <span class="article-title">${m.title}</span>
                   <span class="article-arrow">→</span>
                 </a>

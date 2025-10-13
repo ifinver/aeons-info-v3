@@ -86,28 +86,31 @@ export default {
 					return new Response(generateUUID());
 			}
 
-			// 静态资源优先
+    // 静态资源优先：如果是可能的静态资源请求（含扩展名或以 /content/ 开头），尝试直接读取
+			const isLikelyStatic = /\.[a-zA-Z0-9]+$/.test(url.pathname) || url.pathname.startsWith('/content/');
+			const assets = (env as any).ASSETS;
 			try {
-				const assetResp = await env.ASSETS.fetch(request);
-				if (assetResp && assetResp.status !== 404) {
-					return assetResp;
-				}
-			} catch (e) {
-				console.warn('ASSETS.fetch 失败或未配置，进入 SPA 回退流程:', e);
-			}
+				const resp = assets && typeof assets.fetch === 'function' ? await assets.fetch(request) : null;
+      if (resp && resp.status !== 404) return resp;
+				if (isLikelyStatic) return resp || new Response('Not Found', { status: 404 }); // 对于明确是静态的，404原样返回
+    } catch (e) {
+      console.warn('ASSETS.fetch 失败或未配置，进入 SPA 回退流程:', e);
+    }
 
-			// SPA 回退：对 HTML GET 请求返回 index.html
-			const accept = request.headers.get('accept') || '';
-			const wantsHtml = request.method === 'GET' && accept.includes('text/html');
+    // SPA 回退：非 API 的 HTML GET 请求统一回到 index.html
+    const accept = request.headers.get('accept') || '';
+    const wantsHtml = request.method === 'GET' && (accept.includes('text/html') || accept === '*/*');
 			if (wantsHtml) {
 				const indexUrl = new URL('/index.html', url.origin);
 				const indexRequest = new Request(indexUrl.toString(), request);
 				try {
-					return await env.ASSETS.fetch(indexRequest);
+					if (assets && typeof assets.fetch === 'function') {
+						return await assets.fetch(indexRequest);
+					}
 				} catch (e) {
 					console.error('加载 index.html 失败:', e);
-					return new Response('Not Found', { status: 404 });
 				}
+				return new Response('Not Found', { status: 404 });
 			}
 
 			return new Response('Not Found', { status: 404 });

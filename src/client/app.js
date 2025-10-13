@@ -146,7 +146,7 @@ async function buildSidebar() {
       sortedItems.forEach(m => {
         const li = document.createElement('li');
         const a = document.createElement('a');
-        a.href = `/${encodeURIComponent(m.path)}`;
+        a.href = `/${m.path}`;
         a.textContent = m.title;
         li.appendChild(a);
         ul.appendChild(li);
@@ -158,7 +158,7 @@ async function buildSidebar() {
       sortedMainItems.forEach(m => {
         const li = document.createElement('li');
         const a = document.createElement('a');
-        a.href = `/${encodeURIComponent(m.path)}`;
+        a.href = `/${m.path}`;
         a.textContent = m.title;
         li.appendChild(a);
         ul.appendChild(li);
@@ -180,7 +180,7 @@ async function buildSidebar() {
         sortedSubgroupItems.forEach(m => {
           const subItemLi = document.createElement('li');
           const a = document.createElement('a');
-          a.href = `/${encodeURIComponent(m.path)}`;
+          a.href = `/${m.path}`;
           a.textContent = m.title;
           subItemLi.appendChild(a);
           subUl.appendChild(subItemLi);
@@ -487,7 +487,7 @@ function interceptArticleLinks() {
 
 function highlightActive(path) {
   document.querySelectorAll('.nav-list a').forEach(a => {
-    a.classList.toggle('active', a.getAttribute('href') === `/${encodeURIComponent(path)}`);
+    a.classList.toggle('active', a.getAttribute('href') === `/${path}`);
   });
 }
 
