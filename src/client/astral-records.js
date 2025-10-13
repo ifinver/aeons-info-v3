@@ -3,9 +3,11 @@
 
 import { loadPracticeTimerPage } from './practice-timer.js';
 
+// i18n 助手
+const t = (k, p) => (window.I18nTexts ? window.I18nTexts.getText(k, null, p) : k);
+
 export async function loadAstralRecordsPage(container) {
   const marginStyle = 'max-width: 1200px; margin: 0 auto; padding: 1rem;';
-  const t = (k, p) => (window.I18nTexts ? window.I18nTexts.getText(k, null, p) : k);
 
   // 未登录则显示登录界面（复用练功日志的登录UI）
   const auth = await checkAuth();
