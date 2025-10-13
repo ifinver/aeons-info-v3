@@ -65,26 +65,52 @@ import {
 
 export default {
 	async fetch(request, env, ctx): Promise<Response> {
-		const url = new URL(request.url);
-		
-		// 记录所有请求（调试用）
-		console.log(`📨 收到请求: ${request.method} ${url.pathname}`);
-		// KV API routing
-		if (url.pathname === '/api/kv' || url.pathname.startsWith('/api/kv/')) {
-			return handleKvApi(request, env);
-		}
-		// 认证API路由
-		if (url.pathname.startsWith('/api/auth/')) {
-			return handleAuthApi(request, env);
-		}
-		switch (url.pathname) {
-			case '/message':
-				return new Response('Hello, World!');
-					case '/random':
-			return new Response(generateUUID());
-			default:
-				return new Response('Not Found', { status: 404 });
-		}
+			const url = new URL(request.url);
+			
+			// 记录所有请求（调试用）
+			console.log(`📨 收到请求: ${request.method} ${url.pathname}`);
+			// KV API routing
+			if (url.pathname === '/api/kv' || url.pathname.startsWith('/api/kv/')) {
+				return handleKvApi(request, env);
+			}
+			// 认证API路由
+			if (url.pathname.startsWith('/api/auth/')) {
+				return handleAuthApi(request, env);
+			}
+
+			// 其它动态端点示例
+			switch (url.pathname) {
+				case '/message':
+					return new Response('Hello, World!');
+				case '/random':
+					return new Response(generateUUID());
+			}
+
+			// 静态资源优先
+			try {
+				const assetResp = await env.ASSETS.fetch(request);
+				if (assetResp && assetResp.status !== 404) {
+					return assetResp;
+				}
+			} catch (e) {
+				console.warn('ASSETS.fetch 失败或未配置，进入 SPA 回退流程:', e);
+			}
+
+			// SPA 回退：对 HTML GET 请求返回 index.html
+			const accept = request.headers.get('accept') || '';
+			const wantsHtml = request.method === 'GET' && accept.includes('text/html');
+			if (wantsHtml) {
+				const indexUrl = new URL('/index.html', url.origin);
+				const indexRequest = new Request(indexUrl.toString(), request);
+				try {
+					return await env.ASSETS.fetch(indexRequest);
+				} catch (e) {
+					console.error('加载 index.html 失败:', e);
+					return new Response('Not Found', { status: 404 });
+				}
+			}
+
+			return new Response('Not Found', { status: 404 });
 	},
 } satisfies ExportedHandler<Env>;
 

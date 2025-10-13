@@ -373,7 +373,7 @@ const EMAIL_TEXTS = {
  * 生成验证邮件内容
  */
 function generateVerificationEmail(email: string, token: string, baseUrl: string, language: string = 'zh'): any {
-  const verificationUrl = `${baseUrl}/#/auth/verify/${token}`;
+  const verificationUrl = `${baseUrl}/auth/verify/${token}`;
   const texts = EMAIL_TEXTS.verification[language as 'zh' | 'en'] || EMAIL_TEXTS.verification.zh;
 
   return {
@@ -447,7 +447,7 @@ ${texts.footer}
  */
 function generatePasswordResetEmail(email: string, token: string, baseUrl: string): any {
   // 使用POST方式的重置页面，不在URL中暴露敏感信息
-  const resetUrl = `${baseUrl}/#/auth/reset-password/${token}`;
+  const resetUrl = `${baseUrl}/auth/reset-password/${token}`;
 
   return {
     to: email,

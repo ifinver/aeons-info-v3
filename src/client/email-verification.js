@@ -114,7 +114,7 @@ function showVerificationError(container, message) {
         </div>
         
         <div class="verification-actions">
-          <button onclick="location.hash = 'practice/timer'" class="auth-btn secondary">
+          <button onclick="history.pushState({}, '', '/practice/timer'); window.dispatchEvent(new PopStateEvent('popstate'));" class="auth-btn secondary">
             返回登录页面
           </button>
         </div>
@@ -171,7 +171,8 @@ async function handlePasswordCreation(container, token) {
 
       // 3秒后跳转到登录页面
       setTimeout(() => {
-        location.hash = 'practice/timer';
+        history.pushState({}, '', '/practice/timer');
+        window.dispatchEvent(new PopStateEvent('popstate'));
       }, 3000);
     } else {
       showFormError(container, result.error || '密码创建失败');

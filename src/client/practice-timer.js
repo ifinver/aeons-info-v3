@@ -2546,7 +2546,9 @@ async function handleLogin() {
         if (window.postLoginRedirect) {
           const target = window.postLoginRedirect;
           window.postLoginRedirect = null;
-          location.hash = target;
+          history.pushState({}, '', target);
+          // 由 app.js 的 popstate 统一处理；这里手动触发一次以便立即渲染
+          window.dispatchEvent(new PopStateEvent('popstate'));
           return;
         }
 

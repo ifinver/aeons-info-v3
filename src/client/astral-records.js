@@ -11,7 +11,7 @@ export async function loadAstralRecordsPage(container) {
   const auth = await checkAuth();
   if (!auth.authenticated) {
     // 设置登录后回跳
-    window.postLoginRedirect = '#/astral/records';
+    window.postLoginRedirect = '/astral/records';
     // 展示 Astral 独立登录表单
     renderAstralAuth(container);
     return;
@@ -679,7 +679,7 @@ function renderAstralAuth(container) {
       if (container) {
         loadAstralRecordsPage(container);
       } else {
-        location.hash = '#/astral/records';
+        history.pushState({}, '', '/astral/records');
         location.reload();
       }
     } catch (e) {

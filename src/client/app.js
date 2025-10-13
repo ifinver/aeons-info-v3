@@ -146,7 +146,7 @@ async function buildSidebar() {
       sortedItems.forEach(m => {
         const li = document.createElement('li');
         const a = document.createElement('a');
-        a.href = `#/${encodeURIComponent(m.path)}`;
+        a.href = `/${encodeURIComponent(m.path)}`;
         a.textContent = m.title;
         li.appendChild(a);
         ul.appendChild(li);
@@ -158,7 +158,7 @@ async function buildSidebar() {
       sortedMainItems.forEach(m => {
         const li = document.createElement('li');
         const a = document.createElement('a');
-        a.href = `#/${encodeURIComponent(m.path)}`;
+        a.href = `/${encodeURIComponent(m.path)}`;
         a.textContent = m.title;
         li.appendChild(a);
         ul.appendChild(li);
@@ -180,7 +180,7 @@ async function buildSidebar() {
         sortedSubgroupItems.forEach(m => {
           const subItemLi = document.createElement('li');
           const a = document.createElement('a');
-          a.href = `#/${encodeURIComponent(m.path)}`;
+          a.href = `/${encodeURIComponent(m.path)}`;
           a.textContent = m.title;
           subItemLi.appendChild(a);
           subUl.appendChild(subItemLi);
@@ -264,11 +264,11 @@ function handleLanguageChange(event) {
   updateLanguageButtonText();
   
   // 更新 AppBar 标题
-  if (!location.hash.startsWith('#/')) {
+  if (!location.pathname.startsWith('/')) {
     updateAppBar();
   } else {
     // 如果在特定页面，也需要更新 AppBar 标题
-    const path = decodeURIComponent(location.hash.slice(2));
+    const path = decodeURIComponent(location.pathname.slice(1));
     if (path === 'practice/timer') {
       const practiceLogTitle = window.I18nTexts ? window.I18nTexts.getText('practiceLog.title') : '炼功日志';
       updateAppBar(practiceLogTitle);
@@ -487,24 +487,21 @@ function interceptArticleLinks() {
 
 function highlightActive(path) {
   document.querySelectorAll('.nav-list a').forEach(a => {
-    a.classList.toggle('active', a.getAttribute('href') === `#/${encodeURIComponent(path)}`);
+    a.classList.toggle('active', a.getAttribute('href') === `/${encodeURIComponent(path)}`);
   });
 }
 
 
 
 async function route() {
-  const hash = location.hash;
-  if (hash.startsWith('#/')) {
-    const path = decodeURIComponent(hash.slice(2));
+  const pathname = location.pathname;
+  if (pathname && pathname !== '/' && !pathname.startsWith('/content/')) {
+    const path = decodeURIComponent(pathname.slice(1));
     await loadContent(path);
   } else {
-    // 显示首页，需要先加载清单
     await loadManifest();
     const visibleManifest = manifest.filter(m => !m.hidden);
     loadHomePage(visibleManifest, article);
-    
-    // 重置 AppBar 标题为站点名称（使用本地化）
     updateAppBar();
   }
 }
@@ -536,7 +533,7 @@ function updateAppBar(title = null) {
 
 function checkMobileAndOpenDrawer() {
   // 检查是否是移动端且在首页，如果是则打开抽屉
-  if (window.innerWidth <= 768 && !location.hash.startsWith('#/')) {
+  if (window.innerWidth <= 768 && (location.pathname === '/' || location.pathname === '')) {
     isDrawerOpen = true;
     sidebar.classList.add('mobile-open');
     drawerOverlay.classList.add('active');
@@ -548,7 +545,8 @@ async function initApp() {
   console.log('🚀 === APP 初始化开始 ===');
   console.log('⏰ APP启动时间:', new Date().toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai' }));
   console.log('🔗 当前URL:', window.location.href);
-  console.log('🔗 当前Hash:', window.location.hash);
+  // 兼容日志：移除Hash后，保留输出当前路径
+  console.log('🔗 当前Pathname:', window.location.pathname);
   
   // 检查全局认证状态（如果practice-timer.js已加载）
   if (typeof window.debugAuthStatus === 'function') {
@@ -578,12 +576,13 @@ async function initApp() {
     drawerOverlay.addEventListener('click', closeDrawer);
   }
   
-  if (homeBtn) {
-    homeBtn.addEventListener('click', () => {
-      location.hash = '';
-      closeDrawer();
-    });
-  }
+if (homeBtn) {
+  homeBtn.addEventListener('click', () => {
+    history.pushState({}, '', '/');
+    route();
+    closeDrawer();
+  });
+}
 
   // 绑定语言切换事件（仅侧边栏）
   const sidebarLanguageToggle = document.getElementById('sidebar-language-toggle');
@@ -603,16 +602,33 @@ async function initApp() {
     }
   });
   
-  await route();
+// 全局站内链接拦截 -> 使用 History API 导航
+document.addEventListener('click', (e) => {
+  const a = e.target && (e.target.closest ? e.target.closest('a') : null);
+  if (!a) return;
+  const href = a.getAttribute('href');
+  if (!href) return;
+  // 外链或锚点不拦截
+  if (href.startsWith('http') || href.startsWith('#')) return;
+  const url = new URL(href, window.location.origin);
+  const isInternal = url.origin === window.location.origin && !url.pathname.startsWith('/api/');
+  if (isInternal) {
+    e.preventDefault();
+    history.pushState({}, '', url.pathname + url.search + url.hash);
+    route();
+  }
+});
+
+await route();
   checkMobileAndOpenDrawer();
   
   console.log('🚀 === APP 初始化完成 ===');
 }
 
-addEventListener('hashchange', () => {
+addEventListener('popstate', () => {
   route();
   // 访问文章时关闭抽屉
-  if (location.hash.startsWith('#/')) {
+  if (location.pathname && location.pathname !== '/') {
     closeDrawer();
   }
 });
