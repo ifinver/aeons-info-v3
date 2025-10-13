@@ -327,7 +327,13 @@ function renderPosts() {
   state.posts.forEach(p => {
     const li = document.createElement('li');
     li.className = 'list-item ' + (state.selectedPostId === p.id ? 'active' : '');
-    li.textContent = p.title;
+    const metaLine = formatCreatedUpdatedLine(p.createdAt, p.updatedAt);
+    li.innerHTML = `
+      <div class="flex flex-col min-w-0">
+        <span class="truncate font-medium">${escapeHtml(p.title)}</span>
+        <span class="text-xs text-gray-500">${metaLine}</span>
+      </div>
+    `;
     li.addEventListener('click', async () => {
       state.selectedPostId = p.id;
       renderPosts();
@@ -343,7 +349,32 @@ async function loadPost(nbId, postId) {
   // 简单渲染：优先使用页面内已有的 marked，如没有则用最简单替代
   const html = window.marked ? window.marked.parse(md) : basicMarkdown(md);
   const contentEl = document.getElementById('post-content');
-  if (contentEl) contentEl.innerHTML = html;
+  if (contentEl) {
+    const metaLine = formatCreatedUpdatedLine(data.meta.createdAt, data.meta.updatedAt);
+    const header = `
+      <div class=\"mb-3 flex items-start justify-between gap-2\">
+        <div class=\"min-w-0\">
+          <h2 class=\"text-xl font-semibold truncate\">${escapeHtml(data.meta.title)}</h2>
+          <div class=\"text-xs text-gray-500\">${metaLine}</div>
+        </div>
+        <div class=\"flex-shrink-0\">
+          <button id=\"btn-delete-post-content\" class=\"icon-btn\" title=\"${t('common.delete')}\">🗑</button>
+        </div>
+      </div>
+    `;
+    contentEl.innerHTML = header + html;
+
+    // 绑定删除按钮
+    const delBtn = document.getElementById('btn-delete-post-content');
+    if (delBtn) {
+      delBtn.addEventListener('click', async () => {
+        if (!confirm(t('astral.posts.deleteConfirm'))) return;
+        await apiDeletePost(nbId, postId);
+        state.selectedPostId = null;
+        await refreshPosts(nbId);
+      });
+    }
+  }
 }
 
 function basicMarkdown(md) {
@@ -493,6 +524,34 @@ async function openEditModal(options = {}) {
 
 function escapeHtml(str) {
   return String(str).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', '\'': '&#39;' }[c]));
+}
+
+function formatCreatedUpdatedLine(createdAt, updatedAt) {
+  const lang = window.I18n ? window.I18n.getCurrentLanguage() : 'zh';
+  const created = formatDateTime(createdAt);
+  const updated = formatDateTime(updatedAt || createdAt);
+  if (lang === 'en') {
+    return `Created: ${created} · Updated: ${updated}`;
+  }
+  return `创建: ${created} · 修改: ${updated}`;
+}
+
+function formatDateTime(iso) {
+  if (!iso) return '';
+  try {
+    const d = new Date(iso);
+    return d.toLocaleString('zh-CN', {
+      timeZone: 'Asia/Shanghai',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false
+    }).replace(/\//g, '-');
+  } catch {
+    return iso;
+  }
 }
 
 // Astral 独立登录界面
