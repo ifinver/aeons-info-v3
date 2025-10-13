@@ -156,9 +156,14 @@ function bindUI(container) {
         alert(t('astral.messages.selectNotebookFirst'));
         return;
       }
-      const result = await openEditModal({ title: t('astral.posts.new'), okText: t('common.save'), showPreview: true });
+      // 为新建文章启用草稿自动保存与恢复
+      const userId = (window.currentUser && window.currentUser.id) ? window.currentUser.id : 'guest';
+      const draftKey = `astral_draft_${userId}_${nbId}`;
+      const result = await openEditModal({ title: t('astral.posts.new'), okText: t('common.save'), showPreview: true, draftKey });
       if (!result) return;
       await apiCreatePost(nbId, result.title, result.content);
+      // 提交成功后清理草稿
+      try { localStorage.removeItem(draftKey); } catch {}
       await refreshPosts(nbId);
     });
   }
@@ -472,7 +477,7 @@ async function apiDeletePost(nbId, postId) {
 
 // 简易编辑模态（可带预览）
 async function openEditModal(options = {}) {
-  const { title = '编辑', okText = '确定', fields = ['title', 'content'], initial = {}, showPreview = false } = options;
+  const { title = '编辑', okText = '确定', fields = ['title', 'content'], initial = {}, showPreview = false, draftKey } = options;
   return new Promise(resolve => {
     const overlay = document.createElement('div');
     overlay.className = 'modal-overlay';
@@ -498,8 +503,24 @@ async function openEditModal(options = {}) {
     document.body.appendChild(overlay);
 
     const close = (result) => { document.body.removeChild(overlay); resolve(result || null); };
-    modal.querySelector('#modal-close').addEventListener('click', () => close(null));
-    modal.querySelector('#modal-cancel').addEventListener('click', () => close(null));
+    const onCancelOrClose = () => {
+      if (draftKey) {
+        try {
+          const raw = localStorage.getItem(draftKey);
+          const draft = raw ? JSON.parse(raw) : null;
+          const hasAny = draft && (typeof draft.title === 'string' || typeof draft.content === 'string');
+          if (hasAny) {
+            const msg = (window.I18nTexts ? window.I18nTexts.getText('astral.posts.discardDraftConfirm') : '是否丢弃当前草稿？');
+            if (confirm(msg)) {
+              try { localStorage.removeItem(draftKey); } catch {}
+            }
+          }
+        } catch {}
+      }
+      close(null);
+    };
+    modal.querySelector('#modal-close').addEventListener('click', onCancelOrClose);
+    modal.querySelector('#modal-cancel').addEventListener('click', onCancelOrClose);
     const okBtn = modal.querySelector('#modal-ok');
     okBtn.addEventListener('click', () => {
       const result = {};
@@ -518,6 +539,54 @@ async function openEditModal(options = {}) {
       };
       ta.addEventListener('input', render);
       render();
+    }
+
+    // 草稿自动保存与恢复（仅当提供 draftKey 且包含 title/content 字段时启用）
+    if (draftKey && (fields.includes('title') || fields.includes('content'))) {
+      const titleEl = fields.includes('title') ? modal.querySelector('#f-title') : null;
+      const contentEl = fields.includes('content') ? modal.querySelector('#f-content') : null;
+
+      // 尝试恢复草稿
+      try {
+        const raw = localStorage.getItem(draftKey);
+        if (raw) {
+          const draft = JSON.parse(raw);
+          const hasAny = (draft && (typeof draft.title === 'string' || typeof draft.content === 'string'));
+          if (hasAny) {
+            const restoreMsg = (window.I18nTexts ? window.I18nTexts.getText('astral.posts.restoreDraftConfirm') : '检测到未完成的草稿，是否恢复？');
+            if (confirm(restoreMsg)) {
+              if (titleEl && typeof draft.title === 'string') titleEl.value = draft.title;
+              if (contentEl && typeof draft.content === 'string') contentEl.value = draft.content;
+              // 若有预览，则刷新
+              if (showPreview && fields.includes('content')) {
+                const pv = modal.querySelector('#f-preview');
+                if (pv && contentEl) {
+                  const md = contentEl.value;
+                  pv.innerHTML = window.marked ? window.marked.parse(md) : basicMarkdown(md);
+                }
+              }
+            }
+          }
+        }
+      } catch {}
+
+      // 输入时自动保存（简单防抖）
+      let saveTimer = null;
+      const scheduleSave = () => {
+        if (saveTimer) clearTimeout(saveTimer);
+        saveTimer = setTimeout(() => {
+          try {
+            const payload = {
+              title: titleEl ? titleEl.value : undefined,
+              content: contentEl ? contentEl.value : undefined,
+              ts: Date.now(),
+            };
+            localStorage.setItem(draftKey, JSON.stringify(payload));
+          } catch {}
+        }, 400);
+      };
+      if (titleEl) titleEl.addEventListener('input', scheduleSave);
+      if (contentEl) contentEl.addEventListener('input', scheduleSave);
     }
   });
 }
