@@ -239,10 +239,10 @@
     @apply flex w-full;
   }
   .astral-col-notebooks {
-    @apply shrink-0 w-[280px] border-r border-border overflow-auto;
+    @apply shrink-0 w-fit border-r border-border overflow-auto;
   }
   .astral-col-posts {
-    @apply shrink-0 w-[360px] border-r border-border overflow-auto;
+    @apply shrink-0 w-fit border-r border-border overflow-auto;
   }
   .astral-col-content {
     @apply flex-1 overflow-auto;
