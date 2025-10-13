@@ -92,6 +92,10 @@ const I18N_TEXTS = {
       zh: '炼功日志',
       en: 'Practice Log'
     },
+    astralRecords: {
+      zh: '出神记录',
+      en: 'Astral Records'
+    },
     language: {
       zh: '语言',
       en: 'Language'
@@ -121,6 +125,82 @@ const I18N_TEXTS = {
       Practice: {
         zh: '练习',
         en: 'Practice'
+      }
+    }
+  },
+
+  // 出神记录（记事本/文章）
+  astral: {
+    title: {
+      zh: '出神记录',
+      en: 'Astral Records'
+    },
+    notebooks: {
+      header: {
+        zh: '记事本',
+        en: 'Notebooks'
+      },
+      new: {
+        zh: '新建记事本',
+        en: 'New Notebook'
+      },
+      toggle: {
+        zh: '折叠/展开',
+        en: 'Collapse/Expand'
+      },
+      rename: {
+        zh: '重命名记事本',
+        en: 'Rename Notebook'
+      },
+      deleteConfirm: {
+        zh: '确定删除该记事本及其文章？',
+        en: 'Delete this notebook and all its posts?'
+      }
+    },
+    posts: {
+      header: {
+        zh: '文章',
+        en: 'Posts'
+      },
+      count: {
+        zh: '{count} 篇',
+        en: '{count} posts'
+      },
+      new: {
+        zh: '新建文章',
+        en: 'New Post'
+      },
+      rename: {
+        zh: '重命名文章',
+        en: 'Rename Post'
+      },
+      deleteConfirm: {
+        zh: '确定删除该文章？',
+        en: 'Delete this post?'
+      },
+      contentHeader: {
+        zh: '文章内容',
+        en: 'Post Content'
+      }
+    },
+    placeholders: {
+      name: {
+        zh: '名称',
+        en: 'Name'
+      },
+      title: {
+        zh: '标题',
+        en: 'Title'
+      },
+      content: {
+        zh: '内容 (Markdown)',
+        en: 'Content (Markdown)'
+      }
+    },
+    messages: {
+      selectNotebookFirst: {
+        zh: '请先选择记事本',
+        en: 'Please select a notebook first'
       }
     }
   },

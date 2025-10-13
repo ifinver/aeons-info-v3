@@ -19,7 +19,7 @@ async function loadManifest() {
     const currentLang = window.I18n ? window.I18n.getCurrentLanguage() : 'zh';
     const practiceLogTitle = window.I18nTexts ? window.I18nTexts.getText('practiceLog.title') : (currentLang === 'en' ? 'Practice Log' : '炼功日志');
     const practiceGroupName = window.I18nTexts ? window.I18nTexts.getText('nav.practice') : (currentLang === 'en' ? 'Practice' : '练习');
-    const astralTitle = currentLang === 'en' ? 'Astral Records' : '出神记录';
+    const astralTitle = window.I18nTexts ? window.I18nTexts.getText('nav.astralRecords') : (currentLang === 'en' ? 'Astral Records' : '出神记录');
     
     manifest = [
       ...data.items.map(item => ({
@@ -43,7 +43,7 @@ async function loadManifest() {
     const currentLang = window.I18n ? window.I18n.getCurrentLanguage() : 'zh';
     const practiceLogTitle = window.I18nTexts ? window.I18nTexts.getText('practiceLog.title') : (currentLang === 'en' ? 'Practice Log' : '炼功日志');
     const practiceGroupName = window.I18nTexts ? window.I18nTexts.getText('nav.practice') : (currentLang === 'en' ? 'Practice' : '练习');
-    const astralTitle = currentLang === 'en' ? 'Astral Records' : '出神记录';
+    const astralTitle = window.I18nTexts ? window.I18nTexts.getText('nav.astralRecords') : (currentLang === 'en' ? 'Astral Records' : '出神记录');
     
     manifest = [
       { title: '30天学会灵魂出体', path: 'posts/30-days-master-obe.zh.md', group: '博文', subgroup: null },
@@ -337,7 +337,8 @@ async function loadContent(path) {
   if (path === 'astral/records') {
     await loadAstralRecordsPage(article);
     highlightActive(path);
-    updateAppBar('出神记录');
+    const title = window.I18nTexts ? window.I18nTexts.getText('astral.title') : '出神记录';
+    updateAppBar(title);
     return;
   }
 

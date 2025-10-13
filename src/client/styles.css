@@ -17,6 +17,71 @@
 }
 
 @layer components {
+  /* 通用卡片 */
+  .card {
+    @apply bg-white border border-border rounded-2xl shadow-sm;
+  }
+  .card-header {
+    @apply px-4 py-3 border-b border-border;
+  }
+  .card-body {
+    @apply p-4;
+  }
+
+  /* Astral 列表与按钮 */
+  .list-item {
+    @apply px-3 py-2 rounded-lg cursor-pointer select-none transition-colors duration-150;
+    @apply text-gray-700 hover:bg-gray-100 flex items-center justify-between gap-2;
+  }
+  .list-item.active {
+    @apply bg-primary-light text-primary font-medium;
+  }
+  .list-item .actions {
+    @apply hidden gap-2 flex-shrink-0;
+  }
+  .list-item:hover .actions {
+    @apply flex;
+  }
+
+  .icon-btn {
+    @apply w-8 h-8 inline-flex items-center justify-center rounded-lg border border-border bg-white text-gray-700;
+    @apply hover:bg-gray-100 transition-colors;
+  }
+
+  .floating-btn {
+    @apply fixed bottom-8 right-8 w-12 h-12 rounded-full bg-primary text-white text-2xl leading-none;
+    @apply flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-200;
+  }
+
+  /* 模态框 */
+  .modal-overlay {
+    @apply fixed inset-0 bg-black/40 flex items-center justify-center z-50;
+  }
+  .modal {
+    @apply bg-white rounded-2xl shadow-xl w-full max-w-2xl border border-border;
+  }
+  .modal-header {
+    @apply px-5 py-3 border-b border-border font-semibold text-gray-800 flex items-center justify-between;
+  }
+  .modal-body {
+    @apply p-5;
+  }
+  .modal-footer {
+    @apply px-5 py-3 border-t border-border flex items-center justify-end gap-3;
+  }
+  .input {
+    @apply w-full border border-border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary;
+  }
+  .textarea {
+    @apply w-full min-h-[200px] border border-border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary;
+  }
+  .btn-primary {
+    @apply inline-flex items-center justify-center px-4 py-2 rounded-lg bg-primary text-white hover:bg-primary-dark transition-colors;
+  }
+  .btn-secondary {
+    @apply inline-flex items-center justify-center px-4 py-2 rounded-lg bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors;
+  }
+
   /* 侧边栏样式 - 默认 PC 端 */
   .sidebar {
     @apply fixed top-0 left-0 w-[300px] h-screen overflow-y-auto overflow-x-hidden;
