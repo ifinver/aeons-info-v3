@@ -21,8 +21,10 @@ export async function loadAstralRecordsPage(container) {
   container.innerHTML = `
     <div class="astral-records">
       <div class="astral-layout relative">
-        <button id="drawer-notebooks" class="drawer-btn hidden" title="${t('astral.notebooks.header')}">📒</button>
-        <button id="drawer-posts" class="drawer-btn hidden" title="${t('astral.posts.header')}">📄</button>
+        <div id="astral-gutter" class="astral-left-gutter hidden">
+          <button id="drawer-notebooks" class="drawer-btn-in" title="${t('astral.notebooks.header')}">📒</button>
+          <button id="drawer-posts" class="drawer-btn-in" title="${t('astral.posts.header')}">📄</button>
+        </div>
         <div id="col-notebooks" class="astral-col-notebooks">
           <div class="card rounded-none border-0">
             <div class="card-header flex justify-between items-center border-b">
@@ -91,6 +93,7 @@ function bindUI(container) {
   const colNotebooks = container.querySelector('#col-notebooks');
   const btnToggle = container.querySelector('#btn-toggle-notebook');
   const drawerNotebooks = container.querySelector('#drawer-notebooks');
+  const gutter = container.querySelector('#astral-gutter');
   if (btnToggle && colNotebooks) {
     btnToggle.addEventListener('click', () => {
       const collapsed = !colNotebooks.classList.contains('astral-col-collapsed');
@@ -99,13 +102,15 @@ function bindUI(container) {
       btnToggle.textContent = '📒';
       try { localStorage.setItem('astral_nb_collapsed', collapsed ? '1' : '0'); } catch {}
       if (drawerNotebooks) drawerNotebooks.classList.toggle('hidden', !collapsed);
+      if (gutter) gutter.classList.toggle('hidden', !(collapsed || isPostsCollapsed(container)));
     });
   }
   if (drawerNotebooks && colNotebooks) {
     drawerNotebooks.addEventListener('click', () => {
       colNotebooks.classList.remove('astral-col-collapsed');
-      if (btnToggle) btnToggle.textContent = '◀';
+      if (btnToggle) btnToggle.textContent = '📒';
       drawerNotebooks.classList.add('hidden');
+      if (gutter) gutter.classList.toggle('hidden', !isAnyCollapsed(container));
       try { localStorage.setItem('astral_nb_collapsed', '0'); } catch {}
     });
   }
@@ -121,13 +126,15 @@ function bindUI(container) {
       btnTogglePosts.textContent = '📄';
       try { localStorage.setItem('astral_posts_collapsed', collapsed ? '1' : '0'); } catch {}
       if (drawerPosts) drawerPosts.classList.toggle('hidden', !collapsed);
+      if (gutter) gutter.classList.toggle('hidden', !(collapsed || isNotebooksCollapsed(container)));
     });
   }
   if (drawerPosts && colPosts) {
     drawerPosts.addEventListener('click', () => {
       colPosts.classList.remove('astral-col-collapsed');
-      if (btnTogglePosts) btnTogglePosts.textContent = '◀';
+      if (btnTogglePosts) btnTogglePosts.textContent = '📄';
       drawerPosts.classList.add('hidden');
+      if (gutter) gutter.classList.toggle('hidden', !isAnyCollapsed(container));
       try { localStorage.setItem('astral_posts_collapsed', '0'); } catch {}
     });
   }
@@ -278,7 +285,22 @@ function renderNotebooks() {
       if (btnTogglePosts) btnTogglePosts.textContent = '📄';
       if (drawerPosts) drawerPosts.classList.remove('hidden');
     }
+    const g = document.getElementById('astral-gutter');
+    if (g) g.classList.toggle('hidden', !(nbCollapsed || postsCollapsed));
   } catch {}
+
+  // 工具函数：判断折叠状态
+  function isNotebooksCollapsed(root) {
+    const col = root.querySelector('#col-notebooks');
+    return !!(col && col.classList.contains('astral-col-collapsed'));
+  }
+  function isPostsCollapsed(root) {
+    const col = root.querySelector('#col-posts');
+    return !!(col && col.classList.contains('astral-col-collapsed'));
+  }
+  function isAnyCollapsed(root) {
+    return isNotebooksCollapsed(root) || isPostsCollapsed(root);
+  }
 }
 
 async function refreshPosts(nbId) {

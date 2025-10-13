@@ -257,6 +257,14 @@
   }
   #drawer-notebooks { top: 12px; left: 12px; }
   #drawer-posts { top: 56px; left: 12px; }
+
+  /* 左侧窄侧边栏（按钮容器） */
+  .astral-left-gutter {
+    @apply shrink-0 w-9 border-r border-border bg-white flex flex-col items-center gap-2 py-2;
+  }
+  .drawer-btn-in {
+    @apply w-9 h-9 rounded-lg border border-border bg-white text-gray-700 shadow-sm flex items-center justify-center;
+  }
   
   /* 文章元数据 */
   #article .article-meta {
