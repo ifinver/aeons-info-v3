@@ -231,7 +231,24 @@
   }
   /* 出神记录页面：去除固定最大宽度 */
   #article.astral-wide {
-    @apply max-w-none mx-0;
+    @apply max-w-none mx-0 px-0;
+  }
+
+  /* 出神记录三栏布局（无间距，仅竖线分割） */
+  .astral-layout {
+    @apply flex w-full;
+  }
+  .astral-col-notebooks {
+    @apply shrink-0 w-[280px] border-r border-border overflow-auto;
+  }
+  .astral-col-posts {
+    @apply shrink-0 w-[360px] border-r border-border overflow-auto;
+  }
+  .astral-col-content {
+    @apply flex-1 overflow-auto;
+  }
+  .astral-col-collapsed {
+    @apply w-0 overflow-hidden;
   }
   
   /* 文章元数据 */

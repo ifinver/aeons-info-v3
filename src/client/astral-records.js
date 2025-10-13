@@ -23,46 +23,38 @@ export async function loadAstralRecordsPage(container) {
   // 已登录，渲染三栏布局
   container.innerHTML = `
     <div class="astral-records" style="${marginStyle}">
-      <div class="grid grid-cols-12 gap-4">
-        <div class="col-span-12 lg:col-span-3">
-          <div class="card">
-            <div class="card-header flex justify-between items-center">
-              <h3 class="text-lg font-semibold">${t('astral.notebooks.header')}</h3>
+      <div class="astral-layout">
+        <div id="col-notebooks" class="astral-col-notebooks">
+          <div class="card rounded-none border-0">
+            <div class="card-header flex justify-between items-center border-b">
+              <h3 class="text-sm font-semibold">${t('astral.notebooks.header')}</h3>
               <div class="flex items-center gap-2">
-                <button id="btn-toggle-notebook" class="icon-btn" title="${t('astral.notebooks.toggle')}">▾</button>
+                <button id="btn-toggle-notebook" class="icon-btn" title="${t('astral.notebooks.toggle')}">◀</button>
                 <button id="btn-create-notebook" class="icon-btn" title="${t('astral.notebooks.new')}">＋</button>
               </div>
             </div>
-            <div class="card-body">
-              <ul id="notebook-list" class="space-y-2"></ul>
+            <div class="card-body p-2">
+              <ul id="notebook-list" class="space-y-1"></ul>
             </div>
           </div>
         </div>
-        <div class="col-span-12 lg:col-span-4">
-          <div class="card">
-            <div class="card-header">
-              <div class="flex items-center justify-between">
-                <h3 class="text-lg font-semibold">${t('astral.posts.header')}</h3>
-                <div class="text-sm text-gray-500" id="post-count"></div>
+        <div id="col-posts" class="astral-col-posts">
+          <div class="card rounded-none border-0">
+            <div class="card-header flex items-center justify-between border-b">
+              <h3 class="text-sm font-semibold">${t('astral.posts.header')}</h3>
+              <div class="text-xs text-gray-500" id="post-count"></div>
+              <div class="flex items-center gap-2">
+                <button id="btn-toggle-posts" class="icon-btn" title="${t('astral.notebooks.toggle')}">◀</button>
               </div>
             </div>
-            <div class="card-body">
-              <ul id="post-list" class="space-y-2"></ul>
+            <div class="card-body p-2">
+              <ul id="post-list" class="space-y-1"></ul>
             </div>
           </div>
         </div>
-        <div class="col-span-12 lg:col-span-5">
-          <div class="card">
-            <div class="card-header">
-              <div class="flex items-center justify-between w-full gap-2">
-                <h3 id="post-title" class="text-lg font-semibold truncate">${t('astral.posts.contentHeader')}</h3>
-                <div class="flex items-center gap-2">
-                  <button id="btn-rename-post" class="icon-btn" title="${t('common.edit')}">✎</button>
-                  <button id="btn-delete-post" class="icon-btn" title="${t('common.delete')}">🗑</button>
-                </div>
-              </div>
-            </div>
-            <div class="card-body" id="post-content" style="min-height: 300px;"></div>
+        <div class="astral-col-content">
+          <div class="card rounded-none border-0">
+            <div class="card-body p-4" id="post-content" style="min-height: 300px;"></div>
           </div>
         </div>
       </div>
@@ -83,13 +75,28 @@ async function checkAuth() {
 }
 
 function bindUI(container) {
+  // 记事本列左右折叠
+  const colNotebooks = container.querySelector('#col-notebooks');
   const btnToggle = container.querySelector('#btn-toggle-notebook');
-  const list = container.querySelector('#notebook-list');
-  if (btnToggle && list) {
+  if (btnToggle && colNotebooks) {
     btnToggle.addEventListener('click', () => {
-      const nowHidden = list.style.display !== 'none' ? 'none' : '';
-      list.style.display = nowHidden;
-      try { localStorage.setItem('astral_nb_collapsed', nowHidden === 'none' ? '1' : '0'); } catch {}
+      const collapsed = !colNotebooks.classList.contains('astral-col-collapsed');
+      colNotebooks.classList.toggle('astral-col-collapsed', collapsed);
+      // 切换按钮指向
+      btnToggle.textContent = collapsed ? '▶' : '◀';
+      try { localStorage.setItem('astral_nb_collapsed', collapsed ? '1' : '0'); } catch {}
+    });
+  }
+
+  // 文章列左右折叠
+  const colPosts = container.querySelector('#col-posts');
+  const btnTogglePosts = container.querySelector('#btn-toggle-posts');
+  if (btnTogglePosts && colPosts) {
+    btnTogglePosts.addEventListener('click', () => {
+      const collapsed = !colPosts.classList.contains('astral-col-collapsed');
+      colPosts.classList.toggle('astral-col-collapsed', collapsed);
+      btnTogglePosts.textContent = collapsed ? '▶' : '◀';
+      try { localStorage.setItem('astral_posts_collapsed', collapsed ? '1' : '0'); } catch {}
     });
   }
   const btnCreateNotebook = container.querySelector('#btn-create-notebook');
@@ -219,10 +226,22 @@ function renderNotebooks() {
     ul.appendChild(li);
   });
 
-  // 折叠状态恢复
+  // 折叠状态恢复（列级别）
   try {
-    const collapsed = localStorage.getItem('astral_nb_collapsed') === '1';
-    if (collapsed) ul.style.display = 'none';
+    const nbCollapsed = localStorage.getItem('astral_nb_collapsed') === '1';
+    const postsCollapsed = localStorage.getItem('astral_posts_collapsed') === '1';
+    const colNotebooks = document.getElementById('col-notebooks');
+    const colPosts = document.getElementById('col-posts');
+    const btnToggle = document.getElementById('btn-toggle-notebook');
+    const btnTogglePosts = document.getElementById('btn-toggle-posts');
+    if (nbCollapsed && colNotebooks) {
+      colNotebooks.classList.add('astral-col-collapsed');
+      if (btnToggle) btnToggle.textContent = '▶';
+    }
+    if (postsCollapsed && colPosts) {
+      colPosts.classList.add('astral-col-collapsed');
+      if (btnTogglePosts) btnTogglePosts.textContent = '▶';
+    }
   } catch {}
 }
 
@@ -417,5 +436,7 @@ async function openEditModal(options = {}) {
 function escapeHtml(str) {
   return String(str).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', '\'': '&#39;' }[c]));
 }
+
+
 
 
