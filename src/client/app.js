@@ -326,6 +326,9 @@ async function loadContent(path) {
 
   // 处理炼功日志特殊页面
   if (path === 'practice/timer') {
+    // 恢复默认宽度
+    const articleEl = document.getElementById('article');
+    if (articleEl) articleEl.classList.remove('astral-wide');
     await loadPracticeTimerPage(article);
     highlightActive(path);
     const practiceLogTitle = window.I18nTexts ? window.I18nTexts.getText('practiceLog.title') : '炼功日志';
@@ -335,6 +338,9 @@ async function loadContent(path) {
 
   // 处理出神记录页面
   if (path === 'astral/records') {
+    // 取消最大宽度，铺满容器
+    const articleEl = document.getElementById('article');
+    if (articleEl) articleEl.classList.add('astral-wide');
     await loadAstralRecordsPage(article);
     highlightActive(path);
     const title = window.I18nTexts ? window.I18nTexts.getText('astral.title') : '出神记录';
@@ -400,6 +406,10 @@ async function loadContent(path) {
       await fixSafariReaderMode();
     }
     
+    // 非出神记录页面恢复默认宽度
+    const articleEl = document.getElementById('article');
+    if (articleEl) articleEl.classList.remove('astral-wide');
+
     highlightActive(path);
     
   } catch (e) {

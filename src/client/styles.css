@@ -229,6 +229,10 @@
     font-size: 16px;
     color: #333;
   }
+  /* 出神记录页面：去除固定最大宽度 */
+  #article.astral-wide {
+    @apply max-w-none mx-0;
+  }
   
   /* 文章元数据 */
   #article .article-meta {
