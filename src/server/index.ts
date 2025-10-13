@@ -113,6 +113,12 @@ export default {
 				} catch (e) {
 					console.error('SPA 回退失败:', e);
 				}
+
+				// 最后兜底：直接返回应用壳 HTML（引用静态资源的绝对路径）
+				return new Response(htmlShell(), {
+					status: 200,
+					headers: { 'content-type': 'text/html; charset=utf-8' }
+				});
 			}
 
 			return new Response('Not Found', { status: 404 });
@@ -417,3 +423,36 @@ async function checkAndUpdateRateLimit(ip: string, endpoint: string, env: any): 
 // 类型定义 - User, AuthToken, LoginAttempt 已从 auth.ts 导入
 // 所有工具函数已经从对应模块导入
 
+// 作为最终兜底返回的应用壳（避免边缘静态层异常时 404）
+function htmlShell(): string {
+  return `<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+    <title>仙界邀请函</title>
+    <link rel="stylesheet" href="/styles.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="/i18n.js" type="module"></script>
+    <script src="/i18n-texts.js" type="module"></script>
+  </head>
+  <body>
+    <header class="mobile-appbar" id="mobile-appbar">
+      <button class="home-btn" id="home-btn"><i class="fa-solid fa-house"></i></button>
+      <div class="title" id="appbar-title">仙界邀请函</div>
+      <div class="appbar-actions"><button class="drawer-toggle" id="drawer-toggle">☰</button></div>
+    </header>
+    <div class="mobile-drawer-overlay" id="drawer-overlay"></div>
+    <aside class="sidebar" id="sidebar"></aside>
+    <main class="content">
+      <article id="article">
+        <div class="flex items-center justify-center min-h-[200px]">
+          <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+        </div>
+      </article>
+    </main>
+    <script src="/app.js" type="module"></script>
+  </body>
+  </html>`;
+}
