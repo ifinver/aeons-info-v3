@@ -616,6 +616,10 @@ document.addEventListener('click', (e) => {
     e.preventDefault();
     history.pushState({}, '', url.pathname + url.search + url.hash);
     route();
+    // 移动端导航跳转后关闭抽屉
+    if (url.pathname !== '/') {
+      closeDrawer();
+    }
   }
 });
 

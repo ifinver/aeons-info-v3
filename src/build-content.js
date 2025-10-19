@@ -71,6 +71,7 @@ const manifest = [
   // 中文内容
   { title: '张三丰丹道——《张三丰内丹36诀》', path: 'posts/zh/zhang-sanfeng-36-instructions-on-internal-alchemy.md', group: '博文', subgroup: null, language: 'zh' },
   { title: '合一之道——《老子丹道21诀》', path: 'posts/zh/laozi-internal-alchemy-21-instructions.md', group: '博文', subgroup: null, language: 'zh' },
+  { title: '闭目养神法', path: 'posts/zh/close-eyes-nourish-spirit.md', group: '博文', subgroup: null, language: 'zh' },
   { title: '30天学会灵魂出体', path: 'posts/zh/30-days-master-obe.zh.md', group: '博文', subgroup: null, language: 'zh' },
   { title: '论星体投射', path: 'posts/zh/treatise-on-astral-projection.zh.md', group: '博文', subgroup: null, language: 'zh' },
   { title: '瑜伽经 · 站点版', path: 'posts/zh/yoga-sutra/by-site.zh.md', group: '博文', subgroup: '瑜伽经', hidden: true, language: 'zh' },
@@ -81,6 +82,7 @@ const manifest = [
   { title: 'Out-of-body Adventures (30 Days)', path: 'posts/en/30-days-master-obe.en.md', group: 'Articles', subgroup: null, language: 'en', weight: 2 },
   { title: 'Treatise on Astral Projection', path: 'posts/en/treatise-on-astral-projection.en.md', group: 'Articles', subgroup: null, language: 'en', weight: 3 },
   { title: 'Out of Body Techniques Manual', path: 'posts/en/out-of-body-techniques-manual.en.md', group: 'Articles', subgroup: null, language: 'en', weight: 4 },
+  { title: 'The Method of Nourish Spirit with Eyes Closed', path: 'posts/en/close-eyes-nourish-spirit.en.md', group: 'Articles', subgroup: null, language: 'en', weight: 5 },
   { title: 'Yoga Sutras · Bon Giovanni', path: 'posts/en/yoga-sutra/by-bon-giovanni.en.md', group: 'Articles', subgroup: 'Yoga Sutras', hidden: true, language: 'en' },
   { title: 'Yoga Sutras · Swami Jnaneshvara', path: 'posts/en/yoga-sutra/by-swami-jnaneshvara-bharati.en.md', group: 'Articles', subgroup: 'Yoga Sutras', hidden: true, language: 'en' },
 ];
