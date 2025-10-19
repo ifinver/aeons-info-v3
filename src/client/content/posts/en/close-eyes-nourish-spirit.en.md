@@ -1,10 +1,11 @@
 ---
 title: "The Method of Resting with Eyes Closed"
 category: "Traditional Anti-Hypnosis Methods"
-source: "Compiled by Yuan Wu Shi"
+source: "Yuan Wu Shi"
 ---
 
 # The Method of Nourish Spirit with Eyes Closed
+> — Source：[YuanWuShi](https://yuanwushi.org/article-7-6647.html)
 
 1. Rest with eyes closed ( <— the key point lies entirely in these four words).  
 2. Observe naturally in stillness (observe the natural changes of spirit consciousness as a bystander).  
