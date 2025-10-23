@@ -1,10 +1,10 @@
 ---
-title: "闭目养神法"
+title: "真道养神篇"
 category: "反催眠传统方法"
 source: "元吾氏经验"
 ---
 
-# 闭目养神法
+# 真道养神篇
 > — 摘自：[元吾氏](https://yuanwushi.org/article-7-6647.html)
 
 1. 闭目养神（ <—- 要点只有这四个字）。

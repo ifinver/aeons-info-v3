@@ -71,7 +71,7 @@ const manifest = [
   // 中文内容
   { title: '张三丰丹道——《张三丰内丹36诀》', path: 'posts/zh/zhang-sanfeng-36-instructions-on-internal-alchemy.md', group: '博文', subgroup: null, language: 'zh' },
   { title: '合一之道——《老子丹道21诀》', path: 'posts/zh/laozi-internal-alchemy-21-instructions.md', group: '博文', subgroup: null, language: 'zh' },
-  { title: '闭目养神法', path: 'posts/zh/close-eyes-nourish-spirit.md', group: '博文', subgroup: null, language: 'zh' },
+  { title: '真道养神篇', path: 'posts/zh/close-eyes-nourish-spirit.md', group: '博文', subgroup: null, language: 'zh' },
   { title: '30天学会灵魂出体', path: 'posts/zh/30-days-master-obe.zh.md', group: '博文', subgroup: null, language: 'zh' },
   { title: '论星体投射', path: 'posts/zh/treatise-on-astral-projection.zh.md', group: '博文', subgroup: null, language: 'zh' },
   { title: '瑜伽经 · 站点版', path: 'posts/zh/yoga-sutra/by-site.zh.md', group: '博文', subgroup: '瑜伽经', hidden: true, language: 'zh' },
