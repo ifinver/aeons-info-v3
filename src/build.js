@@ -97,6 +97,10 @@ async function build() {
     const dlSrcDir = join(srcDir, 'dl');
     const dlDestDir = join(distDir, 'dl');
     if (existsSync(dlSrcDir) && statSync(dlSrcDir).isDirectory()) {
+      // 先清空目标目录，避免残留旧文件导致“线上删不掉”
+      if (existsSync(dlDestDir)) {
+        rmSync(dlDestDir, { recursive: true, force: true });
+      }
       copyDirectory(dlSrcDir, dlDestDir);
     } else {
       console.warn(`⚠️ 未找到下载目录: ${dlSrcDir}（已跳过复制）`);

@@ -88,7 +88,8 @@ export default {
 						const headers = new Headers(assetResp.headers);
 						// 保留 ASSETS 生成的 content-type，只强制附件下载
 						headers.set('content-disposition', `attachment; filename="${fileName}"; filename*=UTF-8''${encodedFileName}`);
-						headers.set('cache-control', 'public, max-age=31536000, immutable');
+						// 下载链接可能会“被删除”，这里使用短缓存，避免旧文件被长期缓存造成误判
+						headers.set('cache-control', 'public, max-age=300');
 						return new Response(assetResp.body, {
 							status: assetResp.status,
 							statusText: assetResp.statusText,
