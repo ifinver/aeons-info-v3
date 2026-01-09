@@ -69,6 +69,37 @@ export default {
 			
 			// 记录所有请求（调试用）
 			console.log(`📨 收到请求: ${request.method} ${url.pathname}`);
+
+			// --- 下载资源路由（/dl 下任意文件都强制以附件下载） ---
+			if (request.method === 'GET' && url.pathname.startsWith('/dl/')) {
+				// 简单的路径安全检查：禁止目录穿越
+				const decodedPath = safeDecodeURIComponent(url.pathname);
+				if (!decodedPath || decodedPath.includes('..')) {
+					return new Response('Bad Request', { status: 400 });
+				}
+
+				const fileName = decodedPath.split('/').filter(Boolean).slice(-1)[0] || 'download';
+				const encodedFileName = encodeURIComponent(fileName);
+
+				const assets = (env as any).ASSETS;
+				try {
+					const assetResp = assets && typeof assets.fetch === 'function' ? await assets.fetch(request) : null;
+					if (assetResp && assetResp.status !== 404) {
+						const headers = new Headers(assetResp.headers);
+						// 保留 ASSETS 生成的 content-type，只强制附件下载
+						headers.set('content-disposition', `attachment; filename="${fileName}"; filename*=UTF-8''${encodedFileName}`);
+						headers.set('cache-control', 'public, max-age=31536000, immutable');
+						return new Response(assetResp.body, {
+							status: assetResp.status,
+							statusText: assetResp.statusText,
+							headers
+						});
+					}
+				} catch (e) {
+					console.warn('下载资源读取失败:', e);
+				}
+				return new Response('Not Found', { status: 404 });
+			}
 			// KV API routing
 			if (url.pathname === '/api/kv' || url.pathname.startsWith('/api/kv/')) {
 				return handleKvApi(request, env);
@@ -124,6 +155,14 @@ export default {
 			return new Response('Not Found', { status: 404 });
 	},
 } satisfies ExportedHandler<Env>;
+
+function safeDecodeURIComponent(value: string): string | null {
+  try {
+    return decodeURIComponent(value);
+  } catch {
+    return null;
+  }
+}
 
 // --- KV API helpers ---
 async function handleKvApi(request: Request, env: any): Promise<Response> {

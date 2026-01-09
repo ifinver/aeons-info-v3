@@ -90,6 +90,20 @@ async function build() {
   } catch (error) {
     console.error('CSS 构建失败:', error.message);
   }
+
+  // 7. 复制下载资源目录到 dist/dl（用于 /dl/ 路径下载）
+  console.log('\n复制下载资源...');
+  try {
+    const dlSrcDir = join(srcDir, 'dl');
+    const dlDestDir = join(distDir, 'dl');
+    if (existsSync(dlSrcDir) && statSync(dlSrcDir).isDirectory()) {
+      copyDirectory(dlSrcDir, dlDestDir);
+    } else {
+      console.warn(`⚠️ 未找到下载目录: ${dlSrcDir}（已跳过复制）`);
+    }
+  } catch (error) {
+    console.error('复制下载资源失败:', error.message);
+  }
   
   console.log('\n✅ 构建完成！');
   console.log(`📁 输出目录: ${distDir}`);
