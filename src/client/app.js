@@ -56,7 +56,6 @@ async function loadManifest() {
       { title: '论星体投射', path: 'posts/zh/treatise-on-astral-projection.zh.md', group: '博文', subgroup: null, language: 'zh', weight: 2 },
       { title: 'Out-of-body Adventures (30 Days)', path: 'posts/en/30-days-master-obe.en.md', group: 'Articles', subgroup: null, language: 'en', weight: 1 },
       { title: 'Treatise on Astral Projection', path: 'posts/en/treatise-on-astral-projection.en.md', group: 'Articles', subgroup: null, language: 'en', weight: 2 },
-      { title: 'Out of Body Techniques Manual', path: 'posts/en/out-of-body-techniques-manual.en.md', group: 'Articles', subgroup: null, language: 'en', weight: 3 },
       { title: practiceLogTitle, path: 'practice/timer', group: practiceGroupName, subgroup: null, weight: 1000 },
       { title: astralTitle, path: 'astral/records', group: practiceGroupName, subgroup: null, weight: 1001 },
     ];
