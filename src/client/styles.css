@@ -489,82 +489,193 @@
     @apply text-text-muted text-xs mx-1.5 my-2;
   }
   
-  /* 首页样式 */
+  /* ===== 首页样式 =====
+     首页渲染在 #article 容器内部，正文排版规则（#article h1/p/a ...）的优先级
+     高于普通类选择器，所以凡是会和正文规则冲突的元素都用 #article.home-view 前缀。 */
+  #article.home-view {
+    @apply max-w-none mx-0 bg-transparent border-none rounded-none p-0 shadow-none;
+  }
+
+  #article.home-view a {
+    @apply no-underline text-inherit;
+  }
+
   .home-page {
     @apply max-w-none m-0 bg-transparent border-none rounded-none p-0 shadow-none;
   }
-  
-  
+
   .home-content {
-    @apply max-w-4xl mx-auto;
+    @apply max-w-4xl mx-auto flex flex-col gap-10;
   }
-  
-  .home-intro {
-    @apply text-center bg-white p-12 rounded-2xl shadow-lg mb-10;
+
+  /* Hero */
+  .home-hero {
+    @apply relative overflow-hidden text-center rounded-3xl px-10 py-14;
+    @apply flex flex-col items-center gap-4;
+    @apply bg-gradient-to-br from-white via-primary-light/40 to-white;
+    @apply border border-border shadow-panel;
   }
-  
-  .home-intro h1 {
-    @apply text-gray-800 text-5xl mb-6 font-bold;
+
+  .home-hero::after {
+    content: '';
+    @apply absolute -top-24 -right-16 w-64 h-64 rounded-full bg-primary/10 pointer-events-none;
   }
-  
-  .home-intro p {
-    @apply text-lg leading-7 text-gray-600 mb-4;
+
+  .home-hero-badge {
+    @apply relative inline-block px-4 py-1.5 rounded-full text-xs font-semibold tracking-wide;
+    @apply bg-white/80 text-primary border border-primary/20;
   }
-  
-  .home-sections {
-    @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-10;
+
+  #article.home-view .home-hero h1 {
+    @apply relative m-0 p-0 border-none text-gray-800 text-4xl md:text-5xl font-bold;
+    line-height: 1.15;
   }
-  
-  .home-section {
-    @apply bg-white p-8 rounded-2xl shadow-lg transition-all duration-300 ease-in-out;
+
+  #article.home-view .home-hero-subtitle {
+    @apply relative m-0 text-lg md:text-xl text-primary-dark font-medium;
+    line-height: 1.5;
   }
-  
-  .home-section:hover {
-    @apply -translate-y-1 shadow-hover;
+
+  #article.home-view .home-hero-intro {
+    @apply relative m-0 max-w-2xl text-base text-gray-600;
+    line-height: 1.75;
   }
-  
-  .home-section h3 {
-    @apply text-gray-800 text-xl mb-4 flex items-center gap-2;
+
+  .home-stats {
+    @apply relative flex flex-wrap justify-center gap-3 mt-4;
   }
-  
-  .home-section p {
-    @apply text-gray-600 leading-6 mb-6;
+
+  .home-stat {
+    @apply px-4 py-2 rounded-full bg-white/90 border border-border;
+    @apply text-sm text-text-secondary shadow-sm;
   }
-  
-  .section-articles {
-    @apply flex flex-col gap-3;
+
+  /* 区块 */
+  .home-block-head {
+    @apply flex flex-col gap-2 mb-6;
   }
-  
-  .article-link {
-    @apply flex justify-between items-center py-4 px-5 bg-gray-50 rounded-xl;
-    @apply no-underline text-gray-800 transition-all duration-300 ease-in-out;
-    @apply border-2 border-transparent;
+
+  #article.home-view .home-block-head h2 {
+    @apply m-0 p-0 border-none text-2xl font-bold text-gray-800 flex items-center gap-2;
+    line-height: 1.3;
   }
-  
-  .article-link:hover {
-    @apply bg-gray-100 border-primary translate-x-1;
+
+  #article.home-view .home-block-head p {
+    @apply m-0 text-gray-600;
+    line-height: 1.6;
   }
-  
-  .article-title {
-    @apply font-medium flex-1;
+
+  #article.home-view .home-empty {
+    @apply m-0 bg-white border border-dashed border-border rounded-2xl py-10;
+    @apply text-center text-text-muted;
   }
-  
-  .article-arrow {
-    @apply text-primary font-bold text-lg transition-transform duration-300 ease-in-out;
+
+  /* 文章卡片 */
+  .article-grid {
+    @apply grid grid-cols-1 md:grid-cols-2 gap-6;
   }
-  
-  .article-link:hover .article-arrow {
+
+  #article.home-view .article-card {
+    @apply relative flex flex-col gap-3 bg-white p-7 rounded-2xl;
+    @apply border border-border shadow-sm overflow-hidden;
+    @apply transition-all duration-300 ease-in-out;
+  }
+
+  .article-card::before {
+    content: '';
+    @apply absolute left-0 top-0 h-full w-1 bg-primary opacity-0 transition-opacity duration-300;
+  }
+
+  #article.home-view .article-card:hover {
+    @apply -translate-y-1 shadow-hover border-primary/40;
+  }
+
+  .article-card:hover::before {
+    @apply opacity-100;
+  }
+
+  .article-card-index {
+    @apply text-xs font-bold tracking-widest text-primary/60;
+  }
+
+  #article.home-view .article-card-title {
+    @apply m-0 p-0 text-lg font-semibold text-gray-800;
+    line-height: 1.5;
+  }
+
+  #article.home-view .article-card-summary {
+    @apply m-0 text-sm text-gray-600;
+    line-height: 1.65;
+  }
+
+  .article-card-meta {
+    @apply flex flex-wrap items-center gap-x-4 gap-y-1 mt-auto pt-1 text-xs text-text-muted;
+  }
+
+  .article-card-meta i {
+    @apply mr-1.5;
+  }
+
+  .article-card-author {
+    @apply font-medium text-text-secondary;
+  }
+
+  .article-card-cta {
+    @apply inline-flex items-center gap-2 text-sm font-semibold text-primary;
+  }
+
+  .article-card-cta i {
+    @apply transition-transform duration-300 ease-in-out;
+  }
+
+  .article-card:hover .article-card-cta i {
     @apply translate-x-1;
   }
-  
+
+  /* 练习工具卡片 */
+  .tool-grid {
+    @apply grid grid-cols-1 md:grid-cols-2 gap-5;
+  }
+
+  #article.home-view .tool-card {
+    @apply flex items-center gap-4 bg-white p-5 rounded-2xl;
+    @apply border border-border shadow-sm transition-all duration-300 ease-in-out;
+  }
+
+  #article.home-view .tool-card:hover {
+    @apply border-primary/40 shadow-hover translate-x-1;
+  }
+
+  .tool-card-icon {
+    @apply flex-shrink-0 w-12 h-12 rounded-xl bg-primary-light text-primary;
+    @apply flex items-center justify-center text-xl;
+  }
+
+  .tool-card-body {
+    @apply flex flex-col min-w-0;
+  }
+
+  .tool-card-title {
+    @apply font-semibold text-gray-800;
+  }
+
+  .tool-card-desc {
+    @apply text-sm leading-6 text-gray-600 mt-0.5;
+  }
+
+  .tool-card-arrow {
+    @apply ml-auto flex-shrink-0 text-text-muted text-sm;
+  }
+
+  /* 页脚 */
   .home-footer {
-    @apply text-center bg-white p-8 rounded-2xl shadow-lg;
+    @apply text-center bg-white p-8 rounded-2xl border border-border shadow-sm;
   }
-  
-  .home-footer p {
-    @apply text-gray-600 text-lg m-0 italic;
+
+  #article.home-view .home-footer p {
+    @apply m-0 text-gray-600 text-lg italic;
   }
-  
+
   /* 移动端 AppBar */
   .mobile-appbar {
     @apply fixed top-0 left-0 right-0 h-14 bg-white border-b border-border z-20;
@@ -632,22 +743,36 @@
     }
     
     /* 首页样式调整 */
-    .home-intro h1 {
-      @apply text-4xl;
+    #article.home-view {
+      /* 移动端 .content 去掉了左右内边距，首页要自己撑出边距 */
+      @apply px-4 pb-6;
     }
-    
-    .home-sections {
-      @apply grid-cols-1 gap-5;
+
+    .home-content {
+      @apply gap-8;
     }
-    
-    .home-section {
+
+    .home-hero {
+      @apply py-10 px-5 rounded-2xl;
+    }
+
+    #article.home-view .home-hero h1 {
+      @apply text-3xl;
+    }
+
+    #article.home-view .home-hero-subtitle {
+      @apply text-base;
+    }
+
+    .article-grid,
+    .tool-grid {
+      @apply grid-cols-1 gap-4;
+    }
+
+    #article.home-view .article-card {
       @apply p-6;
     }
-    
-    .home-intro {
-      @apply py-8 px-5;
-    }
-    
+
     /* 文章内容调整 */
     #article {
       @apply p-4 text-sm max-w-none mx-0 rounded-none;

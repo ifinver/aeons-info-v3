@@ -28,7 +28,12 @@ async function loadManifest() {
         group: item.group,
         subgroup: item.subgroup,
         hidden: item.hidden,
+        language: item.language,
         weight: item.weight || 999, // 添加权重支持，默认值999
+        summary: item.summary || '', // 首页卡片摘要
+        author: item.author || '',
+        date: item.date || '',
+        readingMinutes: item.readingMinutes || 0,
         contentPath: item.contentPath // 新增：预生成内容的路径
       })),
       { title: practiceLogTitle, path: 'practice/timer', group: practiceGroupName, subgroup: null, weight: 1000 },
@@ -45,14 +50,16 @@ async function loadManifest() {
     const practiceGroupName = window.I18nTexts ? window.I18nTexts.getText('nav.practice') : (currentLang === 'en' ? 'Practice' : '练习');
     const astralTitle = window.I18nTexts ? window.I18nTexts.getText('nav.astralRecords') : (currentLang === 'en' ? 'Astral Records' : '出神记录');
     
+    // 与 build-content.js 中的清单保持一致（摘要等元数据只在正常加载时可用）
     manifest = [
-      { title: '30天学会灵魂出体', path: 'posts/30-days-master-obe.zh.md', group: '博文', subgroup: null },
-      { title: 'Out-of-body adventures (30 days)', path: 'posts/30-days-master-obe.en.md', group: '博文', subgroup: null, hidden: true },
-      { title: 'Treatise on Astral Projection (EN)', path: 'posts/treatise-on-astral-projection.en.md', group: '博文', subgroup: null, hidden: true },
-      { title: '论星体投射', path: 'posts/treatise-on-astral-projection.zh.md', group: '博文', subgroup: null },
-      { title: 'Out of Body Techniques Manual', path: 'posts/out-of-body-techniques-manual.en.md', group: '博文', subgroup: null, hidden: true },
-      { title: practiceLogTitle, path: 'practice/timer', group: practiceGroupName, subgroup: null },
-      { title: astralTitle, path: 'astral/records', group: practiceGroupName, subgroup: null },
+      { title: '30天学会灵魂出体', path: 'posts/zh/30-days-master-obe.zh.md', group: '博文', subgroup: null, language: 'zh', weight: 1 },
+      { title: '论星体投射', path: 'posts/zh/treatise-on-astral-projection.zh.md', group: '博文', subgroup: null, language: 'zh', weight: 2 },
+      { title: 'Out-of-body Adventures (30 Days)', path: 'posts/en/30-days-master-obe.en.md', group: 'Articles', subgroup: null, language: 'en', weight: 1 },
+      { title: 'Treatise on Astral Projection', path: 'posts/en/treatise-on-astral-projection.en.md', group: 'Articles', subgroup: null, language: 'en', weight: 2 },
+      { title: 'Out of Body Techniques Manual', path: 'posts/en/out-of-body-techniques-manual.en.md', group: 'Articles', subgroup: null, language: 'en', weight: 3 },
+      { title: 'The Method of Nourish Spirit with Eyes Closed', path: 'posts/en/close-eyes-nourish-spirit.en.md', group: 'Articles', subgroup: null, language: 'en', weight: 4 },
+      { title: practiceLogTitle, path: 'practice/timer', group: practiceGroupName, subgroup: null, weight: 1000 },
+      { title: astralTitle, path: 'astral/records', group: practiceGroupName, subgroup: null, weight: 1001 },
     ];
     manifestLoaded = true;
     return manifest;
@@ -492,10 +499,14 @@ function highlightActive(path) {
 async function route() {
   const pathname = location.pathname;
   if (pathname && pathname !== '/' && !pathname.startsWith('/content/')) {
+    // 首页有自己的一套排版，离开首页时要还原 #article 的正文样式
+    article.classList.remove('home-view');
     const path = decodeURIComponent(pathname.slice(1));
     await loadContent(path);
   } else {
     await loadManifest();
+    article.classList.remove('astral-wide');
+    article.classList.add('home-view');
     const visibleManifest = manifest.filter(m => !m.hidden);
     loadHomePage(visibleManifest, article);
     updateAppBar();

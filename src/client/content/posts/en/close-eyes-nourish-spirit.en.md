@@ -2,6 +2,8 @@
 title: "The Method of Resting with Eyes Closed"
 category: "Traditional Anti-Hypnosis Methods"
 source: "Yuan Wu Shi"
+author: "Yuan Wu Shi"
+summary: "A six-step distillation of the simplest traditional method: rest with eyes closed, observe in stillness, and let the spirit go out on its own — rooted in Laozi and combined with dream yoga and The Secret of the Golden Flower."
 ---
 
 # The Method of Nourish Spirit with Eyes Closed

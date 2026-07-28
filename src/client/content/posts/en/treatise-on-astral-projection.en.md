@@ -1,6 +1,7 @@
 ---
 title: "Treatise on Astral Projection"
 date: 2025-05-30T10:17:43+08:00
+author: "Robert Bruce"
 weight: 1
 summary: "Treatise on Astral Projection is Robert Bruce’s detailed explanation of the principles and practices of astral projection, covering foundational concepts, training methods, and practical techniques."
 draft: true

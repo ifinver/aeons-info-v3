@@ -1,6 +1,7 @@
 ---
 title: "论星体投射"
 date: 2025-05-30T10:17:43+08:00
+author: "Robert Bruce"
 summary: "《论星体投射》是 Robert Bruce 对星体投射（Astral Projection）原理与实践的详细阐述，内容涵盖基本概念、练习方法、实战技巧等。"
 weight: 1
 ---

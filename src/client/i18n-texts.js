@@ -69,8 +69,8 @@ const I18N_TEXTS = {
       en: 'Exploring the Spiritual Treasury of Eastern Wisdom'
     },
     description: {
-      zh: '专注于中华传统丹道修炼与意识探索',
-      en: 'Focusing on Traditional Chinese Alchemy and Consciousness Exploration'
+      zh: '专注于灵魂出体、星体投射与静坐养神的实践',
+      en: 'Focusing on out-of-body experience, astral projection, and stillness practice'
     }
   },
 
@@ -207,45 +207,83 @@ const I18N_TEXTS = {
 
   // 首页内容
   home: {
+    badge: {
+      zh: '意识探索 · 出体实践',
+      en: 'Consciousness · Out-of-Body Practice'
+    },
     intro: {
-      zh: '这里收录了张三丰、老子等圣贤的丹道秘诀，以及现代灵魂出体与星体投射的实践指南，为追求内在觉醒的修行者提供珍贵的修炼资源。',
-      en: 'Here we collect the alchemical secrets of sages like Zhang Sanfeng and Laozi, along with modern guides for out-of-body experiences and astral projection, providing valuable cultivation resources for practitioners seeking inner awakening.'
+      zh: '这里收录了灵魂出体与星体投射的完整译著，从原理、准备到逐日练习；并配有炼功计时与出神记录工具，帮助你把阅读变成能坚持下去的日常练习。',
+      en: 'A small library of complete works on out-of-body experience and astral projection — from the underlying principles to day-by-day practice — paired with a practice timer and a journal, so reading turns into a habit you can keep.'
+    },
+    stats: {
+      articles: {
+        zh: '{count} 篇文章',
+        en: '{count} articles'
+      },
+      reading: {
+        zh: '约 {count} 分钟阅读',
+        en: '~{count} min of reading'
+      },
+      readingHours: {
+        zh: '约 {count} 小时阅读',
+        en: '~{count} hours of reading'
+      },
+      tools: {
+        zh: '{count} 个练习工具',
+        en: '{count} practice tools'
+      }
     },
     sections: {
-      traditionalAlchemy: {
+      articles: {
         title: {
-          zh: '🏔️ 传统丹道',
-          en: '🏔️ Traditional Alchemy'
+          zh: '📖 文章',
+          en: '📖 Articles'
         },
         description: {
-          zh: '中华传统丹道修炼的核心秘诀，包含张三丰内丹36诀和老子丹道21诀，传承千年的修真智慧。',
-          en: 'Core secrets of traditional Chinese alchemical cultivation, including Zhang Sanfeng\'s 36 Internal Alchemy Instructions and Laozi\'s 21 Alchemical Instructions, wisdom passed down through millennia.'
+          zh: '出体与星体投射经典著作的全文翻译，按由浅入深的顺序排列。',
+          en: 'Full-length works on leaving the body, ordered from the most approachable to the most demanding.'
         }
       },
-      consciousnessExploration: {
+      practice: {
         title: {
-          zh: '✨ 意识探索',
-          en: '✨ Consciousness Exploration'
-        },
-        description: {
-          zh: '现代意识探索与古典智慧的结合，包括灵魂出体技术和星体投射的理论与实践。',
-          en: 'The fusion of modern consciousness exploration with classical wisdom, including theories and practices of out-of-body experiences and astral projection.'
-        }
-      },
-      practiceTools: {
-        title: {
-          zh: '⚡ 实践工具',
+          zh: '⚡ 练习工具',
           en: '⚡ Practice Tools'
         },
         description: {
-          zh: '实用的修炼辅助工具，帮助您更好地进行灵性实践和意识训练。',
-          en: 'Practical cultivation tools to help you better engage in spiritual practice and consciousness training.'
+          zh: '记录每一次静坐与出体，让练习的进展看得见。',
+          en: 'Log every sitting and every exit, so your progress stops being a guess.'
         }
       }
     },
+    tools: {
+      'practice/timer': {
+        zh: '静坐计时与炼功日志，记录每日练习的时长与状态。',
+        en: 'A meditation timer and practice log for your daily sittings.'
+      },
+      'astral/records': {
+        zh: '按记事本分类整理出体与梦境记录，随时回顾细节。',
+        en: 'Keep out-of-body and dream records in notebooks you can revisit.'
+      }
+    },
+    readMore: {
+      zh: '阅读全文',
+      en: 'Read article'
+    },
+    readingTime: {
+      zh: '{count} 分钟',
+      en: '{count} min'
+    },
+    readingTimeHours: {
+      zh: '{count} 小时',
+      en: '{count} h'
+    },
+    empty: {
+      zh: '暂无文章',
+      en: 'No articles yet'
+    },
     footer: {
-      zh: '从传统丹道到现代意识探索，开启您的内在觉醒之路...',
-      en: 'From traditional alchemy to modern consciousness exploration, begin your journey of inner awakening...'
+      zh: '从一次安静的闭目开始，走向更广阔的实相……',
+      en: 'It starts with closing your eyes — and opens onto a much larger reality...'
     }
   },
 

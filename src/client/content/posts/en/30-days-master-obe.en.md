@@ -1,7 +1,8 @@
 ---
 title: "Out-of-body adventures -- 30 days to the most exciting experience of your life"
 date: 2025-06-03T20:02:00+08:00
-summary: ""
+author: "Rick Stack"
+summary: "A practical 30-day program for reaching the out-of-body state, covering relaxation training, conscious control, the vibrational state, exit techniques, and how to work through the obstacles most beginners run into."
 weight: 2
 ---
 

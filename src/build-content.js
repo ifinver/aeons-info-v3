@@ -69,8 +69,8 @@ function addHeaderIds(html) {
 // 文件清单配置 - 更新为新的目录结构
 const manifest = [
   // 中文内容
-  { title: '30天学会灵魂出体', path: 'posts/zh/30-days-master-obe.zh.md', group: '博文', subgroup: null, language: 'zh' },
-  { title: '论星体投射', path: 'posts/zh/treatise-on-astral-projection.zh.md', group: '博文', subgroup: null, language: 'zh' },
+  { title: '30天学会灵魂出体', path: 'posts/zh/30-days-master-obe.zh.md', group: '博文', subgroup: null, language: 'zh', weight: 1 },
+  { title: '论星体投射', path: 'posts/zh/treatise-on-astral-projection.zh.md', group: '博文', subgroup: null, language: 'zh', weight: 2 },
 
   // 英文内容
   { title: 'Out-of-body Adventures (30 Days)', path: 'posts/en/30-days-master-obe.en.md', group: 'Articles', subgroup: null, language: 'en', weight: 1 },
@@ -79,12 +79,40 @@ const manifest = [
   { title: 'The Method of Nourish Spirit with Eyes Closed', path: 'posts/en/close-eyes-nourish-spirit.en.md', group: 'Articles', subgroup: null, language: 'en', weight: 4 },
 ];
 
-function stripFrontmatter(text) {
-  if (text.startsWith('---')) {
-    const end = text.indexOf('\n---', 3);
-    if (end !== -1) return text.slice(end + 4);
+// 解析 frontmatter，返回 { data, body }
+// 只支持 `key: value` 的扁平结构，这也是本站所有 MD 文件实际使用的形式
+function parseFrontmatter(text) {
+  if (!text.startsWith('---')) return { data: {}, body: text };
+
+  const end = text.indexOf('\n---', 3);
+  if (end === -1) return { data: {}, body: text };
+
+  const data = {};
+  for (const line of text.slice(3, end).split('\n')) {
+    const matched = line.match(/^([A-Za-z_][A-Za-z0-9_-]*)\s*:\s*(.*)$/);
+    if (!matched) continue;
+
+    let value = matched[2].trim();
+    if (value.length >= 2 && /^(".*"|'.*')$/.test(value)) {
+      value = value.slice(1, -1);
+    }
+    data[matched[1]] = value;
   }
-  return text;
+
+  return { data, body: text.slice(end + 4) };
+}
+
+// 中英文混排的字数统计：中文按字计，英文按词计
+function countWords(text) {
+  const cjkPattern = /[一-鿿㐀-䶿]/g;
+  const cjk = (text.match(cjkPattern) || []).length;
+  const latin = (text.replace(cjkPattern, ' ').match(/[A-Za-z0-9][A-Za-z0-9'’-]*/g) || []).length;
+  return { cjk, latin, total: cjk + latin };
+}
+
+// 预估阅读时长（分钟）：中文 400 字/分钟，英文 200 词/分钟
+function estimateReadingMinutes({ cjk, latin }) {
+  return Math.max(1, Math.round(cjk / 400 + latin / 200));
 }
 
 function ensureDir(dirPath) {
@@ -101,39 +129,50 @@ function processMarkdownFile(sourcePath, outputPath, metadata) {
   try {
     // 读取 MD 文件
     const mdContent = readFileSync(sourcePath, 'utf-8');
-    
-    // 去除 frontmatter
-    const cleanedContent = stripFrontmatter(mdContent);
-    
+
+    // 解析并去除 frontmatter
+    const { data: frontmatter, body: cleanedContent } = parseFrontmatter(mdContent);
+
     // 转换为 HTML
     let htmlContent = marked.parse(cleanedContent);
-    
+
     // 后处理：为标题添加 id 属性
     htmlContent = addHeaderIds(htmlContent);
-    
+
     // 后处理：为外部链接添加 target="_blank"
     htmlContent = addTargetBlankToExternalLinks(htmlContent);
-    
+
+    // 从 frontmatter 提取首页卡片所需的摘要信息
+    const counted = countWords(cleanedContent);
+    const summaryMeta = {
+      summary: frontmatter.summary || '',
+      author: frontmatter.author || frontmatter.source || '',
+      date: frontmatter.date || '',
+      wordCount: counted.total,
+      readingMinutes: estimateReadingMinutes(counted)
+    };
+
     // 创建带有元数据的完整 HTML 结构
     const fullHtml = {
-      metadata,
+      metadata: { ...metadata, ...summaryMeta },
       content: htmlContent,
       generatedAt: getChinaISOString(),
-      wordCount: cleanedContent.split(/\s+/).length
+      wordCount: counted.total
     };
-    
+
     // 确保输出目录存在
     ensureDir(dirname(outputPath));
-    
+
     // 写入 JSON 格式（便于 JS 加载和包含元数据）
     writeFileSync(outputPath, JSON.stringify(fullHtml, null, 2), 'utf-8');
-    
+
     return {
       success: true,
       wordCount: fullHtml.wordCount,
+      summaryMeta,
       size: Buffer.byteLength(JSON.stringify(fullHtml), 'utf-8')
     };
-    
+
   } catch (error) {
     console.error(`处理文件失败 ${sourcePath}:`, error);
     return { success: false, error: error.message };
@@ -151,11 +190,13 @@ function buildContent(outputDir = null) {
   ensureDir(actualOutputDir);
   
   const results = [];
+  // path -> 从 frontmatter/正文提取的摘要信息，用于回填清单
+  const summaryByPath = new Map();
   let totalFiles = 0;
   let successfulFiles = 0;
   let totalWordCount = 0;
   let totalSize = 0;
-  
+
   // 处理清单中的每个文件
   for (const item of manifest) {
     const sourcePath = join(sourceDir, item.path);
@@ -185,6 +226,7 @@ function buildContent(outputDir = null) {
         successfulFiles++;
         totalWordCount += result.wordCount;
         totalSize += result.size;
+        summaryByPath.set(item.path, result.summaryMeta);
         results.push({
           path: item.path,
           title: item.title,
@@ -204,8 +246,10 @@ function buildContent(outputDir = null) {
     totalFiles: successfulFiles,
     totalWordCount,
     totalSize,
+    // 清单里带上摘要/作者/阅读时长，首页无需再逐篇加载正文
     items: manifest.map(item => ({
       ...item,
+      ...(summaryByPath.get(item.path) || {}),
       contentPath: item.path.replace(/\.md$/, '.json')
     })),
     buildResults: results
